@@ -16,6 +16,11 @@ const { sendFeeInvoiceEmail } = require('../services/mailercloud');
 const { createOrder } = require('../services/cashfree');
 const { generateMonthlyFeesForTenant } = require('../services/billing');
 
+// Staff roles allowed to read academy operational data.
+// Excludes PARENT and MEMBER, whose tokens must not expose other
+// students' personal details, fees, or attendance.
+const STAFF_READ = authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'FINANCE_MANAGER', 'RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'HR_MANAGER');
+
 // 1. Admit Student (Counsellor/Admin/Staff permission)
 router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
     const { 
@@ -143,7 +148,7 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
 });
 
 // 2. List Students (Staff permissions)
-router.get('/academy/students', authenticateToken, async (req, res) => {
+router.get('/academy/students', authenticateToken, STAFF_READ, async (req, res) => {
     const { sport, status } = req.query;
     const query = { tenantId: req.user.tenantId };
     if (sport) query.sport = sport;
@@ -345,7 +350,7 @@ router.post('/academy/students/:studentId/fees', authenticateToken, authorizeRol
 });
 
 // Get all fee records for a specific student (for the profile history log)
-router.get('/academy/students/:studentId/fees', authenticateToken, async (req, res) => {
+router.get('/academy/students/:studentId/fees', authenticateToken, STAFF_READ, async (req, res) => {
     const { studentId } = req.params;
     const tenantId = req.user.tenantId;
 
@@ -379,9 +384,16 @@ router.get('/academy/dues', async (req, res) => {
         if (search.match(/^[0-9a-fA-F]{24}$/)) {
             student = await Student.findOne({ _id: search, ...tenantFilter });
         } else {
+            // Require the complete phone number (exact match on the last 10
+            // digits). A suffix regex on partial input would let anyone
+            // enumerate students with a few digits.
             const cleanPhone = search.replace(/\D/g, '');
-            student = await Student.findOne({ 
-                phone: { $regex: cleanPhone + '$' },
+            if (cleanPhone.length < 10) {
+                return res.status(400).json({ error: 'Please enter the complete 10-digit phone number.' });
+            }
+            const last10 = cleanPhone.slice(-10);
+            student = await Student.findOne({
+                phone: { $regex: last10 + '$' },
                 ...tenantFilter
             });
         }
@@ -395,9 +407,28 @@ router.get('/academy/dues', async (req, res) => {
             status: { $in: ['UNPAID', 'PARTIAL'] }
         }).sort({ dueDate: 1 });
 
+        // Expose only what the payment portal needs — never the full document
+        // (which contains parent contact details, notes, etc.)
         res.json({
-            student,
-            dues
+            student: {
+                _id: student._id,
+                name: student.name,
+                parentName: student.parentName,
+                sport: student.sport,
+                batchTime: student.batchTime,
+                monthlyFee: student.monthlyFee,
+                adjustedFee: student.adjustedFee,
+                status: student.status
+            },
+            dues: dues.map(d => ({
+                _id: d._id,
+                monthFor: d.monthFor,
+                dueDate: d.dueDate,
+                amountDue: d.amountDue,
+                amountPaid: d.amountPaid,
+                discount: d.discount,
+                status: d.status
+            }))
         });
 
     } catch (err) {
@@ -448,7 +479,7 @@ router.post('/academy/dues/pay', async (req, res) => {
             customerName: student.parentName,
             customerEmail: student.email,
             customerPhone: student.phone,
-            returnUrl: `https://khelopatna.in/academy/pay-fees?order_id=${orderId}&payment_status=success`
+            returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/academy/pay-fees?order_id=${orderId}&payment_status=success`
         });
 
         res.json({
@@ -524,7 +555,7 @@ router.post('/academy/attendance', authenticateToken, authorizeRoles('RECEPTIONI
 });
 
 // 8. Get Attendance Logs
-router.get('/academy/attendance', authenticateToken, async (req, res) => {
+router.get('/academy/attendance', authenticateToken, STAFF_READ, async (req, res) => {
     const { date } = req.query; // YYYY-MM-DD
 
     if (!date) {
@@ -544,7 +575,7 @@ router.get('/academy/attendance', authenticateToken, async (req, res) => {
 // --- NEW SaaS ERP ROUTINGS ---
 
 // 9. Session Management
-router.get('/academy/sessions', authenticateToken, async (req, res) => {
+router.get('/academy/sessions', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const sessions = await Session.find({ tenantId }).sort({ startDate: -1 });
@@ -609,7 +640,7 @@ router.post('/academy/sessions/promote', authenticateToken, authorizeRoles('BRAN
 });
 
 // 10. Coach Management
-router.get('/academy/coaches', authenticateToken, async (req, res) => {
+router.get('/academy/coaches', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const coaches = await Coach.find({ tenantId }).sort({ name: 1 });
@@ -670,7 +701,7 @@ router.delete('/academy/coaches/:id', authenticateToken, authorizeRoles('ACADEMY
 });
 
 // 11. Batch Management
-router.get('/academy/batches', authenticateToken, async (req, res) => {
+router.get('/academy/batches', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const batches = await Batch.find({ tenantId }).populate('coachId', 'name').populate('members', 'name membershipId');

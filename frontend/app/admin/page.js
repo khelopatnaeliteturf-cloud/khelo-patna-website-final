@@ -3007,7 +3007,7 @@ export default function AdminDashboard() {
             const totalBookingsCount = bookingsLog.length;
             const paidCount = bookingsLog.filter(b => b.paymentStatus === 'SUCCESS').length;
             const pendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
-            const failedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED').length;
+            const failedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
             const totalPendingAmount = bookingsLog.filter(b => b.paymentStatus !== 'SUCCESS').reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
             
             const selectedBookingCustId = selectedBooking ? generateCustomerId(selectedBooking.customerName, selectedBooking.customerPhone) : '';
@@ -3034,6 +3034,7 @@ export default function AdminDashboard() {
                                 <option value="SUCCESS">Paid</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="FAILED">Failed</option>
+                                <option value="CANCELLED">Cancelled</option>
                             </select>
                             <select className="input-premium" style={{ fontSize: '0.82rem', padding: '8px 14px', borderRadius: '10px', fontFamily: 'inherit', fontWeight: 500, width: 'auto', minWidth: '145px' }} value={bookingsDateRange} onChange={(e) => setBookingsDateRange(e.target.value)}>
                                 <option value="all">All Time</option>
@@ -4496,7 +4497,7 @@ export default function AdminDashboard() {
                                 >
                                     <span className="material-icons-outlined" style={{ fontSize: '16px' }}>schedule</span> Reschedule
                                 </button>
-                                {b.paymentStatus !== 'FAILED' && (
+                                {b.paymentStatus !== 'FAILED' && b.paymentStatus !== 'CANCELLED' && (
                                     <>
                                         <button 
                                             onClick={() => handleCancelOnlyBooking(b._id)}
@@ -4658,7 +4659,7 @@ export default function AdminDashboard() {
                                                     if (b.paymentStatus === 'SUCCESS') {
                                                         statusColor = 'var(--success)';
                                                         statusBg = 'rgba(16,185,129,0.1)';
-                                                    } else if (b.paymentStatus === 'FAILED') {
+                                                    } else if (b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED') {
                                                         statusColor = 'var(--danger)';
                                                         statusBg = 'rgba(239,68,68,0.1)';
                                                     } else if (b.paymentStatus === 'PENDING') {
@@ -5013,7 +5014,7 @@ export default function AdminDashboard() {
         const reportBookingsCount = bookingsLog.length;
         const reportPaidCount = bookingsLog.filter(b => b.paymentStatus === 'SUCCESS').length;
         const reportPendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
-        const reportFailedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED').length;
+        const reportFailedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
         
         const reportTotalRevenue = bookingsLog.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
         const reportTotalOutstanding = bookingsLog.reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);

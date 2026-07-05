@@ -90,8 +90,8 @@ router.post('/checkout', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADE
     }
 });
 
-// 3. List Active Players inside Arena
-router.get('/checkin/active', authenticateToken, async (req, res) => {
+// 3. List Active Players inside Arena (staff only — not PARENT/MEMBER tokens)
+router.get('/checkin/active', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST', 'GROUND_MANAGER', 'COACH'), async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const activeLogs = await CheckInLog.find({ tenantId, checkOutTime: null })

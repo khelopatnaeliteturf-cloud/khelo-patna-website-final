@@ -573,26 +573,11 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         const tenantId = req.user.tenantId || null;
         const branchId = req.user.branchId || null;
 
-        // Check slot availability (conflict check on the shared physical ground)
-        const sportFilter = (sport === 'cricket' || sport === 'football') 
-            ? { $in: ['cricket', 'football'] } 
-            : sport;
-
-        const bookings = await Booking.find({
-            tenantId,
-            date,
-            sport: sportFilter,
-            paymentStatus: 'SUCCESS'
-        });
-
-        const bookedSlots = new Set();
-        bookings.forEach(b => {
-            b.timeSlots.forEach(slot => bookedSlots.add(slot));
-        });
-
-        const hasConflict = timeSlots.some(slot => bookedSlots.has(slot));
-        if (hasConflict) {
-            return res.status(400).json({ error: 'One or more of the selected slots are already booked.' });
+        // Check slot availability (conflict check on the shared physical ground,
+        // including in-flight PENDING payments to avoid double-booking races)
+        const conflict = await hasSlotConflict({ tenantId, date, sport, timeSlots });
+        if (conflict) {
+            return res.status(409).json({ error: 'One or more of the selected slots are already booked.' });
         }
 
         const orderId = `KP-OFFLINE-${Date.now()}`;
@@ -602,7 +587,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         if (paymentType === 'link') {
             // Online Payment Link flow
             const { createPaymentLink } = require('../services/cashfree');
-            const returnUrl = `http://localhost:3000/book?order_id=${orderId}&payment_status=success`;
+            const returnUrl = `${FRONTEND_URL}/book?order_id=${orderId}&payment_status=success`;
             const paymentLink = await createPaymentLink({
                 linkId: orderId,
                 amount: Number(paidAmount),
@@ -720,32 +705,22 @@ router.put('/admin/bookings/:id/reschedule', authenticateToken, authorizeRoles('
     }
 
     try {
-        const booking = await Booking.findById(bookingId);
+        // Scope lookup to the caller's tenant to prevent cross-tenant access
+        const booking = await Booking.findOne({ _id: bookingId, tenantId: req.user.tenantId });
         if (!booking) {
             return res.status(404).json({ error: 'Booking not found.' });
         }
 
-        // Shared turf query filter
-        const sportFilter = (booking.sport === 'cricket' || booking.sport === 'football')
-            ? { $in: ['cricket', 'football'] }
-            : booking.sport;
-
-        // Check slots availability for another date (excluding current booking)
-        const conflictingBookings = await Booking.find({
-            _id: { $ne: booking._id },
-            date: date,
-            sport: sportFilter,
-            paymentStatus: 'SUCCESS'
+        // Check slot availability (tenant-scoped, excluding this booking)
+        const conflict = await hasSlotConflict({
+            tenantId: booking.tenantId,
+            date,
+            sport: booking.sport,
+            timeSlots,
+            excludeBookingId: booking._id
         });
-
-        const bookedSlots = new Set();
-        conflictingBookings.forEach(b => {
-            b.timeSlots.forEach(slot => bookedSlots.add(slot));
-        });
-
-        const hasConflict = timeSlots.some(slot => bookedSlots.has(slot));
-        if (hasConflict) {
-            return res.status(400).json({ error: 'One or more of the requested slots are already booked.' });
+        if (conflict) {
+            return res.status(409).json({ error: 'One or more of the requested slots are already booked.' });
         }
 
         const oldDate = booking.date;
@@ -784,17 +759,19 @@ router.put('/admin/bookings/:id/reschedule', authenticateToken, authorizeRoles('
 });
 
 // POST /api/admin/bookings/:id/cancel-refund
-router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'RECEPTIONIST'), async (req, res) => {
+// Refunds move real money — restricted to management roles (not RECEPTIONIST).
+router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN'), async (req, res) => {
     const bookingId = req.params.id;
     const { initiateRefund } = req.body; // true/false flag
 
     try {
-        const booking = await Booking.findById(bookingId);
+        // Scope lookup to the caller's tenant to prevent cross-tenant refunds
+        const booking = await Booking.findOne({ _id: bookingId, tenantId: req.user.tenantId });
         if (!booking) {
             return res.status(404).json({ error: 'Booking not found.' });
         }
 
-        if (booking.paymentStatus === 'FAILED') {
+        if (booking.paymentStatus === 'CANCELLED' || booking.paymentStatus === 'FAILED') {
             return res.status(400).json({ error: 'Booking is already cancelled.' });
         }
 
@@ -819,7 +796,7 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
             }
         }
 
-        booking.paymentStatus = 'FAILED'; // Release the slots
+        booking.paymentStatus = 'CANCELLED'; // Release the slots (distinct from payment FAILED)
         if (refundDetails) {
             booking.paymentDetails = {
                 ...booking.paymentDetails,

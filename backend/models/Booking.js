@@ -10,7 +10,7 @@ const BookingSchema = new mongoose.Schema({
     timeSlots: [{ type: String, required: true }], // e.g. ["06:00-07:00", "07:00-08:00"]
     totalAmount: { type: Number, required: true },
     paidAmount: { type: Number, required: true },
-    paymentStatus: { type: String, enum: ['PENDING', 'SUCCESS', 'FAILED'], default: 'PENDING' },
+    paymentStatus: { type: String, enum: ['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'], default: 'PENDING' },
     paymentMethod: { type: String, enum: ['cashfree', 'upi', 'cash', 'offline', 'card'], required: true },
     discount: { type: Number, default: 0 },
     orderId: { type: String, required: true, unique: true },
@@ -25,5 +25,7 @@ const BookingSchema = new mongoose.Schema({
 BookingSchema.index({ tenantId: 1, branchId: 1 });
 BookingSchema.index({ tenantId: 1, date: 1 });
 BookingSchema.index({ tenantId: 1, groundId: 1, date: 1 });
+// Supports slot-conflict lookups (date + sport + status)
+BookingSchema.index({ tenantId: 1, date: 1, sport: 1, paymentStatus: 1 });
 
 module.exports = mongoose.model('Booking', BookingSchema);

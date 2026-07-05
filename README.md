@@ -37,13 +37,15 @@ npm run seed          # Creates tenant, staff, coaches, batches, fee structure
 npm run dev           # http://localhost:5001
 ```
 
-**Default staff logins** (after seed):
+**Seeded staff accounts:**
 
-| Username | Password | Role |
-|----------|----------|------|
-| admin | admin123 | SUPER_ADMIN |
-| manager | manager123 | BRANCH_MANAGER |
-| counsellor | counsellor123 | RECEPTIONIST |
+| Username | Role | Password |
+|----------|------|----------|
+| admin | SUPER_ADMIN | `SEED_ADMIN_PASSWORD` env var, or auto-generated |
+| manager | BRANCH_MANAGER | `SEED_MANAGER_PASSWORD` env var, or auto-generated |
+| counsellor | RECEPTIONIST | `SEED_COUNSELLOR_PASSWORD` env var, or auto-generated |
+
+If the env vars are not set, the seed script generates strong random passwords and prints them once to the console — save them immediately.
 
 ### 2. Frontend
 
