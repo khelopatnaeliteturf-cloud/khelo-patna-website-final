@@ -7480,13 +7480,13 @@ export default function AdminDashboard() {
                             sessionsList={sessionsList}
                             coachesList={coachesList}
                             batchesList={batchesList}
-                            onAddStudent={handleAddStudent}
                             onUpdateStudent={handleUpdateStudentWrapper}
                             onCollectPayment={handleCollectPaymentRedirect}
                             backendUrl={BACKEND_URL}
                             getHeaders={getHeaders}
                             initialSelectedMemberId={initialSelectedMemberId}
                             clearInitialSelectedMemberId={() => setInitialSelectedMemberId('')}
+                            onOpenAdmissions={() => { setActiveTab('admission-studio'); setActiveSidebarKey('admission-studio'); }}
                         />
                     )}
                     {activeTab === 'session-management' && renderSessionTab()}
