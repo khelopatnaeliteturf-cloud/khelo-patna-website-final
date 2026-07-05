@@ -15,6 +15,7 @@ import AuditLogsTab from './components/AuditLogsTab';
 import IntegrationsTab from './components/IntegrationsTab';
 import CustomersTab from './components/CustomersTab';
 import AnimatedNumber from './components/AnimatedNumber';
+import AdmissionStudio from './components/AdmissionStudio';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
 const BACKEND_URL = getBackendUrl();
@@ -615,7 +616,7 @@ export default function AdminDashboard() {
             loadBookingsLog();
             loadCheckins();
             loadSettingsAndClosures();
-        } else if (activeTab === 'membership-management' || activeTab === 'academy-management') {
+        } else if (activeTab === 'membership-management' || activeTab === 'academy-management' || activeTab === 'admission-studio') {
             loadAllStudents();
             loadSessions();
             loadCoaches();
@@ -5381,6 +5382,12 @@ export default function AdminDashboard() {
             description: 'Manage rates, blackout hours, academy blocks, and closure rules.',
             icon: 'tune'
         },
+        'admission-studio': {
+            title: 'Admission Studio',
+            eyebrow: 'Guided enrollment',
+            description: 'Enroll students step by step — pick a sport, assign a batch, and apply the right fee plan automatically.',
+            icon: 'how_to_reg'
+        },
         'membership-management': {
             title: 'Membership CRM',
             eyebrow: 'Academy members',
@@ -7221,6 +7228,7 @@ export default function AdminDashboard() {
                     {/* ACADEMY SECTION */}
                     <div className="sidebar-section-label">Academy</div>
                     {[
+                        { id: 'admission-studio', label: 'Admissions', icon: 'how_to_reg' },
                         { id: 'membership-management', label: 'Memberships', icon: 'people' },
                         { id: 'session-management', label: 'Sessions', icon: 'schedule' },
                         { id: 'batch-management', label: 'Batches', icon: 'groups' },
@@ -7452,6 +7460,17 @@ export default function AdminDashboard() {
                         </div>
                     )}
 
+                    {activeTab === 'admission-studio' && (
+                        <AdmissionStudio
+                            backendUrl={BACKEND_URL}
+                            getHeaders={getHeaders}
+                            batchesList={batchesList}
+                            onRefresh={() => { loadAllStudents(); loadBatches(); }}
+                            onCollectPayment={handleCollectPaymentRedirect}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
+                        />
+                    )}
                     {activeTab === 'academy-management' && renderAcademyTab()}
                     {activeTab === 'dashboard' && renderDashboardTab()}
                     {activeTab === 'turf-management' && renderTurfTab()}
