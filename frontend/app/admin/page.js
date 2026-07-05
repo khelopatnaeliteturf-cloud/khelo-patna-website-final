@@ -114,7 +114,8 @@ export default function AdminDashboard() {
         category: 'pos_drinks',
         totalQuantity: 0,
         availableQuantity: 0,
-        condition: 'GOOD'
+        condition: 'GOOD',
+        unitPrice: 0
     });
     const [posSale, setPosSale] = useState({
         itemId: '',
@@ -1252,12 +1253,13 @@ export default function AdminDashboard() {
                     category: newInventoryItem.category,
                     totalQuantity: Number(newInventoryItem.totalQuantity),
                     availableQuantity: Number(newInventoryItem.availableQuantity),
-                    condition: newInventoryItem.condition
+                    condition: newInventoryItem.condition,
+                    unitPrice: Number(newInventoryItem.unitPrice) || 0
                 })
             });
             if (res.ok) {
                 setSuccessMessage('Inventory entry saved successfully.');
-                setNewInventoryItem({ id: '', itemName: '', category: 'pos_drinks', totalQuantity: 0, availableQuantity: 0, condition: 'GOOD' });
+                setNewInventoryItem({ id: '', itemName: '', category: 'pos_drinks', totalQuantity: 0, availableQuantity: 0, condition: 'GOOD', unitPrice: 0 });
                 loadInventory();
             }
         } catch (e) {
@@ -1275,9 +1277,10 @@ export default function AdminDashboard() {
         const selected = posItems.find(item => item._id === posSale.itemId);
         if (!selected) return;
 
-        // Arbitrary pricing mock: drinks are 20, cones rental is 100, etc.
-        const unitPrice = selected.category === 'pos_drinks' ? 20 : 150;
-        const total = unitPrice * Number(posSale.quantity);
+        // Fallback price only used by the server for legacy items without a
+        // configured unitPrice; otherwise the server computes the price itself.
+        const fallbackUnitPrice = selected.category === 'pos_drinks' ? 20 : 150;
+        const fallbackTotal = fallbackUnitPrice * Number(posSale.quantity);
 
         try {
             const res = await fetch(`${BACKEND_URL}/api/pos/sell`, {
@@ -1286,13 +1289,13 @@ export default function AdminDashboard() {
                 body: JSON.stringify({
                     itemId: posSale.itemId,
                     quantity: Number(posSale.quantity),
-                    totalPrice: total,
+                    totalPrice: fallbackTotal,
                     bookingId: posSale.bookingId || undefined
                 })
             });
             const data = await res.json();
             if (res.ok) {
-                setSuccessMessage(`Sale recorded! Total collected: ₹${total}. Remaining Stock: ${data.item_remaining}`);
+                setSuccessMessage(`Sale recorded! Total collected: ₹${data.sale?.totalPrice ?? fallbackTotal}. Remaining Stock: ${data.item_remaining}`);
                 setPosSale({ itemId: '', quantity: 1, bookingId: '' });
                 loadInventory();
             } else {

@@ -8,6 +8,18 @@ const BASE_URL = CASHFREE_ENV === 'production'
     ? 'https://api.cashfree.com/pg' 
     : 'https://sandbox.cashfree.com/pg';
 
+// Mock payment flows are ONLY allowed in non-production environments.
+// In production, missing credentials must fail closed to prevent
+// attackers from confirming bookings/fees without paying.
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || CASHFREE_ENV === 'production';
+const hasCredentials = () => Boolean(CASHFREE_APP_ID && CASHFREE_SECRET_KEY);
+const assertCredentialsInProduction = (operation) => {
+    if (IS_PRODUCTION && !hasCredentials()) {
+        console.error(`CRITICAL: Cashfree credentials missing in production. Refusing to ${operation}.`);
+        throw new Error('Payment gateway is not configured. Please contact support.');
+    }
+};
+
 // Helper to get headers
 const getCFHeaders = () => {
     return {
@@ -22,9 +34,11 @@ const getCFHeaders = () => {
  * Creates an order session for the Next.js frontend checkout.
  */
 async function createOrder({ amount, orderId, customerName, customerEmail, customerPhone, returnUrl }) {
-    // Check if credentials exist; if not, return mock session
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
-        console.log('Cashfree credentials missing. Generating MOCK Order Session...');
+    assertCredentialsInProduction('create an order');
+
+    // Non-production only: return mock session when credentials are missing
+    if (!hasCredentials()) {
+        console.log('Cashfree credentials missing (non-production). Generating MOCK Order Session...');
         return {
             success: true,
             order_id: orderId,
@@ -64,9 +78,11 @@ async function createOrder({ amount, orderId, customerName, customerEmail, custo
  * Generates a Payment Link specifically for WhatsApp Bot booking chat flows.
  */
 async function createPaymentLink({ linkId, amount, customerPhone, customerName, customerEmail, returnUrl }) {
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY) {
-        console.log('Cashfree credentials missing. Generating MOCK Payment Link...');
-        // We link to a simulated mock payment portal on Vercel frontend or local backend
+    assertCredentialsInProduction('create a payment link');
+
+    if (!hasCredentials()) {
+        console.log('Cashfree credentials missing (non-production). Generating MOCK Payment Link...');
+        // We link to a simulated mock payment portal on the local backend (dev only)
         return `http://localhost:5001/mock-payment.html?order_id=${linkId}&amount=${amount}`;
     }
 
@@ -93,24 +109,29 @@ async function createPaymentLink({ linkId, amount, customerPhone, customerName, 
         return response.data.link_url;
     } catch (err) {
         console.error('Cashfree link creation error:', err.response?.data || err.message);
-        // Fall back to a mock link if API fails during sandbox rate limit or downtimes
-        return `http://localhost:5001/mock-payment.html?order_id=${linkId}&amount=${amount}`;
+        // Never send customers a broken/mock link — fail loudly so the caller can handle it
+        throw new Error(err.response?.data?.message || 'Failed to create payment link.');
     }
 }
 
 /**
  * Verifies the payment status of an order.
  */
-async function verifyPayment(orderId) {
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || orderId.startsWith('mock_')) {
-        console.log(`Mock verification for Order: ${orderId} -> SUCCESS`);
+async function verifyPayment(orderId, expectedAmount = null) {
+    assertCredentialsInProduction('verify a payment');
+
+    if (!hasCredentials()) {
+        console.log(`Mock verification (non-production) for Order: ${orderId} -> SUCCESS`);
         return {
             success: true,
             payment_status: 'SUCCESS',
+            mock: true,
             payment_details: {
                 transaction_id: 'mock_tx_' + Date.now(),
-                amount: 100,
-                payment_method: 'UPI'
+                // Echo the expected amount so amount-mismatch checks stay consistent in dev
+                amount: expectedAmount !== null ? Number(expectedAmount) : 0,
+                payment_method: 'UPI',
+                mock: true
             }
         };
     }
@@ -144,8 +165,20 @@ async function verifyPayment(orderId) {
  * Initiates a refund for a Cashfree order.
  */
 async function refundPayment(orderId, amount) {
-    if (!CASHFREE_APP_ID || !CASHFREE_SECRET_KEY || orderId.startsWith('mock_') || orderId.startsWith('KP-OFFLINE-')) {
-        console.log(`Mock refund initiated for Order: ${orderId}, Amount: ${amount}`);
+    // Offline bookings are refunded in cash outside the gateway
+    if (orderId.startsWith('KP-OFFLINE-')) {
+        console.log(`Offline order ${orderId}: no gateway refund needed (handled manually).`);
+        return {
+            success: true,
+            refund_id: 'offline_ref_' + Date.now(),
+            status: 'OFFLINE'
+        };
+    }
+
+    assertCredentialsInProduction('initiate a refund');
+
+    if (!hasCredentials()) {
+        console.log(`Mock refund (non-production) for Order: ${orderId}, Amount: ${amount}`);
         return {
             success: true,
             refund_id: 'mock_ref_' + Date.now(),

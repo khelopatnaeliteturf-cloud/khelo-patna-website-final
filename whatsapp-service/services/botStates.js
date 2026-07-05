@@ -282,7 +282,7 @@ async function handleIncomingMessage(sock, m) {
                     customerPhone: phone,
                     customerName: session.bookingData.name,
                     customerEmail: session.bookingData.email,
-                    returnUrl: `https://khelopatna.in/book?order_id=${orderId}`
+                    returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/book?order_id=${orderId}`
                 });
 
                 session.state = 'AWAITING_PAYMENT';
@@ -299,15 +299,21 @@ async function handleIncomingMessage(sock, m) {
             break;
 
         case 'AWAITING_PAYMENT':
-            await sendWhatsAppMessage(phone, 
-                `Awaiting online payment of *₹${session.bookingData.totalAmount}*.\n🔗 Payment Link: ${await createPaymentLink({
+            try {
+                const reminderLink = await createPaymentLink({
                     linkId: session.bookingData.orderId,
                     amount: session.bookingData.totalAmount,
                     customerPhone: phone,
                     customerName: session.bookingData.name,
                     customerEmail: session.bookingData.email
-                })}\n\nIf you want to start a new booking, type *Cancel*.`
-            );
+                });
+                await sendWhatsAppMessage(phone, 
+                    `Awaiting online payment of *₹${session.bookingData.totalAmount}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start a new booking, type *Cancel*.`
+                );
+            } catch (err) {
+                console.error('Error regenerating payment link:', err);
+                await sendWhatsAppMessage(phone, `⚠️ Could not generate the payment link right now. Please try again in a few minutes, or type *Cancel* to restart.`);
+            }
             break;
     }
 }
