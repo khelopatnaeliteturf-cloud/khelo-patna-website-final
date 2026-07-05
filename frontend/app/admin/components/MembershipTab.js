@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import AnimatedNumber from './AnimatedNumber';
+import FeeTermsManager from './FeeTermsManager';
+import { getSessionMonths, getSessionLabel } from '../lib/feeSession';
 
 export default function MembershipTab({ 
     allStudents, 
@@ -14,7 +16,9 @@ export default function MembershipTab({
     getHeaders,
     initialSelectedMemberId,
     clearInitialSelectedMemberId,
-    onOpenAdmissions
+    onOpenAdmissions,
+    notifySuccess,
+    notifyError
 }) {
     const [subView, setSubView] = useState('list'); // 'list', 'new', 'promote', 'transfer'
     const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +71,39 @@ export default function MembershipTab({
     const [promoSourceSession, setPromoSourceSession] = useState('');
     const [promoTargetSession, setPromoTargetSession] = useState('');
     const [promoSelectedMembers, setPromoSelectedMembers] = useState([]);
+    // Bulk fee-term assignment state
+    const [bulkSelectedIds, setBulkSelectedIds] = useState([]);
+    const [bulkMonths, setBulkMonths] = useState([]);
+    const [bulkSaving, setBulkSaving] = useState(false);
+
+    const toggleBulkStudent = (id) => {
+        setBulkSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
+    const toggleBulkMonth = (m) => {
+        setBulkMonths(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+    };
+
+    const handleBulkAssign = async () => {
+        if (bulkSelectedIds.length === 0 || bulkMonths.length === 0) return;
+        setBulkSaving(true);
+        try {
+            const res = await fetch(`${backendUrl}/api/academy/fee-terms/bulk-assign`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ studentIds: bulkSelectedIds, months: bulkMonths })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Bulk assignment failed.');
+            notifySuccess && notifySuccess(data.message);
+            setBulkSelectedIds([]);
+            setBulkMonths([]);
+        } catch (err) {
+            notifyError && notifyError(err.message);
+        } finally {
+            setBulkSaving(false);
+        }
+    };
+
     const normalizedSearch = searchQuery.trim().toLowerCase();
     const memberStats = students.reduce((acc, member) => {
         const status = member.status || 'ACTIVE';
@@ -251,12 +288,72 @@ export default function MembershipTab({
                         </div>
                     </div>
 
+                    {/* Bulk fee-term assignment bar */}
+                    {bulkSelectedIds.length > 0 && (
+                        <div style={{
+                            border: '1px solid rgba(15, 143, 106, 0.3)', borderRadius: '12px', padding: '14px 16px',
+                            marginBottom: '16px', background: 'rgba(15, 143, 106, 0.05)'
+                        }}>
+                            <div className="d-flex justify-content-between align-items-center mb-2" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                <strong style={{ fontSize: '0.85rem' }}>
+                                    Assign fee terms (Session {getSessionLabel()}) to {bulkSelectedIds.length} selected student{bulkSelectedIds.length === 1 ? '' : 's'}
+                                </strong>
+                                <button type="button" className="btn btn-sm btn-link text-muted" style={{ textDecoration: 'none', padding: 0 }} onClick={() => { setBulkSelectedIds([]); setBulkMonths([]); }}>
+                                    Clear selection
+                                </button>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                                {getSessionMonths().map(m => (
+                                    <button
+                                        key={m}
+                                        type="button"
+                                        aria-pressed={bulkMonths.includes(m)}
+                                        onClick={() => toggleBulkMonth(m)}
+                                        style={{
+                                            fontSize: '0.74rem', fontWeight: 600, padding: '5px 12px', borderRadius: '999px',
+                                            cursor: 'pointer',
+                                            border: bulkMonths.includes(m) ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                                            background: bulkMonths.includes(m) ? 'var(--primary)' : 'transparent',
+                                            color: bulkMonths.includes(m) ? '#fff' : 'var(--text-muted)'
+                                        }}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                className="btn-primary-stripe"
+                                disabled={bulkMonths.length === 0 || bulkSaving}
+                                onClick={handleBulkAssign}
+                                style={{ fontSize: '0.82rem', opacity: bulkMonths.length === 0 ? 0.5 : 1 }}
+                            >
+                                {bulkSaving ? 'Assigning…' : `Assign ${bulkMonths.length} Term${bulkMonths.length === 1 ? '' : 's'} to ${bulkSelectedIds.length} Student${bulkSelectedIds.length === 1 ? '' : 's'}`}
+                            </button>
+                        </div>
+                    )}
+
                     {/* Premium Table Rendering */}
                     <div className="table-responsive">
                         <table className="table-premium" style={{ verticalAlign: 'middle' }}>
                             <thead>
                                 <tr>
-                                    <th style={{ paddingLeft: '16px' }}>Member Profile</th>
+                                    <th style={{ width: '36px', paddingLeft: '16px' }}>
+                                        <input
+                                            type="checkbox"
+                                            aria-label="Select all visible students for bulk fee-term assignment"
+                                            checked={filteredMembers.length > 0 && filteredMembers.every(m => bulkSelectedIds.includes(m._id))}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setBulkSelectedIds(prev => [...new Set([...prev, ...filteredMembers.map(m => m._id)])]);
+                                                } else {
+                                                    const visible = new Set(filteredMembers.map(m => m._id));
+                                                    setBulkSelectedIds(prev => prev.filter(id => !visible.has(id)));
+                                                }
+                                            }}
+                                        />
+                                    </th>
+                                    <th>Member Profile</th>
                                     <th>Membership ID</th>
                                     <th>Discipline</th>
                                     <th>Batch Schedule</th>
@@ -275,8 +372,16 @@ export default function MembershipTab({
                                         const isActiveMember = memberStatus === 'ACTIVE';
                                         return (
                                         <tr key={m._id} className="table-row-hover" style={{ transition: 'background-color 0.2s ease' }}>
-                                            {/* Profile column with Image Avatar */}
                                             <td style={{ paddingLeft: '16px' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    aria-label={`Select ${memberName} for bulk fee-term assignment`}
+                                                    checked={bulkSelectedIds.includes(m._id)}
+                                                    onChange={() => toggleBulkStudent(m._id)}
+                                                />
+                                            </td>
+                                            {/* Profile column with Image Avatar */}
+                                            <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                         {m.photoUrl ? (
@@ -368,7 +473,7 @@ export default function MembershipTab({
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="text-center p-5 text-muted">
+                                        <td colSpan="8" className="text-center p-5 text-muted">
                                             <span className="material-icons-outlined d-block mb-2" style={{ fontSize: '2rem', color: 'rgba(255,255,255,0.1)' }}>group</span>
                                             No academy members match the selected filters.
                                         </td>
@@ -462,6 +567,17 @@ export default function MembershipTab({
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    {/* Fee Terms Manager (session April → March) */}
+                    <div style={{ padding: '16px 28px 0' }}>
+                        <FeeTermsManager
+                            student={selectedMember}
+                            backendUrl={backendUrl}
+                            getHeaders={getHeaders}
+                            notifySuccess={notifySuccess}
+                            notifyError={notifyError}
+                        />
                     </div>
 
                     {/* Main Content Grid */}
