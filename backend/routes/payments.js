@@ -14,6 +14,41 @@ const { sendBookingInvoiceEmail, sendFeeInvoiceEmail } = require('../services/ma
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 const crypto = require('crypto');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://khelopatna.in';
+
+// Shared physical ground: cricket & football occupy the same turf
+const getSportFilter = (sport) => (
+    (sport === 'cricket' || sport === 'football')
+        ? { $in: ['cricket', 'football'] }
+        : sport
+);
+
+/**
+ * Checks whether any of the requested slots collide with existing bookings.
+ * Considers confirmed (SUCCESS) bookings and recent PENDING ones (payment in
+ * flight) to reduce double-booking races between concurrent checkouts.
+ */
+async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null }) {
+    const pendingCutoff = new Date(Date.now() - 15 * 60 * 1000); // 15-minute payment window
+    const query = {
+        tenantId,
+        date,
+        sport: getSportFilter(sport),
+        $or: [
+            { paymentStatus: 'SUCCESS' },
+            { paymentStatus: 'PENDING', createdAt: { $gte: pendingCutoff } }
+        ]
+    };
+    if (excludeBookingId) {
+        query._id = { $ne: excludeBookingId };
+    }
+
+    const existing = await Booking.find(query).select('timeSlots');
+    const bookedSlots = new Set();
+    existing.forEach(b => b.timeSlots.forEach(slot => bookedSlots.add(slot)));
+    return timeSlots.some(slot => bookedSlots.has(slot));
+}
+
 // Helper to send booking notifications
 async function sendBookingNotifications(booking) {
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -65,6 +100,17 @@ router.post('/payment/create-order', async (req, res) => {
             }
         }
 
+        // Reject orders for slots that are already booked (or mid-payment)
+        const conflict = await hasSlotConflict({
+            tenantId,
+            date: bookingData.booking_date,
+            sport: bookingData.sport,
+            timeSlots: bookingData.time_slots
+        });
+        if (conflict) {
+            return res.status(409).json({ error: 'One or more of the selected slots are no longer available. Please pick different slots.' });
+        }
+
         // Create a PENDING Booking record
         const newBooking = new Booking({
             tenantId,
@@ -92,7 +138,7 @@ router.post('/payment/create-order', async (req, res) => {
             customerName,
             customerEmail: customerEmail || 'no-email@khelopatna.in',
             customerPhone,
-            returnUrl: `https://khelopatna.in/book?order_id=${orderId}&payment_status=success`
+            returnUrl: `${FRONTEND_URL}/book?order_id=${orderId}&payment_status=success`
         });
 
         res.json({
@@ -116,7 +162,18 @@ router.post('/payment/verify', async (req, res) => {
     }
 
     try {
-        const verifyResult = await verifyPayment(order_id);
+        // Look up the record first so mock verification (dev only) can echo the
+        // expected amount, keeping the amount-mismatch check consistent.
+        let expectedAmount = null;
+        if (order_id.startsWith('KP-')) {
+            const b = await Booking.findOne({ orderId: order_id }).select('totalAmount');
+            if (b) expectedAmount = b.totalAmount;
+        } else if (order_id.startsWith('KPFEE-')) {
+            const f = await Fee.findOne({ orderId: order_id }).select('amountDue');
+            if (f) expectedAmount = f.amountDue;
+        }
+
+        const verifyResult = await verifyPayment(order_id, expectedAmount);
 
         if (verifyResult.success && verifyResult.payment_status === 'SUCCESS') {
             if (order_id.startsWith('KP-')) {
@@ -217,6 +274,7 @@ router.post('/payment/webhook', async (req, res) => {
         const orderId = data.order.order_id;
         const paymentStatus = data.payment.payment_status;
         const transactionId = data.payment.cf_payment_id;
+        const paidAmount = Number(data.payment.payment_amount ?? data.order.order_amount);
 
         console.log(`Received Webhook for Order: ${orderId}, Status: ${paymentStatus}`);
 
@@ -224,6 +282,15 @@ router.post('/payment/webhook', async (req, res) => {
             if (orderId.startsWith('KP-')) {
                 const booking = await Booking.findOne({ orderId: orderId });
                 if (booking && booking.paymentStatus === 'PENDING') {
+                    // Validate the paid amount against what is owed (prevents
+                    // confirming a booking with an underpaid/tampered order)
+                    if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - booking.totalAmount) > 0.01) {
+                        console.error(`Webhook amount mismatch! Order: ${orderId}. Expected: ${booking.totalAmount}, Paid: ${paidAmount}`);
+                        booking.paymentStatus = 'FAILED';
+                        booking.paymentDetails = { ...booking.paymentDetails, error: 'Webhook amount mismatch', webhookPaidAmount: paidAmount };
+                        await booking.save();
+                        return res.json({ processed: true, note: 'Amount mismatch. Booking not confirmed.' });
+                    }
                     booking.paymentStatus = 'SUCCESS';
                     booking.transactionId = transactionId;
                     await booking.save();
@@ -235,6 +302,10 @@ router.post('/payment/webhook', async (req, res) => {
             } else if (orderId.startsWith('KPFEE-')) {
                 const feeRecord = await Fee.findOne({ orderId: orderId });
                 if (feeRecord && feeRecord.status !== 'PAID') {
+                    if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - feeRecord.amountDue) > 0.01) {
+                        console.error(`Webhook fee amount mismatch! Order: ${orderId}. Expected: ${feeRecord.amountDue}, Paid: ${paidAmount}`);
+                        return res.json({ processed: true, note: 'Amount mismatch. Fee not confirmed.' });
+                    }
                     feeRecord.status = 'PAID';
                     feeRecord.paymentDate = new Date();
                     feeRecord.amountPaid = feeRecord.amountDue;
