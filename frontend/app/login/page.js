@@ -66,8 +66,13 @@ export default function LoginPage() {
     // server-side. Not a security boundary — the backend validates the real
     // httpOnly JWT cookie on every API call.
     const setSessionMarker = () => {
-        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = `kp_session=1; path=/; max-age=${24 * 60 * 60}; SameSite=Lax${secure}`;
+        // Over HTTPS use SameSite=None so the cookie also works when the app
+        // is embedded in a cross-site iframe (e.g. the v0 preview); browsers
+        // refuse to send SameSite=Lax cookies in that context. SameSite=None
+        // requires Secure, so fall back to Lax on plain-HTTP localhost.
+        const isHttps = window.location.protocol === 'https:';
+        const attrs = isHttps ? '; SameSite=None; Secure' : '; SameSite=Lax';
+        document.cookie = `kp_session=1; path=/; max-age=${24 * 60 * 60}${attrs}`;
     };
 
     useEffect(() => {

@@ -33,6 +33,21 @@ function getJwtSecret() {
     return JWT_SECRET;
 }
 
+// Determines cookie SameSite/Secure attributes per-request. When the browser
+// is on HTTPS (e.g. behind a proxy or embedded in a cross-site iframe like
+// the v0 preview), SameSite=None + Secure is required for the cookie to be
+// sent at all; browsers silently drop SameSite=Lax cookies in iframes.
+const sessionCookiePolicy = (req) => {
+    const origin = req.headers.origin || '';
+    const isHttpsClient =
+        req.secure ||
+        req.headers['x-forwarded-proto'] === 'https' ||
+        origin.startsWith('https://');
+    return isHttpsClient
+        ? { sameSite: 'none', secure: true }
+        : { sameSite: 'lax', secure: false };
+};
+
 // 0. Bootstrap status (Public) — tells the login page whether the very first
 // admin account still needs to be created. Reveals nothing beyond a boolean.
 router.get('/auth/bootstrap-status', async (req, res) => {
@@ -72,10 +87,9 @@ router.post('/auth/login', authLimiter, async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
             maxAge: 24 * 60 * 60 * 1000, // 1 day
-            sameSite: 'lax',
-            path: '/'
+            path: '/',
+            ...sessionCookiePolicy(req)
         });
 
         res.json({
