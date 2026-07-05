@@ -15,9 +15,8 @@ Sports facility and academy ERP for Khelo Patna (Patna, Bihar). Combines a publi
 ## Project structure
 
 ```
-├── backend/          Express API + MongoDB
-├── frontend/         Next.js app (public site + admin ERP)
-└── legacy_static_backup/   Archived static site
+├── backend/          Express API + MongoDB (includes WhatsApp bot + Cashfree payments)
+└── frontend/         Next.js app (public site + admin ERP)
 ```
 
 ## Quick start
@@ -37,13 +36,15 @@ npm run seed          # Creates tenant, staff, coaches, batches, fee structure
 npm run dev           # http://localhost:5001
 ```
 
-**Default staff logins** (after seed):
+**Seeded staff accounts:**
 
-| Username | Password | Role |
-|----------|----------|------|
-| admin | admin123 | SUPER_ADMIN |
-| manager | manager123 | BRANCH_MANAGER |
-| counsellor | counsellor123 | RECEPTIONIST |
+| Username | Role | Password |
+|----------|------|----------|
+| admin | SUPER_ADMIN | `SEED_ADMIN_PASSWORD` env var, or auto-generated |
+| manager | BRANCH_MANAGER | `SEED_MANAGER_PASSWORD` env var, or auto-generated |
+| counsellor | RECEPTIONIST | `SEED_COUNSELLOR_PASSWORD` env var, or auto-generated |
+
+If the env vars are not set, the seed script generates strong random passwords and prints them once to the console — save them immediately.
 
 ### 2. Frontend
 
@@ -122,8 +123,10 @@ All routes under `/api`:
 ## Production checklist
 
 - [ ] Set strong `JWT_SECRET` in backend `.env`
-- [ ] Configure `CASHFREE_*` credentials for live payments
-- [ ] Lock CORS to your frontend domain in `server.js`
+- [ ] Configure `CASHFREE_*` credentials for live payments (the server refuses payment operations in production without them)
+- [ ] Set `FRONTEND_URL` (used in payment return URLs and CORS)
+- [ ] Set `NEXT_PUBLIC_BACKEND_URL` in the frontend environment
+- [ ] Set `LOW_STOCK_ALERT_PHONE` if you want WhatsApp low-stock alerts
 - [ ] Set up monthly billing cron job
 - [ ] Configure WhatsApp and email integrations
 

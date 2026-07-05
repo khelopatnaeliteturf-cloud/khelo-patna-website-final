@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { getBackendUrl } from './lib/backendUrl';
+import ConfettiCanvas from './components/ConfettiCanvas';
+import TiltCard from './components/TiltCard';
 
 const BACKEND_URL = getBackendUrl();
 
@@ -265,6 +267,9 @@ export default function HomePage() {
             {/* ═══ Cursor spotlight element ═══ */}
             <div className="cursor-spotlight d-none d-md-block" style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }} />
 
+            {/* ═══ Anniversary golden confetti celebration ═══ */}
+            <ConfettiCanvas delay={1800} ambientSeconds={6} />
+
             {/* ═══ Ultra-Premium Animated Loading Screen ═══ */}
             <div className={`premium-loader-screen ${!isLoading ? 'fade-out' : ''}`}>
                 <div className="loader-ball" />
@@ -460,6 +465,7 @@ export default function HomePage() {
 
                         {/* Hero Right: Booking Card Preview */}
                         <div className="col-lg-5 animate-fade-in-delay-2">
+                            <TiltCard maxTilt={5} style={{ borderRadius: 'var(--radius-xl)' }}>
                             <div className="liquid-glass-card" style={{ padding: '24px', backdropFilter: 'blur(40px) saturate(200%)', WebkitBackdropFilter: 'blur(40px) saturate(200%)', background: 'rgba(8, 16, 12, 0.55)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 'var(--radius-xl)', boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                                     <h3 style={{ fontSize: '1rem', margin: 0, fontFamily: 'Montserrat', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -543,6 +549,7 @@ export default function HomePage() {
                                     <span><span className="material-icons-outlined" style={{ fontSize: '14px', marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}>bolt</span>GO TO BOOKING PAGE</span>
                                 </Link>
                             </div>
+                            </TiltCard>
                         </div>
 
                     </div>
@@ -555,6 +562,29 @@ export default function HomePage() {
                     <span>SCROLL DOWN</span>
                     <span className="material-icons-outlined" style={{ animation: 'bounce 2s infinite', fontSize: '18px', color: 'var(--neon)' }}>keyboard_double_arrow_down</span>
                 </a>
+            </div>
+
+            {/* ═══ Anniversary Gold Marquee Ribbon ═══ */}
+            <div className="anniversary-marquee" aria-hidden="true">
+                <div className="anniversary-marquee__track">
+                    {[0, 1].map(copy => (
+                        <div key={copy} style={{ display: 'flex' }}>
+                            {[
+                                'Celebrating 1 Year of KheloPatna',
+                                '10,000+ Games Played',
+                                'Anniversary Offers Live',
+                                "Patna's #1 Sports Arena",
+                                '350+ Academy Students',
+                                'FIFA-Grade Turf'
+                            ].map((text, i) => (
+                                <span key={i} className="anniversary-marquee__item">
+                                    <span className="marquee-dot" />
+                                    {text}
+                                </span>
+                            ))}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* ═══ 1.5. ANNIVERSARY SPECIAL SECTION ═══ */}

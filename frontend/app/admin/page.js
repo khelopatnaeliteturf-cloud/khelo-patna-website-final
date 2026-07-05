@@ -14,6 +14,8 @@ import WebsiteTab from './components/WebsiteTab';
 import AuditLogsTab from './components/AuditLogsTab';
 import IntegrationsTab from './components/IntegrationsTab';
 import CustomersTab from './components/CustomersTab';
+import AnimatedNumber from './components/AnimatedNumber';
+import AdmissionStudio from './components/AdmissionStudio';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
 const BACKEND_URL = getBackendUrl();
@@ -86,6 +88,18 @@ export default function AdminDashboard() {
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
+    // Auto-dismiss toast notifications (success after 4.5s, errors after 8s).
+    useEffect(() => {
+        if (!successMessage) return;
+        const t = setTimeout(() => setSuccessMessage(''), 4500);
+        return () => clearTimeout(t);
+    }, [successMessage]);
+    useEffect(() => {
+        if (!errorMessage) return;
+        const t = setTimeout(() => setErrorMessage(''), 8000);
+        return () => clearTimeout(t);
+    }, [errorMessage]);
+
     // --- DATA STATES ---
     // Analytics
     const [stats, setStats] = useState(null);
@@ -114,7 +128,8 @@ export default function AdminDashboard() {
         category: 'pos_drinks',
         totalQuantity: 0,
         availableQuantity: 0,
-        condition: 'GOOD'
+        condition: 'GOOD',
+        unitPrice: 0
     });
     const [posSale, setPosSale] = useState({
         itemId: '',
@@ -481,6 +496,7 @@ export default function AdminDashboard() {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user_role');
                 localStorage.removeItem('username');
+                document.cookie = 'kp_session=; path=/; max-age=0';
                 router.push('/login');
             }
         };
@@ -488,60 +504,82 @@ export default function AdminDashboard() {
         verifySession();
     }, []);
 
-    // Finance LocalStorage Sync
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_terms', JSON.stringify(feeTerms));
-        }
-    }, [feeTerms]);
+    // --- FINANCE BACKEND SYNC ---
+    // Fee data is persisted per-tenant in MongoDB (/api/finance/config).
+    // localStorage is only read once as a legacy migration source: if the
+    // server has no finance document yet, the locally-initialized state
+    // (seeded from old kp_fee_* keys) is pushed up on first save.
+    const [financeLoaded, setFinanceLoaded] = useState(false);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_types', JSON.stringify(feeTypes));
-        }
-    }, [feeTypes]);
+        if (!authenticated) return;
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_rebates', JSON.stringify(feeRebates));
-        }
-    }, [feeRebates]);
+        const loadFinanceConfig = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/finance/config`, {
+                    headers: getHeaders(),
+                    credentials: 'include'
+                });
+                if (res.status === 403) {
+                    // Caller's role has no finance access; skip sync entirely
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to fetch finance config');
+                const data = await res.json();
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_groups', JSON.stringify(feeGroups));
-        }
-    }, [feeGroups]);
+                if (data.exists && data.config) {
+                    setFeeTerms(data.config.feeTerms || []);
+                    setFeeTypes(data.config.feeTypes || []);
+                    setFeeRebates(data.config.feeRebates || []);
+                    setFeeGroups(data.config.feeGroups || []);
+                    setStudentFeeGroups(data.config.studentFeeGroups || {});
+                    setStudentBackDues(data.config.studentBackDues || {});
+                    setFeePayments(data.config.feePayments || []);
+                    setAdjustmentRequests(data.config.adjustmentRequests || []);
+                    setFeeRemindersLog(data.config.feeRemindersLog || []);
+                }
+                // exists === false: keep current state (defaults or legacy
+                // localStorage data) — the sync effect below will persist it.
+                setFinanceLoaded(true);
+            } catch (err) {
+                console.error('Could not load finance data from server:', err);
+                // Do NOT enable sync on failure — avoids overwriting server
+                // data with local defaults.
+            }
+        };
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_student_fee_groups', JSON.stringify(studentFeeGroups));
-        }
-    }, [studentFeeGroups]);
+        loadFinanceConfig();
+    }, [authenticated]);
 
+    // Debounced save of all finance sections whenever any of them change
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_student_back_dues', JSON.stringify(studentBackDues));
-        }
-    }, [studentBackDues]);
+        if (!financeLoaded) return;
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_payments', JSON.stringify(feePayments));
-        }
-    }, [feePayments]);
+        const timer = setTimeout(async () => {
+            try {
+                await fetch(`${BACKEND_URL}/api/finance/config`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        feeTerms,
+                        feeTypes,
+                        feeRebates,
+                        feeGroups,
+                        studentFeeGroups,
+                        studentBackDues,
+                        feePayments,
+                        adjustmentRequests,
+                        feeRemindersLog
+                    })
+                });
+            } catch (err) {
+                console.error('Could not save finance data to server:', err);
+            }
+        }, 800);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_adjustment_requests', JSON.stringify(adjustmentRequests));
-        }
-    }, [adjustmentRequests]);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_reminders', JSON.stringify(feeRemindersLog));
-        }
-    }, [feeRemindersLog]);
+        return () => clearTimeout(timer);
+    }, [financeLoaded, feeTerms, feeTypes, feeRebates, feeGroups, studentFeeGroups, studentBackDues, feePayments, adjustmentRequests, feeRemindersLog]);
 
     // Get Auth Headers
     const getHeaders = () => {
@@ -578,7 +616,7 @@ export default function AdminDashboard() {
             loadBookingsLog();
             loadCheckins();
             loadSettingsAndClosures();
-        } else if (activeTab === 'membership-management' || activeTab === 'academy-management') {
+        } else if (activeTab === 'membership-management' || activeTab === 'academy-management' || activeTab === 'admission-studio') {
             loadAllStudents();
             loadSessions();
             loadCoaches();
@@ -1252,12 +1290,13 @@ export default function AdminDashboard() {
                     category: newInventoryItem.category,
                     totalQuantity: Number(newInventoryItem.totalQuantity),
                     availableQuantity: Number(newInventoryItem.availableQuantity),
-                    condition: newInventoryItem.condition
+                    condition: newInventoryItem.condition,
+                    unitPrice: Number(newInventoryItem.unitPrice) || 0
                 })
             });
             if (res.ok) {
                 setSuccessMessage('Inventory entry saved successfully.');
-                setNewInventoryItem({ id: '', itemName: '', category: 'pos_drinks', totalQuantity: 0, availableQuantity: 0, condition: 'GOOD' });
+                setNewInventoryItem({ id: '', itemName: '', category: 'pos_drinks', totalQuantity: 0, availableQuantity: 0, condition: 'GOOD', unitPrice: 0 });
                 loadInventory();
             }
         } catch (e) {
@@ -1275,9 +1314,10 @@ export default function AdminDashboard() {
         const selected = posItems.find(item => item._id === posSale.itemId);
         if (!selected) return;
 
-        // Arbitrary pricing mock: drinks are 20, cones rental is 100, etc.
-        const unitPrice = selected.category === 'pos_drinks' ? 20 : 150;
-        const total = unitPrice * Number(posSale.quantity);
+        // Fallback price only used by the server for legacy items without a
+        // configured unitPrice; otherwise the server computes the price itself.
+        const fallbackUnitPrice = selected.category === 'pos_drinks' ? 20 : 150;
+        const fallbackTotal = fallbackUnitPrice * Number(posSale.quantity);
 
         try {
             const res = await fetch(`${BACKEND_URL}/api/pos/sell`, {
@@ -1286,13 +1326,13 @@ export default function AdminDashboard() {
                 body: JSON.stringify({
                     itemId: posSale.itemId,
                     quantity: Number(posSale.quantity),
-                    totalPrice: total,
+                    totalPrice: fallbackTotal,
                     bookingId: posSale.bookingId || undefined
                 })
             });
             const data = await res.json();
             if (res.ok) {
-                setSuccessMessage(`Sale recorded! Total collected: ₹${total}. Remaining Stock: ${data.item_remaining}`);
+                setSuccessMessage(`Sale recorded! Total collected: ₹${data.sale?.totalPrice ?? fallbackTotal}. Remaining Stock: ${data.item_remaining}`);
                 setPosSale({ itemId: '', quantity: 1, bookingId: '' });
                 loadInventory();
             } else {
@@ -2236,6 +2276,7 @@ export default function AdminDashboard() {
         localStorage.removeItem('token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('username');
+        document.cookie = 'kp_session=; path=/; max-age=0';
         setToken('');
         setRole('');
         setUsername('');
@@ -2319,7 +2360,7 @@ export default function AdminDashboard() {
             <div className="card-premium animate-fade-in">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="material-icons-outlined" style={{ color: 'var(--primary)' }}>chat</span> GungunERP Communicate Center
+                        <span className="material-icons-outlined" style={{ color: 'var(--primary)' }}>chat</span> Communicate Center
                     </h3>
                 </div>
 
@@ -2770,7 +2811,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                             <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 500, marginBottom: '2px' }}>{m.label}</div>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{m.value}</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}><AnimatedNumber value={m.value} /></div>
                             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '4px' }}>{m.trendLabel}</div>
                         </div>
                     ))}
@@ -3007,7 +3048,7 @@ export default function AdminDashboard() {
             const totalBookingsCount = bookingsLog.length;
             const paidCount = bookingsLog.filter(b => b.paymentStatus === 'SUCCESS').length;
             const pendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
-            const failedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED').length;
+            const failedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
             const totalPendingAmount = bookingsLog.filter(b => b.paymentStatus !== 'SUCCESS').reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
             
             const selectedBookingCustId = selectedBooking ? generateCustomerId(selectedBooking.customerName, selectedBooking.customerPhone) : '';
@@ -3034,6 +3075,7 @@ export default function AdminDashboard() {
                                 <option value="SUCCESS">Paid</option>
                                 <option value="PENDING">Pending</option>
                                 <option value="FAILED">Failed</option>
+                                <option value="CANCELLED">Cancelled</option>
                             </select>
                             <select className="input-premium" style={{ fontSize: '0.82rem', padding: '8px 14px', borderRadius: '10px', fontFamily: 'inherit', fontWeight: 500, width: 'auto', minWidth: '145px' }} value={bookingsDateRange} onChange={(e) => setBookingsDateRange(e.target.value)}>
                                 <option value="all">All Time</option>
@@ -4496,7 +4538,7 @@ export default function AdminDashboard() {
                                 >
                                     <span className="material-icons-outlined" style={{ fontSize: '16px' }}>schedule</span> Reschedule
                                 </button>
-                                {b.paymentStatus !== 'FAILED' && (
+                                {b.paymentStatus !== 'FAILED' && b.paymentStatus !== 'CANCELLED' && (
                                     <>
                                         <button 
                                             onClick={() => handleCancelOnlyBooking(b._id)}
@@ -4658,7 +4700,7 @@ export default function AdminDashboard() {
                                                     if (b.paymentStatus === 'SUCCESS') {
                                                         statusColor = 'var(--success)';
                                                         statusBg = 'rgba(16,185,129,0.1)';
-                                                    } else if (b.paymentStatus === 'FAILED') {
+                                                    } else if (b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED') {
                                                         statusColor = 'var(--danger)';
                                                         statusBg = 'rgba(239,68,68,0.1)';
                                                     } else if (b.paymentStatus === 'PENDING') {
@@ -5013,7 +5055,7 @@ export default function AdminDashboard() {
         const reportBookingsCount = bookingsLog.length;
         const reportPaidCount = bookingsLog.filter(b => b.paymentStatus === 'SUCCESS').length;
         const reportPendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
-        const reportFailedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED').length;
+        const reportFailedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
         
         const reportTotalRevenue = bookingsLog.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
         const reportTotalOutstanding = bookingsLog.reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
@@ -5340,6 +5382,12 @@ export default function AdminDashboard() {
             description: 'Manage rates, blackout hours, academy blocks, and closure rules.',
             icon: 'tune'
         },
+        'admission-studio': {
+            title: 'Admission Studio',
+            eyebrow: 'Guided enrollment',
+            description: 'Enroll students step by step — pick a sport, assign a batch, and apply the right fee plan automatically.',
+            icon: 'how_to_reg'
+        },
         'membership-management': {
             title: 'Membership CRM',
             eyebrow: 'Academy members',
@@ -5377,9 +5425,9 @@ export default function AdminDashboard() {
             icon: 'fact_check'
         },
         'membership-billing': {
-            title: 'Billing Setup',
-            eyebrow: 'Fee structures',
-            description: 'Configure terms, fee groups, rebates, and billing templates.',
+            title: 'Billing Ledger',
+            eyebrow: 'Payment records',
+            description: 'Review every recorded payment, filter by month, and audit billing history.',
             icon: 'receipt_long'
         },
         finance: {
@@ -5619,6 +5667,7 @@ export default function AdminDashboard() {
                     position: relative;
                     width: 100%;
                     letter-spacing: 0.01em;
+                    flex-shrink: 0;
                 }
                 .sidebar-link:focus,
                 .sidebar-link:active,
@@ -5740,6 +5789,10 @@ export default function AdminDashboard() {
                     white-space: nowrap;
                     overflow: hidden;
                     position: relative;
+                    /* Prevent the label being crushed to 0 height when the
+                       flex-column nav overflows (overflow:hidden makes its
+                       automatic minimum size 0, so it shrinks first). */
+                    flex-shrink: 0;
                 }
                 .sidebar-section-label:first-child {
                     padding-top: 4px;
@@ -6773,6 +6826,351 @@ export default function AdminDashboard() {
                         padding: 16px !important;
                     }
                 }
+
+                /* ═══════════════════════════════════════════════
+                   INTERACTIVE POLISH LAYER
+                   ═══════════════════════════════════════════════ */
+
+                /* Tab content entrance animation */
+                @keyframes tab-enter {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .admin-content-shell > *:not(.toast-stack) {
+                    animation: tab-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+
+                /* KPI metric cards: lift + icon pop on hover */
+                .metric-card {
+                    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+                    cursor: default;
+                }
+                .metric-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: var(--shadow-md);
+                    border-color: rgba(15, 143, 106, 0.28);
+                }
+                .metric-card:hover .material-icons-outlined {
+                    animation: icon-pop 0.35s ease;
+                }
+                @keyframes icon-pop {
+                    50% { transform: scale(1.18); }
+                }
+
+                /* All premium cards: subtle lift */
+                .card-premium {
+                    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+                }
+                .card-premium:hover {
+                    box-shadow: var(--shadow-md);
+                }
+
+                /* Tables: row hover highlight + smooth transitions */
+                .admin-erp-container table tbody tr {
+                    transition: background 0.15s ease;
+                }
+                .admin-erp-container table tbody tr:hover {
+                    background: var(--primary-light);
+                }
+
+                /* Inputs and selects: focus glow */
+                .admin-erp-container input:focus,
+                .admin-erp-container select:focus,
+                .admin-erp-container textarea:focus {
+                    outline: none;
+                    border-color: var(--primary) !important;
+                    box-shadow: 0 0 0 4px var(--primary-light) !important;
+                    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+                }
+
+                /* Buttons: press feedback */
+                .admin-erp-container button {
+                    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+                }
+                .admin-erp-container button:active:not(:disabled) {
+                    transform: scale(0.97);
+                }
+
+                /* Custom scrollbars */
+                .admin-erp-container ::-webkit-scrollbar {
+                    width: 9px;
+                    height: 9px;
+                }
+                .admin-erp-container ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .admin-erp-container ::-webkit-scrollbar-thumb {
+                    background: rgba(15, 143, 106, 0.24);
+                    border-radius: 8px;
+                    border: 2px solid transparent;
+                    background-clip: content-box;
+                }
+                .admin-erp-container ::-webkit-scrollbar-thumb:hover {
+                    background: rgba(15, 143, 106, 0.45);
+                    background-clip: content-box;
+                }
+
+                /* ═══ Floating toast notifications ═══ */
+                .toast-stack {
+                    position: fixed;
+                    top: 84px;
+                    right: 24px;
+                    z-index: 4000;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    max-width: min(420px, calc(100vw - 32px));
+                    pointer-events: none;
+                }
+                .toast-item {
+                    pointer-events: auto;
+                    position: relative;
+                    overflow: hidden;
+                    margin: 0 !important;
+                    box-shadow: var(--shadow-lg) !important;
+                    backdrop-filter: blur(20px) saturate(160%);
+                    -webkit-backdrop-filter: blur(20px) saturate(160%);
+                    animation: toast-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+                @keyframes toast-in {
+                    from { opacity: 0; transform: translateX(40px) scale(0.96); }
+                    to { opacity: 1; transform: translateX(0) scale(1); }
+                }
+                .toast-dismiss {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 6px;
+                    border: none;
+                    background: transparent;
+                    color: inherit;
+                    opacity: 0.6;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                }
+                .toast-dismiss:hover {
+                    opacity: 1;
+                    background: rgba(0, 0, 0, 0.08);
+                }
+                .toast-progress {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    height: 3px;
+                    width: 100%;
+                    background: var(--success);
+                    opacity: 0.55;
+                    transform-origin: left;
+                    animation: toast-countdown 4.5s linear forwards;
+                }
+                @keyframes toast-countdown {
+                    from { transform: scaleX(1); }
+                    to { transform: scaleX(0); }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .admin-content-shell > *:not(.toast-stack),
+                    .toast-item,
+                    .toast-progress {
+                        animation: none !important;
+                    }
+                    .metric-card:hover {
+                        transform: none;
+                    }
+                }
+
+                /* ═══ Shared premium summary chips (Memberships / Finance) ═══ */
+                .summary-chip {
+                    position: relative;
+                    overflow: hidden;
+                    border: 1px solid var(--border-color);
+                    border-radius: 14px;
+                    padding: 16px 18px;
+                    background: linear-gradient(135deg, rgba(15, 143, 106, 0.06), rgba(255, 255, 255, 0.02) 55%);
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    min-height: 76px;
+                    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+                }
+                .summary-chip::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0 0 auto 0;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, var(--chip-accent, var(--primary)), transparent);
+                    opacity: 0.5;
+                }
+                .summary-chip:hover {
+                    transform: translateY(-3px);
+                    box-shadow: var(--shadow-md);
+                    border-color: rgba(15, 143, 106, 0.3);
+                }
+                .summary-chip:hover .summary-chip__icon {
+                    transform: scale(1.08);
+                    box-shadow: 0 0 18px var(--chip-glow, rgba(15, 143, 106, 0.25));
+                }
+                .summary-chip__icon {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid var(--border-color);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px !important;
+                    flex-shrink: 0;
+                    transition: transform 0.25s ease, box-shadow 0.25s ease;
+                }
+                .summary-chip__value {
+                    font-size: 1.3rem;
+                    font-weight: 800;
+                    line-height: 1.1;
+                    letter-spacing: -0.02em;
+                    color: var(--text-main);
+                }
+                .summary-chip__label {
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    margin-top: 4px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                }
+
+                /* Finance profile account card */
+                .finance-profile-card {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 16px !important;
+                    background: linear-gradient(120deg, rgba(15, 143, 106, 0.10), rgba(255, 255, 255, 0.02) 45%) !important;
+                    border: 1px solid rgba(15, 143, 106, 0.22) !important;
+                    animation: tab-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+                .finance-profile-card::before {
+                    content: '';
+                    position: absolute;
+                    top: -60px;
+                    right: -60px;
+                    width: 180px;
+                    height: 180px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, rgba(15, 143, 106, 0.14), transparent 70%);
+                    pointer-events: none;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .summary-chip:hover { transform: none; }
+                    .finance-profile-card { animation: none; }
+                }
+
+                /* ═══ Form & panel refinement layer ═══ */
+
+                /* Card headings: accent bar + tighter hierarchy */
+                .card-premium > h3:first-child,
+                .card-premium > h4:first-child,
+                .card-premium > h5:first-child,
+                .card-premium > .d-flex:first-child h3,
+                .card-premium > .d-flex:first-child h5 {
+                    position: relative;
+                    padding-left: 14px;
+                    letter-spacing: -0.01em;
+                }
+                .card-premium > h3:first-child::before,
+                .card-premium > h4:first-child::before,
+                .card-premium > h5:first-child::before,
+                .card-premium > .d-flex:first-child h3::before,
+                .card-premium > .d-flex:first-child h5::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 70%;
+                    min-height: 16px;
+                    border-radius: 4px;
+                    background: linear-gradient(180deg, var(--primary), rgba(15, 143, 106, 0.35));
+                }
+
+                /* Form labels: refined micro-label treatment */
+                .admin-erp-container form label,
+                .admin-erp-container .card-premium label {
+                    font-size: 0.72rem !important;
+                    font-weight: 700 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.07em;
+                    color: var(--text-muted) !important;
+                    margin-bottom: 6px !important;
+                }
+
+                /* Inputs: softer radius, hover feedback, filled feel */
+                .input-premium {
+                    border-radius: 10px !important;
+                    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+                }
+                .input-premium:hover:not(:focus) {
+                    border-color: rgba(15, 143, 106, 0.35) !important;
+                }
+
+                /* Sub-tabs: segmented pill control instead of flat text tabs */
+                .sub-tab-link {
+                    border-radius: 999px !important;
+                    padding: 8px 16px !important;
+                    border: 1px solid transparent !important;
+                    background: transparent;
+                    color: var(--text-muted);
+                    font-size: 0.82rem;
+                    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+                }
+                .sub-tab-link:hover:not(.active) {
+                    background: var(--surface-tint);
+                    color: var(--text-main);
+                }
+                .sub-tab-link.active {
+                    background: var(--gradient-1) !important;
+                    color: #fff !important;
+                    border-color: transparent !important;
+                    box-shadow: 0 6px 16px rgba(15, 143, 106, 0.28);
+                }
+
+                /* Primary buttons: sheen sweep on hover */
+                .btn-primary-stripe {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .btn-primary-stripe::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -80%;
+                    width: 50%;
+                    height: 100%;
+                    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+                    transform: skewX(-20deg);
+                    transition: left 0.45s ease;
+                }
+                .btn-primary-stripe:hover::after {
+                    left: 130%;
+                }
+                .btn-primary-stripe:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 14px 30px rgba(15, 143, 106, 0.32);
+                }
+
+                /* Empty tables: give headers breathing room */
+                .table-premium thead th {
+                    padding-top: 12px;
+                    padding-bottom: 12px;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .btn-primary-stripe::after { display: none; }
+                    .btn-primary-stripe:hover { transform: none; }
+                }
             `}</style>
 
             {/* Sidebar navigation */}
@@ -6830,6 +7228,7 @@ export default function AdminDashboard() {
                     {/* ACADEMY SECTION */}
                     <div className="sidebar-section-label">Academy</div>
                     {[
+                        { id: 'admission-studio', label: 'Admissions', icon: 'how_to_reg' },
                         { id: 'membership-management', label: 'Memberships', icon: 'people' },
                         { id: 'session-management', label: 'Sessions', icon: 'schedule' },
                         { id: 'batch-management', label: 'Batches', icon: 'groups' },
@@ -7037,19 +7436,41 @@ export default function AdminDashboard() {
                             </span>
                         </div>
                     </section>
-                    {errorMessage && (
-                        <div className="alert-premium alert-danger">
-                            <span className="material-icons-outlined">error</span>
-                            <span>{errorMessage}</span>
-                        </div>
-                    )}
-                    {successMessage && (
-                        <div className="alert-premium alert-success">
-                            <span className="material-icons-outlined">check_circle</span>
-                            <span>{successMessage}</span>
+                    {(errorMessage || successMessage) && (
+                        <div className="toast-stack" role="status" aria-live="polite">
+                            {errorMessage && (
+                                <div className="alert-premium alert-danger toast-item">
+                                    <span className="material-icons-outlined">error</span>
+                                    <span style={{ flex: 1 }}>{errorMessage}</span>
+                                    <button className="toast-dismiss" onClick={() => setErrorMessage('')} aria-label="Dismiss error">
+                                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
+                                    </button>
+                                </div>
+                            )}
+                            {successMessage && (
+                                <div className="alert-premium alert-success toast-item">
+                                    <span className="material-icons-outlined">check_circle</span>
+                                    <span style={{ flex: 1 }}>{successMessage}</span>
+                                    <button className="toast-dismiss" onClick={() => setSuccessMessage('')} aria-label="Dismiss notification">
+                                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
+                                    </button>
+                                    <div className="toast-progress" />
+                                </div>
+                            )}
                         </div>
                     )}
 
+                    {activeTab === 'admission-studio' && (
+                        <AdmissionStudio
+                            backendUrl={BACKEND_URL}
+                            getHeaders={getHeaders}
+                            batchesList={batchesList}
+                            onRefresh={() => { loadAllStudents(); loadBatches(); }}
+                            onCollectPayment={handleCollectPaymentRedirect}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
+                        />
+                    )}
                     {activeTab === 'academy-management' && renderAcademyTab()}
                     {activeTab === 'dashboard' && renderDashboardTab()}
                     {activeTab === 'turf-management' && renderTurfTab()}
@@ -7059,13 +7480,15 @@ export default function AdminDashboard() {
                             sessionsList={sessionsList}
                             coachesList={coachesList}
                             batchesList={batchesList}
-                            onAddStudent={handleAddStudent}
                             onUpdateStudent={handleUpdateStudentWrapper}
                             onCollectPayment={handleCollectPaymentRedirect}
                             backendUrl={BACKEND_URL}
                             getHeaders={getHeaders}
                             initialSelectedMemberId={initialSelectedMemberId}
                             clearInitialSelectedMemberId={() => setInitialSelectedMemberId('')}
+                            onOpenAdmissions={() => { setActiveTab('admission-studio'); setActiveSidebarKey('admission-studio'); }}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
                         />
                     )}
                     {activeTab === 'session-management' && renderSessionTab()}
@@ -7106,7 +7529,7 @@ export default function AdminDashboard() {
                             onCollectPayment={handleCollectPaymentRedirect}
                             initialStudentId={initialStudentId}
                             clearInitialStudentId={() => setInitialStudentId('')}
-                            activeSubTab="templates"
+                            activeSubTab="ledger"
                         />
                     )}
                     {activeTab === 'finance' && (

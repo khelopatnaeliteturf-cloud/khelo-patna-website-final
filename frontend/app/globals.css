@@ -984,7 +984,7 @@ select.glass-input option {
     border-radius: var(--radius-sm) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* ══════════════════════════════════��════════════════════════
    PREMIUM LOADER SCREEN
    ═══════════════════════════════════════════════════════════ */
 .premium-loader-screen {
@@ -1179,4 +1179,61 @@ select.glass-input option {
    ═══════════════════════════════════════════════════════════ */
 .perspective-container {
     perspective: 1000px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANNIVERSARY GOLD MARQUEE RIBBON
+   ═══════════════════════════════════════════════════════════ */
+.anniversary-marquee {
+    position: relative;
+    overflow: hidden;
+    padding: 14px 0;
+    background: rgba(255, 215, 0, 0.03);
+    border-top: 1px solid rgba(255, 215, 0, 0.14);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.14);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    z-index: 5;
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+.anniversary-marquee__track {
+    display: flex;
+    width: max-content;
+    gap: 0;
+    animation: marquee-scroll 28s linear infinite;
+    will-change: transform;
+}
+.anniversary-marquee:hover .anniversary-marquee__track {
+    animation-play-state: paused;
+}
+.anniversary-marquee__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 28px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--gold);
+    text-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+}
+.anniversary-marquee__item .marquee-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+    flex-shrink: 0;
+}
+@keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .anniversary-marquee__track { animation: none; }
 }
