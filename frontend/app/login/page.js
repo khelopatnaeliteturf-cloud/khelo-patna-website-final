@@ -42,12 +42,21 @@ export default function LoginPage() {
         }
     };
 
+    // Frontend-domain session marker read by middleware.js to gate /admin
+    // server-side. Not a security boundary — the backend validates the real
+    // httpOnly JWT cookie on every API call.
+    const setSessionMarker = () => {
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `kp_session=1; path=/; max-age=${24 * 60 * 60}; SameSite=Lax${secure}`;
+    };
+
     useEffect(() => {
         // Clear old client-side identity hints on landing on login page.
         // The real session is the HTTP-only cookie cleared by the backend logout route.
         localStorage.removeItem('token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('username');
+        document.cookie = 'kp_session=; path=/; max-age=0';
         checkBootstrapNeeded();
     }, []);
 
@@ -60,6 +69,7 @@ export default function LoginPage() {
             const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ username, password })
             });
             const data = await res.json();
@@ -72,6 +82,7 @@ export default function LoginPage() {
 
             localStorage.setItem('user_role', data.user.role);
             localStorage.setItem('username', data.user.username);
+            setSessionMarker();
 
             // Redirect to dashboard
             router.push('/admin');
@@ -105,6 +116,7 @@ export default function LoginPage() {
             const loginRes = await fetch(`${BACKEND_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ username, password })
             });
             const loginData = await loginRes.json();
@@ -114,6 +126,7 @@ export default function LoginPage() {
             
             localStorage.setItem('user_role', loginData.user.role);
             localStorage.setItem('username', loginData.user.username);
+            setSessionMarker();
 
             router.push('/admin');
 

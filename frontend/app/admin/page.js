@@ -482,6 +482,7 @@ export default function AdminDashboard() {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user_role');
                 localStorage.removeItem('username');
+                document.cookie = 'kp_session=; path=/; max-age=0';
                 router.push('/login');
             }
         };
@@ -489,60 +490,82 @@ export default function AdminDashboard() {
         verifySession();
     }, []);
 
-    // Finance LocalStorage Sync
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_terms', JSON.stringify(feeTerms));
-        }
-    }, [feeTerms]);
+    // --- FINANCE BACKEND SYNC ---
+    // Fee data is persisted per-tenant in MongoDB (/api/finance/config).
+    // localStorage is only read once as a legacy migration source: if the
+    // server has no finance document yet, the locally-initialized state
+    // (seeded from old kp_fee_* keys) is pushed up on first save.
+    const [financeLoaded, setFinanceLoaded] = useState(false);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_types', JSON.stringify(feeTypes));
-        }
-    }, [feeTypes]);
+        if (!authenticated) return;
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_rebates', JSON.stringify(feeRebates));
-        }
-    }, [feeRebates]);
+        const loadFinanceConfig = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/finance/config`, {
+                    headers: getHeaders(),
+                    credentials: 'include'
+                });
+                if (res.status === 403) {
+                    // Caller's role has no finance access; skip sync entirely
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to fetch finance config');
+                const data = await res.json();
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_groups', JSON.stringify(feeGroups));
-        }
-    }, [feeGroups]);
+                if (data.exists && data.config) {
+                    setFeeTerms(data.config.feeTerms || []);
+                    setFeeTypes(data.config.feeTypes || []);
+                    setFeeRebates(data.config.feeRebates || []);
+                    setFeeGroups(data.config.feeGroups || []);
+                    setStudentFeeGroups(data.config.studentFeeGroups || {});
+                    setStudentBackDues(data.config.studentBackDues || {});
+                    setFeePayments(data.config.feePayments || []);
+                    setAdjustmentRequests(data.config.adjustmentRequests || []);
+                    setFeeRemindersLog(data.config.feeRemindersLog || []);
+                }
+                // exists === false: keep current state (defaults or legacy
+                // localStorage data) — the sync effect below will persist it.
+                setFinanceLoaded(true);
+            } catch (err) {
+                console.error('Could not load finance data from server:', err);
+                // Do NOT enable sync on failure — avoids overwriting server
+                // data with local defaults.
+            }
+        };
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_student_fee_groups', JSON.stringify(studentFeeGroups));
-        }
-    }, [studentFeeGroups]);
+        loadFinanceConfig();
+    }, [authenticated]);
 
+    // Debounced save of all finance sections whenever any of them change
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_student_back_dues', JSON.stringify(studentBackDues));
-        }
-    }, [studentBackDues]);
+        if (!financeLoaded) return;
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_payments', JSON.stringify(feePayments));
-        }
-    }, [feePayments]);
+        const timer = setTimeout(async () => {
+            try {
+                await fetch(`${BACKEND_URL}/api/finance/config`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        feeTerms,
+                        feeTypes,
+                        feeRebates,
+                        feeGroups,
+                        studentFeeGroups,
+                        studentBackDues,
+                        feePayments,
+                        adjustmentRequests,
+                        feeRemindersLog
+                    })
+                });
+            } catch (err) {
+                console.error('Could not save finance data to server:', err);
+            }
+        }, 800);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_adjustment_requests', JSON.stringify(adjustmentRequests));
-        }
-    }, [adjustmentRequests]);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kp_fee_reminders', JSON.stringify(feeRemindersLog));
-        }
-    }, [feeRemindersLog]);
+        return () => clearTimeout(timer);
+    }, [financeLoaded, feeTerms, feeTypes, feeRebates, feeGroups, studentFeeGroups, studentBackDues, feePayments, adjustmentRequests, feeRemindersLog]);
 
     // Get Auth Headers
     const getHeaders = () => {
@@ -2239,6 +2262,7 @@ export default function AdminDashboard() {
         localStorage.removeItem('token');
         localStorage.removeItem('user_role');
         localStorage.removeItem('username');
+        document.cookie = 'kp_session=; path=/; max-age=0';
         setToken('');
         setRole('');
         setUsername('');

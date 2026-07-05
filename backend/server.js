@@ -95,6 +95,10 @@ initWhatsApp();
 // Import auth middleware for securing admin routes
 const { authenticateToken, authorizeRoles } = require('./middlewares/auth');
 
+// Periodic cleanup: expire stale PENDING bookings (releases their slots)
+const { startBookingExpirySweep } = require('./services/expirePendingBookings');
+startBookingExpirySweep();
+
 // Import Routes
 const authRoutes = require('./routes/auth');
 const slotsRoutes = require('./routes/slots');
@@ -104,6 +108,7 @@ const inventoryRoutes = require('./routes/inventory');
 const checkinRoutes = require('./routes/checkin');
 const reportsRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
+const financeRoutes = require('./routes/finance');
 
 // Apply Routes
 app.use('/api', authRoutes);
@@ -114,6 +119,7 @@ app.use('/api', inventoryRoutes);
 app.use('/api', checkinRoutes);
 app.use('/api', reportsRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api', financeRoutes);
 
 // WhatsApp Status API for Admin Dashboard (Secured)
 app.get('/api/admin/whatsapp/status', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), (req, res) => {
