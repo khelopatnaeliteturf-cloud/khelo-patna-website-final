@@ -11,6 +11,7 @@
     "billing:monthly": "node jobs/generateMonthlyFees.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.78.0",
     "@whiskeysockets/baileys": "^6.7.23",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
