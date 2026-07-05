@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AnimatedNumber from './AnimatedNumber';
+import { getSessionMonths, getSessionLabel } from '../lib/feeSession';
 
 const formatCurrency = (value) => `₹${(Number(value) || 0).toLocaleString('en-IN')}`;
 
@@ -104,6 +105,35 @@ export default function FinanceTab({
             }
             return next;
         });
+    };
+
+    // Assigns a session fee term to the current student on the fly (when the
+    // cashier picks an unassigned month from the session dropdown), then
+    // reloads the dues so the new term appears in the payment table.
+    const [assigningTerm, setAssigningTerm] = useState(false);
+    const handleAssignTermFromDesk = async (monthLabel) => {
+        if (!feeStudentData?._id || assigningTerm) return;
+        setAssigningTerm(true);
+        try {
+            const res = await fetch(`${backendUrl}/api/academy/students/${feeStudentData._id}/fee-terms`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ months: [monthLabel] })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to assign fee term.');
+            const reDues = await fetch(`${backendUrl}/api/academy/dues?search=${encodeURIComponent(feeStudentData._id)}`, { headers: getHeaders() });
+            const reData = await reDues.json();
+            if (reDues.ok) {
+                setFeeDues(reData.dues || []);
+                setPaymentDetails(prev => ({ ...prev, selectedMonth: monthLabel }));
+            }
+        } catch (err) {
+            console.error('Error assigning fee term from desk:', err);
+            alert(err.message || 'Error assigning fee term.');
+        } finally {
+            setAssigningTerm(false);
+        }
     };
 
     const handleAutoAdjustChange = (val) => {
@@ -529,17 +559,56 @@ export default function FinanceTab({
                                                 <select 
                                                     className="input-premium w-100" 
                                                     value={paymentDetails.selectedMonth}
+                                                    disabled={assigningTerm}
                                                     onChange={e => {
                                                         const mVal = e.target.value;
+                                                        if (mVal.startsWith('__assign__')) {
+                                                            handleAssignTermFromDesk(mVal.replace('__assign__', ''));
+                                                            return;
+                                                        }
                                                         setPaymentDetails(prev => ({ ...prev, selectedMonth: mVal }));
                                                         setAutoAdjustAmount('');
                                                     }}
                                                 >
-                                                    <option value="all">All Outstanding Months</option>
-                                                    {feeDues.map(d => (
-                                                        <option key={d._id} value={d.monthFor}>{d.monthFor} (Due: {formatCurrency((Number(d.amountDue) || 0) - (Number(d.amountPaid) || 0))})</option>
-                                                    ))}
+                                                    <option value="all">All Outstanding Dues</option>
+                                                    {(() => {
+                                                        const duesByMonth = new Map(feeDues.map(d => [d.monthFor, d]));
+                                                        const sessionMonths = getSessionMonths();
+                                                        const sessionSet = new Set(sessionMonths);
+                                                        // Dues outside the session grid (e.g. Admission Fee, legacy months)
+                                                        const otherDues = feeDues.filter(d => !sessionSet.has(d.monthFor));
+                                                        return (
+                                                            <>
+                                                                {otherDues.map(d => (
+                                                                    <option key={d._id} value={d.monthFor}>
+                                                                        {d.monthFor} (Due: {formatCurrency((Number(d.amountDue) || 0) - (Number(d.amountPaid) || 0))})
+                                                                    </option>
+                                                                ))}
+                                                                <optgroup label={`Session ${getSessionLabel()} (Apr – Mar)`}>
+                                                                    {sessionMonths.map(m => {
+                                                                        const due = duesByMonth.get(m);
+                                                                        if (due) {
+                                                                            const bal = (Number(due.amountDue) || 0) - (Number(due.amountPaid) || 0);
+                                                                            return (
+                                                                                <option key={m} value={m}>
+                                                                                    {m} (Due: {formatCurrency(bal)})
+                                                                                </option>
+                                                                            );
+                                                                        }
+                                                                        return (
+                                                                            <option key={m} value={`__assign__${m}`}>
+                                                                                {m} — not assigned (select to assign)
+                                                                            </option>
+                                                                        );
+                                                                    })}
+                                                                </optgroup>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </select>
+                                                {assigningTerm && (
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>Assigning fee term…</div>
+                                                )}
                                             </div>
                                             
                                             <div>
@@ -739,7 +808,24 @@ export default function FinanceTab({
                                 <div className="card-premium text-center py-5">
                                     <span className="material-icons-outlined text-success mb-3" style={{ fontSize: '3rem' }}>check_circle</span>
                                     <h4 className="text-success">✓ Accounts are clear!</h4>
-                                    <p className="text-muted mb-0">Student has no outstanding dues for this season.</p>
+                                    <p className="text-muted mb-3">Student has no outstanding dues. Assign a session fee term to collect a payment.</p>
+                                    <div style={{ maxWidth: '340px', margin: '0 auto' }}>
+                                        <select
+                                            className="input-premium w-100"
+                                            defaultValue=""
+                                            disabled={assigningTerm}
+                                            aria-label={`Assign a fee term from session ${getSessionLabel()}`}
+                                            onChange={e => { if (e.target.value) handleAssignTermFromDesk(e.target.value); }}
+                                        >
+                                            <option value="" disabled>Assign fee term — Session {getSessionLabel()}</option>
+                                            {getSessionMonths().map(m => (
+                                                <option key={m} value={m}>{m}</option>
+                                            ))}
+                                        </select>
+                                        {assigningTerm && (
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '6px' }}>Assigning fee term…</div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </>

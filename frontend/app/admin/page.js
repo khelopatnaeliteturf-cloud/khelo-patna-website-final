@@ -7487,6 +7487,8 @@ export default function AdminDashboard() {
                             initialSelectedMemberId={initialSelectedMemberId}
                             clearInitialSelectedMemberId={() => setInitialSelectedMemberId('')}
                             onOpenAdmissions={() => { setActiveTab('admission-studio'); setActiveSidebarKey('admission-studio'); }}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
                         />
                     )}
                     {activeTab === 'session-management' && renderSessionTab()}

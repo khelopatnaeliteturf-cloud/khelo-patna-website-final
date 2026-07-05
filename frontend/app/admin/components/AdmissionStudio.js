@@ -438,9 +438,12 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                                         />
                                     </div>
                                     <div style={{ marginTop: '12px', padding: '12px 14px', borderRadius: '10px', background: 'var(--primary-light)', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                                        <span>Due at admission</span>
-                                        <strong>{formatINR(Number(activePlan.oneTimeAdmissionFee) + Number(effectiveMonthly))}</strong>
+                                        <span>Due at admission (one-time fee only)</span>
+                                        <strong>{formatINR(Number(activePlan.oneTimeAdmissionFee))}</strong>
                                     </div>
+                                    <p style={{ margin: '8px 0 0', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                        Monthly fee terms are not auto-assigned. Assign session months from the member profile, in bulk from the students list, or at the Fee Collection Desk.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -480,7 +483,7 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                         Membership ID <strong style={{ color: 'var(--primary)' }}>{enrolled.membershipId}</strong> · {SPORTS.find(s => s.id === form.sport)?.label} · {form.batchTime}
                     </p>
                     <p style={{ margin: '0 0 22px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                        First payment due: {formatINR(Number(activePlan.oneTimeAdmissionFee) + Number(effectiveMonthly))} (admission + first month)
+                        Admission fee due: {formatINR(Number(activePlan.oneTimeAdmissionFee))} · Monthly fee terms can be assigned from the member profile or Fee Desk
                     </p>
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <button className="btn-primary-stripe" onClick={() => onCollectPayment?.(enrolled)}>
