@@ -2359,7 +2359,7 @@ export default function AdminDashboard() {
             <div className="card-premium animate-fade-in">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="material-icons-outlined" style={{ color: 'var(--primary)' }}>chat</span> GungunERP Communicate Center
+                        <span className="material-icons-outlined" style={{ color: 'var(--primary)' }}>chat</span> Communicate Center
                     </h3>
                 </div>
 
@@ -7058,6 +7058,111 @@ export default function AdminDashboard() {
                 @media (prefers-reduced-motion: reduce) {
                     .summary-chip:hover { transform: none; }
                     .finance-profile-card { animation: none; }
+                }
+
+                /* ═══ Form & panel refinement layer ═══ */
+
+                /* Card headings: accent bar + tighter hierarchy */
+                .card-premium > h3:first-child,
+                .card-premium > h4:first-child,
+                .card-premium > h5:first-child,
+                .card-premium > .d-flex:first-child h3,
+                .card-premium > .d-flex:first-child h5 {
+                    position: relative;
+                    padding-left: 14px;
+                    letter-spacing: -0.01em;
+                }
+                .card-premium > h3:first-child::before,
+                .card-premium > h4:first-child::before,
+                .card-premium > h5:first-child::before,
+                .card-premium > .d-flex:first-child h3::before,
+                .card-premium > .d-flex:first-child h5::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 70%;
+                    min-height: 16px;
+                    border-radius: 4px;
+                    background: linear-gradient(180deg, var(--primary), rgba(15, 143, 106, 0.35));
+                }
+
+                /* Form labels: refined micro-label treatment */
+                .admin-erp-container form label,
+                .admin-erp-container .card-premium label {
+                    font-size: 0.72rem !important;
+                    font-weight: 700 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.07em;
+                    color: var(--text-muted) !important;
+                    margin-bottom: 6px !important;
+                }
+
+                /* Inputs: softer radius, hover feedback, filled feel */
+                .input-premium {
+                    border-radius: 10px !important;
+                    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+                }
+                .input-premium:hover:not(:focus) {
+                    border-color: rgba(15, 143, 106, 0.35) !important;
+                }
+
+                /* Sub-tabs: segmented pill control instead of flat text tabs */
+                .sub-tab-link {
+                    border-radius: 999px !important;
+                    padding: 8px 16px !important;
+                    border: 1px solid transparent !important;
+                    background: transparent;
+                    color: var(--text-muted);
+                    font-size: 0.82rem;
+                    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+                }
+                .sub-tab-link:hover:not(.active) {
+                    background: var(--surface-tint);
+                    color: var(--text-main);
+                }
+                .sub-tab-link.active {
+                    background: var(--gradient-1) !important;
+                    color: #fff !important;
+                    border-color: transparent !important;
+                    box-shadow: 0 6px 16px rgba(15, 143, 106, 0.28);
+                }
+
+                /* Primary buttons: sheen sweep on hover */
+                .btn-primary-stripe {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .btn-primary-stripe::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -80%;
+                    width: 50%;
+                    height: 100%;
+                    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+                    transform: skewX(-20deg);
+                    transition: left 0.45s ease;
+                }
+                .btn-primary-stripe:hover::after {
+                    left: 130%;
+                }
+                .btn-primary-stripe:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 14px 30px rgba(15, 143, 106, 0.32);
+                }
+
+                /* Empty tables: give headers breathing room */
+                .table-premium thead th {
+                    padding-top: 12px;
+                    padding-bottom: 12px;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .btn-primary-stripe::after { display: none; }
+                    .btn-primary-stripe:hover { transform: none; }
                 }
             `}</style>
 
