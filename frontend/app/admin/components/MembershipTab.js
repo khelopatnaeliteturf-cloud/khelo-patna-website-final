@@ -1,19 +1,24 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import AnimatedNumber from './AnimatedNumber';
+import FeeTermsManager from './FeeTermsManager';
+import { getSessionMonths, getSessionLabel } from '../lib/feeSession';
 
 export default function MembershipTab({ 
     allStudents, 
     sessionsList, 
     coachesList, 
     batchesList, 
-    onAddStudent, 
     onUpdateStudent, 
     onCollectPayment, 
     backendUrl, 
     getHeaders,
     initialSelectedMemberId,
-    clearInitialSelectedMemberId
+    clearInitialSelectedMemberId,
+    onOpenAdmissions,
+    notifySuccess,
+    notifyError
 }) {
     const [subView, setSubView] = useState('list'); // 'list', 'new', 'promote', 'transfer'
     const [searchQuery, setSearchQuery] = useState('');
@@ -62,64 +67,40 @@ export default function MembershipTab({
         }
     }, [initialSelectedMemberId, allStudents]);
 
-    // New Member State
-    const [newMember, setNewMember] = useState({
-        name: '', dateOfBirth: '', gender: 'Male', bloodGroup: '',
-        phone: '', email: '', whatsapp: '',
-        fatherName: '', motherName: '', guardianName: '', guardianMobile: '',
-        currentAddress: '', permanentAddress: '',
-        sport: 'cricket', secondarySport: '', playingPosition: '', skillLevel: 'Beginner',
-        joiningDate: new Date().toISOString().split('T')[0],
-        oneTimeAdmissionFee: 1500, monthlyFee: 2000, adjustedFee: '',
-        batchTime: '06:00-08:00 AM',
-        height: '', weight: '', allergies: '', medicalNotes: '',
-        photoUrl: '', aadhaarUrl: '', birthCertUrl: '', medicalCertUrl: ''
-    });
-
     // Session Promotion State
     const [promoSourceSession, setPromoSourceSession] = useState('');
     const [promoTargetSession, setPromoTargetSession] = useState('');
     const [promoSelectedMembers, setPromoSelectedMembers] = useState([]);
-    const [uploadingField, setUploadingField] = useState(null);
+    // Bulk fee-term assignment state
+    const [bulkSelectedIds, setBulkSelectedIds] = useState([]);
+    const [bulkMonths, setBulkMonths] = useState([]);
+    const [bulkSaving, setBulkSaving] = useState(false);
 
-    const handleFileUpload = async (e, fieldName) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const toggleBulkStudent = (id) => {
+        setBulkSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
+    const toggleBulkMonth = (m) => {
+        setBulkMonths(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+    };
 
-        setUploadingField(fieldName);
-        const formData = new FormData();
-        formData.append('file', file);
-
+    const handleBulkAssign = async () => {
+        if (bulkSelectedIds.length === 0 || bulkMonths.length === 0) return;
+        setBulkSaving(true);
         try {
-            const headers = getHeaders();
-            const token = headers['Authorization'];
-            
-            const reqHeaders = {};
-            if (token) {
-                reqHeaders['Authorization'] = token;
-            }
-
-            const res = await fetch(`${backendUrl}/api/upload`, {
+            const res = await fetch(`${backendUrl}/api/academy/fee-terms/bulk-assign`, {
                 method: 'POST',
-                headers: reqHeaders,
-                body: formData
+                headers: getHeaders(),
+                body: JSON.stringify({ studentIds: bulkSelectedIds, months: bulkMonths })
             });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || 'Failed to upload document');
-            }
-
             const data = await res.json();
-            setNewMember(prev => ({
-                ...prev,
-                [fieldName]: data.url
-            }));
+            if (!res.ok) throw new Error(data.error || 'Bulk assignment failed.');
+            notifySuccess && notifySuccess(data.message);
+            setBulkSelectedIds([]);
+            setBulkMonths([]);
         } catch (err) {
-            console.error('File upload error:', err);
-            alert(err.message || 'Error uploading file.');
+            notifyError && notifyError(err.message);
         } finally {
-            setUploadingField(null);
+            setBulkSaving(false);
         }
     };
 
@@ -144,7 +125,6 @@ export default function MembershipTab({
 
     const memberNavigation = [
         { key: 'list', label: 'Students', icon: 'groups' },
-        { key: 'new', label: 'New Student', icon: 'person_add' },
         { key: 'promote', label: 'Promotion', icon: 'upgrade' }
     ];
 
@@ -171,34 +151,6 @@ export default function MembershipTab({
         setSearchQuery('');
         setSportFilter('');
         setStatusFilter('ACTIVE');
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        const payload = {
-            ...newMember,
-            parentName: newMember.fatherName || newMember.guardianName || 'N/A',
-            phone: newMember.phone || newMember.guardianMobile || 'N/A',
-            whatsapp: newMember.whatsapp || newMember.phone || 'N/A',
-            adjustedFee: newMember.adjustedFee ? Number(newMember.adjustedFee) : undefined
-        };
-        const success = await onAddStudent(payload);
-        if (success) {
-            setSubView('list');
-            // reset form
-            setNewMember({
-                name: '', dateOfBirth: '', gender: 'Male', bloodGroup: '',
-                phone: '', email: '', whatsapp: '',
-                fatherName: '', motherName: '', guardianName: '', guardianMobile: '',
-                currentAddress: '', permanentAddress: '',
-                sport: 'cricket', secondarySport: '', playingPosition: '', skillLevel: 'Beginner',
-                joiningDate: new Date().toISOString().split('T')[0],
-                oneTimeAdmissionFee: 1500, monthlyFee: 2000, adjustedFee: '',
-                batchTime: '06:00-08:00 AM',
-                height: '', weight: '', allergies: '', medicalNotes: '',
-                photoUrl: '', aadhaarUrl: '', birthCertUrl: '', medicalCertUrl: ''
-            });
-        }
     };
 
     const handlePromotionSubmit = async (e) => {
@@ -252,22 +204,22 @@ export default function MembershipTab({
                     </div>
                     <button
                         className="btn-primary-stripe"
-                        onClick={() => setSubView('new')}
+                        onClick={() => onOpenAdmissions && onOpenAdmissions()}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
                     >
-                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>person_add</span>
-                        Admit Student
+                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>how_to_reg</span>
+                        New Admission
                     </button>
                 </div>
 
                 {subView === 'list' && !selectedMember && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                         {memberSummaryCards.map(card => (
-                            <div key={card.label} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '14px 16px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '72px' }}>
-                                <span className="material-icons-outlined" style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: card.color }}>{card.icon}</span>
+                            <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': `${card.color}33` }}>
+                                <span className="material-icons-outlined summary-chip__icon" style={{ color: card.color }}>{card.icon}</span>
                                 <div>
-                                    <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1, color: 'var(--text-main)' }}>{card.value}</div>
-                                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '5px' }}>{card.label}</div>
+                                    <div className="summary-chip__value"><AnimatedNumber value={card.value} /></div>
+                                    <div className="summary-chip__label">{card.label}</div>
                                 </div>
                             </div>
                         ))}
@@ -336,12 +288,72 @@ export default function MembershipTab({
                         </div>
                     </div>
 
+                    {/* Bulk fee-term assignment bar */}
+                    {bulkSelectedIds.length > 0 && (
+                        <div style={{
+                            border: '1px solid rgba(15, 143, 106, 0.3)', borderRadius: '12px', padding: '14px 16px',
+                            marginBottom: '16px', background: 'rgba(15, 143, 106, 0.05)'
+                        }}>
+                            <div className="d-flex justify-content-between align-items-center mb-2" style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                <strong style={{ fontSize: '0.85rem' }}>
+                                    Assign fee terms (Session {getSessionLabel()}) to {bulkSelectedIds.length} selected student{bulkSelectedIds.length === 1 ? '' : 's'}
+                                </strong>
+                                <button type="button" className="btn btn-sm btn-link text-muted" style={{ textDecoration: 'none', padding: 0 }} onClick={() => { setBulkSelectedIds([]); setBulkMonths([]); }}>
+                                    Clear selection
+                                </button>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+                                {getSessionMonths().map(m => (
+                                    <button
+                                        key={m}
+                                        type="button"
+                                        aria-pressed={bulkMonths.includes(m)}
+                                        onClick={() => toggleBulkMonth(m)}
+                                        style={{
+                                            fontSize: '0.74rem', fontWeight: 600, padding: '5px 12px', borderRadius: '999px',
+                                            cursor: 'pointer',
+                                            border: bulkMonths.includes(m) ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                                            background: bulkMonths.includes(m) ? 'var(--primary)' : 'transparent',
+                                            color: bulkMonths.includes(m) ? '#fff' : 'var(--text-muted)'
+                                        }}
+                                    >
+                                        {m}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                className="btn-primary-stripe"
+                                disabled={bulkMonths.length === 0 || bulkSaving}
+                                onClick={handleBulkAssign}
+                                style={{ fontSize: '0.82rem', opacity: bulkMonths.length === 0 ? 0.5 : 1 }}
+                            >
+                                {bulkSaving ? 'Assigning…' : `Assign ${bulkMonths.length} Term${bulkMonths.length === 1 ? '' : 's'} to ${bulkSelectedIds.length} Student${bulkSelectedIds.length === 1 ? '' : 's'}`}
+                            </button>
+                        </div>
+                    )}
+
                     {/* Premium Table Rendering */}
                     <div className="table-responsive">
                         <table className="table-premium" style={{ verticalAlign: 'middle' }}>
                             <thead>
                                 <tr>
-                                    <th style={{ paddingLeft: '16px' }}>Member Profile</th>
+                                    <th style={{ width: '36px', paddingLeft: '16px' }}>
+                                        <input
+                                            type="checkbox"
+                                            aria-label="Select all visible students for bulk fee-term assignment"
+                                            checked={filteredMembers.length > 0 && filteredMembers.every(m => bulkSelectedIds.includes(m._id))}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setBulkSelectedIds(prev => [...new Set([...prev, ...filteredMembers.map(m => m._id)])]);
+                                                } else {
+                                                    const visible = new Set(filteredMembers.map(m => m._id));
+                                                    setBulkSelectedIds(prev => prev.filter(id => !visible.has(id)));
+                                                }
+                                            }}
+                                        />
+                                    </th>
+                                    <th>Member Profile</th>
                                     <th>Membership ID</th>
                                     <th>Discipline</th>
                                     <th>Batch Schedule</th>
@@ -360,8 +372,16 @@ export default function MembershipTab({
                                         const isActiveMember = memberStatus === 'ACTIVE';
                                         return (
                                         <tr key={m._id} className="table-row-hover" style={{ transition: 'background-color 0.2s ease' }}>
-                                            {/* Profile column with Image Avatar */}
                                             <td style={{ paddingLeft: '16px' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    aria-label={`Select ${memberName} for bulk fee-term assignment`}
+                                                    checked={bulkSelectedIds.includes(m._id)}
+                                                    onChange={() => toggleBulkStudent(m._id)}
+                                                />
+                                            </td>
+                                            {/* Profile column with Image Avatar */}
+                                            <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                         {m.photoUrl ? (
@@ -453,7 +473,7 @@ export default function MembershipTab({
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="text-center p-5 text-muted">
+                                        <td colSpan="8" className="text-center p-5 text-muted">
                                             <span className="material-icons-outlined d-block mb-2" style={{ fontSize: '2rem', color: 'rgba(255,255,255,0.1)' }}>group</span>
                                             No academy members match the selected filters.
                                         </td>
@@ -547,6 +567,17 @@ export default function MembershipTab({
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    {/* Fee Terms Manager (session April → March) */}
+                    <div style={{ padding: '16px 28px 0' }}>
+                        <FeeTermsManager
+                            student={selectedMember}
+                            backendUrl={backendUrl}
+                            getHeaders={getHeaders}
+                            notifySuccess={notifySuccess}
+                            notifyError={notifyError}
+                        />
                     </div>
 
                     {/* Main Content Grid */}
@@ -823,237 +854,6 @@ export default function MembershipTab({
                 </div>
             )}
 
-            {/* Sub View: New Admission Intake Form */}
-            {subView === 'new' && (
-                <form onSubmit={handleFormSubmit} className="row g-4">
-                    {/* Left panel */}
-                    <div className="col-lg-4">
-                        <div className="card-premium text-center">
-                            <div className="mb-3">
-                                {newMember.photoUrl ? (
-                                    <div className="mb-2 position-relative d-inline-block">
-                                        <img src={newMember.photoUrl} alt="Preview" style={{ width: '120px', height: '120px', borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--primary)' }} />
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setNewMember(prev => ({ ...prev, photoUrl: '' }))}
-                                            className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
-                                            style={{ borderRadius: '50%', padding: '2px 6px', fontSize: '0.65rem', border: 'none' }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="user-avatar mx-auto mb-3" style={{ width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <span className="material-icons-outlined" style={{ fontSize: '3rem', color: 'rgba(255,255,255,0.3)' }}>person</span>
-                                    </div>
-                                )}
-                                <h4 style={{ fontSize: '1rem', fontWeight: 700 }}>Member Photo</h4>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Upload applicant identity passport photo.</p>
-                                
-                                <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    id="photo-upload-input" 
-                                    style={{ display: 'none' }} 
-                                    onChange={(e) => handleFileUpload(e, 'photoUrl')} 
-                                />
-                                <button 
-                                    type="button"
-                                    disabled={uploadingField === 'photoUrl'}
-                                    onClick={() => document.getElementById('photo-upload-input').click()}
-                                    className="btn-primary-stripe btn-sm w-100"
-                                >
-                                    {uploadingField === 'photoUrl' ? 'Uploading...' : 'Choose Photo File'}
-                                </button>
-                                <input 
-                                    type="text" 
-                                    placeholder="Or paste photo URL link" 
-                                    className="input-premium w-100 mt-2" 
-                                    style={{ fontSize: '0.72rem' }}
-                                    value={newMember.photoUrl} 
-                                    onChange={(e) => setNewMember({...newMember, photoUrl: e.target.value})} 
-                                />
-                            </div>
-                            
-                            <div className="text-start mt-4 border-top pt-3">
-                                <h5>Admission Summary</h5>
-                                <p style={{ fontSize: '0.82rem' }}>Admission ID will be auto-generated consecutively per tenant pool (e.g. KP-0005) upon submission.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right / Main form panel */}
-                    <div className="col-lg-8">
-                        <div className="card-premium d-flex flex-column gap-4">
-                            {/* Personal Info */}
-                            <div>
-                                <h3 className="section-title mb-3">1. Personal Information</h3>
-                                <div className="row g-3">
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Full Name *</label>
-                                        <input type="text" required className="input-premium w-100" value={newMember.name} onChange={(e) => setNewMember({...newMember, name: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Date Of Birth *</label>
-                                        <input type="date" required className="input-premium w-100" value={newMember.dateOfBirth} onChange={(e) => setNewMember({...newMember, dateOfBirth: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Gender *</label>
-                                        <select className="input-premium w-100" value={newMember.gender} onChange={(e) => setNewMember({...newMember, gender: e.target.value})}>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Blood Group</label>
-                                        <input type="text" placeholder="e.g. O+, A-" className="input-premium w-100" value={newMember.bloodGroup} onChange={(e) => setNewMember({...newMember, bloodGroup: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Contact Info */}
-                            <div>
-                                <h3 className="section-title mb-3">2. Contact Details</h3>
-                                <div className="row g-3">
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">Mobile Phone *</label>
-                                        <input type="tel" required className="input-premium w-100" value={newMember.phone} onChange={(e) => setNewMember({...newMember, phone: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">WhatsApp Mobile</label>
-                                        <input type="tel" className="input-premium w-100" value={newMember.whatsapp} onChange={(e) => setNewMember({...newMember, whatsapp: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">Email Address</label>
-                                        <input type="email" className="input-premium w-100" value={newMember.email} onChange={(e) => setNewMember({...newMember, email: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Parent Info */}
-                            <div>
-                                <h3 className="section-title mb-3">3. Parents / Guardian Info</h3>
-                                <div className="row g-3">
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">Father Name</label>
-                                        <input type="text" className="input-premium w-100" value={newMember.fatherName} onChange={(e) => setNewMember({...newMember, fatherName: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">Mother Name</label>
-                                        <input type="text" className="input-premium w-100" value={newMember.motherName} onChange={(e) => setNewMember({...newMember, motherName: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className="d-block mb-1">Guardian Mobile *</label>
-                                        <input type="tel" required className="input-premium w-100" value={newMember.guardianMobile} onChange={(e) => setNewMember({...newMember, guardianMobile: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Address */}
-                            <div>
-                                <h3 className="section-title mb-3">4. Address Details</h3>
-                                <div className="row g-3">
-                                    <div className="col-md-12">
-                                        <label className="d-block mb-1">Current Residential Address *</label>
-                                        <input type="text" required className="input-premium w-100" value={newMember.currentAddress} onChange={(e) => setNewMember({...newMember, currentAddress: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Sports Details */}
-                            <div>
-                                <h3 className="section-title mb-3">5. Sports Academy Preferences</h3>
-                                <div className="row g-3">
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Primary Sport *</label>
-                                        <select className="input-premium w-100" value={newMember.sport} onChange={(e) => setNewMember({...newMember, sport: e.target.value})}>
-                                            <option value="cricket">Cricket</option>
-                                            <option value="football">Football</option>
-                                        </select>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Batch Timings *</label>
-                                        <input type="text" required placeholder="e.g. 06:00-08:00 AM" className="input-premium w-100" value={newMember.batchTime} onChange={(e) => setNewMember({...newMember, batchTime: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">One-time Admission Fee (INR) *</label>
-                                        <input type="number" required className="input-premium w-100" value={newMember.oneTimeAdmissionFee} onChange={(e) => setNewMember({...newMember, oneTimeAdmissionFee: e.target.value})} />
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="d-block mb-1">Monthly Tuition Fee (INR) *</label>
-                                        <input type="number" required className="input-premium w-100" value={newMember.monthlyFee} onChange={(e) => setNewMember({...newMember, monthlyFee: e.target.value})} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Admission Documents */}
-                            <div>
-                                <h3 className="section-title mb-3">6. Identity & Admission Documents</h3>
-                                <div className="row g-3">
-                                    {[
-                                        { label: 'Aadhaar Card (PDF / Image)', field: 'aadhaarUrl', inputId: 'aadhaar-upload-input' },
-                                        { label: 'Birth Certificate (PDF / Image)', field: 'birthCertUrl', inputId: 'birthcert-upload-input' },
-                                        { label: 'Medical Certificate (PDF / Image)', field: 'medicalCertUrl', inputId: 'medicalcert-upload-input' }
-                                    ].map((doc, idx) => (
-                                        <div key={idx} className="col-md-4">
-                                            <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{doc.label}</label>
-                                            <div className="border rounded p-3 bg-dark bg-opacity-10 d-flex flex-column align-items-center justify-content-center gap-2" style={{ borderStyle: 'dashed', minHeight: '120px' }}>
-                                                {newMember[doc.field] ? (
-                                                    <div className="text-center w-100">
-                                                        <span className="material-icons-outlined text-success" style={{ fontSize: '2rem' }}>check_circle</span>
-                                                        <div className="text-truncate px-2" style={{ fontSize: '0.72rem', maxWidth: '100%' }}>
-                                                            <a href={newMember[doc.field]} target="_blank" rel="noreferrer" className="text-primary text-decoration-none">
-                                                                Uploaded Document ↗
-                                                            </a>
-                                                        </div>
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={() => setNewMember(prev => ({ ...prev, [doc.field]: '' }))}
-                                                            className="btn btn-sm btn-link text-danger mt-1"
-                                                            style={{ fontSize: '0.7rem', padding: 0 }}
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <span className="material-icons-outlined text-muted" style={{ fontSize: '1.8rem' }}>upload_file</span>
-                                                        <input 
-                                                            type="file" 
-                                                            accept="image/*,application/pdf"
-                                                            id={doc.inputId}
-                                                            style={{ display: 'none' }}
-                                                            onChange={(e) => handleFileUpload(e, doc.field)}
-                                                        />
-                                                        <button 
-                                                            type="button"
-                                                            disabled={uploadingField === doc.field}
-                                                            onClick={() => document.getElementById(doc.inputId).click()}
-                                                            className="btn-secondary-stripe btn-sm w-100"
-                                                            style={{ fontSize: '0.7rem', padding: '4px 8px' }}
-                                                        >
-                                                            {uploadingField === doc.field ? 'Uploading...' : 'Choose File'}
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Submit */}
-                            <div className="d-flex justify-content-end gap-3 mt-4">
-                                <button type="button" className="btn-secondary-stripe" onClick={() => setSubView('list')}>Cancel</button>
-                                <button type="submit" className="btn-primary-stripe" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>add_circle</span> Register Admission
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            )}
 
             {/* Sub View: Session Promotion */}
             {subView === 'promote' && (

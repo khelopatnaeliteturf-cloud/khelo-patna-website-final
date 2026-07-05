@@ -8,6 +8,16 @@ const { ensureDefaultTenant } = require('../lib/bootstrap');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const STAFF_REGISTER_ROLES = ['SUPER_ADMIN', 'ACADEMY_OWNER', 'HR_MANAGER'];
+
+// Which roles each registrar role is allowed to assign. Prevents privilege
+// escalation (e.g. an HR_MANAGER creating a SUPER_ADMIN account).
+const ASSIGNABLE_ROLES = {
+    SUPER_ADMIN: ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'FINANCE_MANAGER', 'RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'HR_MANAGER', 'PARENT', 'MEMBER'],
+    ACADEMY_OWNER: ['BRANCH_MANAGER', 'FINANCE_MANAGER', 'RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'HR_MANAGER', 'PARENT', 'MEMBER'],
+    HR_MANAGER: ['RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'PARENT', 'MEMBER']
+};
+
+const MIN_PASSWORD_LENGTH = 8;
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
@@ -22,6 +32,33 @@ function getJwtSecret() {
     }
     return JWT_SECRET;
 }
+
+// Determines cookie SameSite/Secure attributes per-request. When the browser
+// is on HTTPS (e.g. behind a proxy or embedded in a cross-site iframe like
+// the v0 preview), SameSite=None + Secure is required for the cookie to be
+// sent at all; browsers silently drop SameSite=Lax cookies in iframes.
+const sessionCookiePolicy = (req) => {
+    const origin = req.headers.origin || '';
+    const isHttpsClient =
+        req.secure ||
+        req.headers['x-forwarded-proto'] === 'https' ||
+        origin.startsWith('https://');
+    return isHttpsClient
+        ? { sameSite: 'none', secure: true }
+        : { sameSite: 'lax', secure: false };
+};
+
+// 0. Bootstrap status (Public) — tells the login page whether the very first
+// admin account still needs to be created. Reveals nothing beyond a boolean.
+router.get('/auth/bootstrap-status', async (req, res) => {
+    try {
+        const staffCount = await Staff.countDocuments();
+        res.json({ bootstrapNeeded: staffCount === 0 });
+    } catch (err) {
+        console.error('Error checking bootstrap status:', err);
+        res.status(500).json({ error: 'Server error checking bootstrap status.' });
+    }
+});
 
 // 1. Staff Login (Public)
 router.post('/auth/login', authLimiter, async (req, res) => {
@@ -50,10 +87,9 @@ router.post('/auth/login', authLimiter, async (req, res) => {
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
             maxAge: 24 * 60 * 60 * 1000, // 1 day
-            sameSite: 'lax',
-            path: '/'
+            path: '/',
+            ...sessionCookiePolicy(req)
         });
 
         res.json({
@@ -90,6 +126,10 @@ router.post('/auth/register', authLimiter, async (req, res) => {
         return res.status(400).json({ error: 'Username, password, and role are required.' });
     }
 
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long.` });
+    }
+
     try {
         const staffCount = await Staff.countDocuments();
         let tenantId = null;
@@ -106,6 +146,14 @@ router.post('/auth/register', authLimiter, async (req, res) => {
             if (!STAFF_REGISTER_ROLES.includes(decoded.role)) {
                 return res.status(403).json({ error: 'Only Super Admin, Academy Owner, or HR Manager can register staff.' });
             }
+
+            // Enforce role-assignment hierarchy: a registrar can only create
+            // accounts with roles at or below their own privilege level.
+            const allowedRoles = ASSIGNABLE_ROLES[decoded.role] || [];
+            if (!allowedRoles.includes(role)) {
+                return res.status(403).json({ error: `Your role (${decoded.role}) is not permitted to create accounts with the ${role} role.` });
+            }
+
             tenantId = decoded.tenantId;
             branchId = decoded.branchId;
         } else {

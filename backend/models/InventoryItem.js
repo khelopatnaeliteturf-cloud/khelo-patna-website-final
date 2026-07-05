@@ -7,6 +7,7 @@ const InventoryItemSchema = new mongoose.Schema({
     category: { type: String, required: true }, // allow custom categories as requested
     totalQuantity: { type: Number, required: true },
     availableQuantity: { type: Number, required: true },
+    unitPrice: { type: Number, default: 0, min: 0 }, // POS selling price per unit
     condition: { type: String, enum: ['GOOD', 'DAMAGED', 'LOST'], default: 'GOOD' }
 }, { timestamps: true });
 

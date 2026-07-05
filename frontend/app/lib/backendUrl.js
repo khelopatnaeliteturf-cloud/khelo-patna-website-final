@@ -4,9 +4,9 @@ export function getBackendUrl() {
         return configuredUrl.replace(/\/$/, '');
     }
 
-    if (typeof window !== 'undefined' && window.location?.hostname) {
-        return `http://${window.location.hostname}:5001`;
-    }
-
-    return 'http://localhost:5001';
+    // Default: same-origin. Next.js rewrites (next.config.mjs) proxy /api/*
+    // to the Express backend, which avoids CORS and mixed-content issues in
+    // local dev, the v0 preview, and any deployment where the proxy is kept.
+    // Set NEXT_PUBLIC_BACKEND_URL to call a separately-hosted backend directly.
+    return '';
 }

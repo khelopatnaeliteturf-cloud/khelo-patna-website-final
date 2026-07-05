@@ -40,7 +40,13 @@ const isLocalDevOrigin = (origin) => {
     if (process.env.NODE_ENV === 'production') return false;
     try {
         const parsed = new URL(origin);
-        return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+        // Local dev + v0/Vercel preview sandboxes (requests arrive via the
+        // Next.js same-origin proxy, which forwards the browser's Origin).
+        return (
+            ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname) ||
+            parsed.hostname.endsWith('.vusercontent.net') ||
+            parsed.hostname.endsWith('.vercel.app')
+        );
     } catch (e) {
         return false;
     }
@@ -51,7 +57,10 @@ app.use(cors({
         if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            // Deny CORS without throwing: throwing produces an HTML 500 error
+            // page, which breaks JSON parsing on the client. `false` simply
+            // omits CORS headers so the browser blocks the response itself.
+            callback(null, false);
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -95,6 +104,10 @@ initWhatsApp();
 // Import auth middleware for securing admin routes
 const { authenticateToken, authorizeRoles } = require('./middlewares/auth');
 
+// Periodic cleanup: expire stale PENDING bookings (releases their slots)
+const { startBookingExpirySweep } = require('./services/expirePendingBookings');
+startBookingExpirySweep();
+
 // Import Routes
 const authRoutes = require('./routes/auth');
 const slotsRoutes = require('./routes/slots');
@@ -104,6 +117,7 @@ const inventoryRoutes = require('./routes/inventory');
 const checkinRoutes = require('./routes/checkin');
 const reportsRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
+const financeRoutes = require('./routes/finance');
 
 // Apply Routes
 app.use('/api', authRoutes);
@@ -114,6 +128,7 @@ app.use('/api', inventoryRoutes);
 app.use('/api', checkinRoutes);
 app.use('/api', reportsRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api', financeRoutes);
 
 // WhatsApp Status API for Admin Dashboard (Secured)
 app.get('/api/admin/whatsapp/status', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), (req, res) => {

@@ -79,35 +79,36 @@ async function seed() {
     console.log('Turf settings seeded.');
 
     // 5. Seed Staff Accounts
+    // Passwords come from env vars; if unset, strong random passwords are
+    // generated and printed ONCE so no environment ever ships with
+    // guessable defaults like "admin123".
     console.log('Clearing and seeding Staff Accounts...');
     await Staff.deleteMany({});
-    
-    const admin = new Staff({
-        tenantId: tenant._id,
-        branchId: branch._id,
-        username: 'admin',
-        password: 'admin123',
-        role: 'SUPER_ADMIN'
-    });
-    await admin.save();
 
-    const manager = new Staff({
-        tenantId: tenant._id,
-        branchId: branch._id,
-        username: 'manager',
-        password: 'manager123',
-        role: 'BRANCH_MANAGER'
-    });
-    await manager.save();
+    const crypto = require('crypto');
+    const generatePassword = () => crypto.randomBytes(9).toString('base64url');
 
-    const receptionist = new Staff({
-        tenantId: tenant._id,
-        branchId: branch._id,
-        username: 'counsellor',
-        password: 'counsellor123',
-        role: 'RECEPTIONIST'
-    });
-    await receptionist.save();
+    const seedAccounts = [
+        { username: 'admin', role: 'SUPER_ADMIN', envKey: 'SEED_ADMIN_PASSWORD' },
+        { username: 'manager', role: 'BRANCH_MANAGER', envKey: 'SEED_MANAGER_PASSWORD' },
+        { username: 'counsellor', role: 'RECEPTIONIST', envKey: 'SEED_COUNSELLOR_PASSWORD' }
+    ];
+
+    for (const account of seedAccounts) {
+        const fromEnv = process.env[account.envKey];
+        const password = fromEnv || generatePassword();
+        const staff = new Staff({
+            tenantId: tenant._id,
+            branchId: branch._id,
+            username: account.username,
+            password,
+            role: account.role
+        });
+        await staff.save();
+        if (!fromEnv) {
+            console.log(`  Generated password for "${account.username}": ${password}  (save this now — it will not be shown again; or set ${account.envKey} before seeding)`);
+        }
+    }
     console.log('Staff accounts seeded successfully.');
 
     // 5b. Seed Fee Structure

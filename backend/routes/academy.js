@@ -16,6 +16,11 @@ const { sendFeeInvoiceEmail } = require('../services/mailercloud');
 const { createOrder } = require('../services/cashfree');
 const { generateMonthlyFeesForTenant } = require('../services/billing');
 
+// Staff roles allowed to read academy operational data.
+// Excludes PARENT and MEMBER, whose tokens must not expose other
+// students' personal details, fees, or attendance.
+const STAFF_READ = authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'FINANCE_MANAGER', 'RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'HR_MANAGER');
+
 // 1. Admit Student (Counsellor/Admin/Staff permission)
 router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
     const { 
@@ -96,10 +101,9 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
 
         await newStudent.save();
 
-        // Create first month's invoice (Admission fee + First Month tuition fee)
-        const currentMonth = new Date(newStudent.admissionDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        const firstMonthAmount = newStudent.oneTimeAdmissionFee + (newStudent.adjustedFee || newStudent.monthlyFee);
-
+        // Create admission invoice (one-time admission fee ONLY).
+        // Monthly fee terms are NOT auto-assigned — staff assign session
+        // terms from the member profile, in bulk, or at the Finance Desk.
         const dueDate = new Date(newStudent.admissionDate);
         dueDate.setDate(dueDate.getDate() + 5);
 
@@ -107,12 +111,12 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
             tenantId,
             branchId,
             studentId: newStudent._id,
-            amountDue: firstMonthAmount,
+            amountDue: newStudent.oneTimeAdmissionFee,
             amountPaid: 0,
             dueDate: dueDate,
-            monthFor: currentMonth,
+            monthFor: 'Admission Fee',
             status: 'UNPAID',
-            adjustmentReason: 'First Month Tuition + Registration Admission fee'
+            adjustmentReason: 'One-time registration / admission fee'
         });
 
         await initialFee.save();
@@ -143,7 +147,7 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
 });
 
 // 2. List Students (Staff permissions)
-router.get('/academy/students', authenticateToken, async (req, res) => {
+router.get('/academy/students', authenticateToken, STAFF_READ, async (req, res) => {
     const { sport, status } = req.query;
     const query = { tenantId: req.user.tenantId };
     if (sport) query.sport = sport;
@@ -345,7 +349,7 @@ router.post('/academy/students/:studentId/fees', authenticateToken, authorizeRol
 });
 
 // Get all fee records for a specific student (for the profile history log)
-router.get('/academy/students/:studentId/fees', authenticateToken, async (req, res) => {
+router.get('/academy/students/:studentId/fees', authenticateToken, STAFF_READ, async (req, res) => {
     const { studentId } = req.params;
     const tenantId = req.user.tenantId;
 
@@ -355,6 +359,131 @@ router.get('/academy/students/:studentId/fees', authenticateToken, async (req, r
     } catch (err) {
         console.error('Error fetching student fee history:', err);
         res.status(500).json({ error: 'Server error fetching student fee history.' });
+    }
+});
+
+// ═══════════════ FEE TERMS (session April → March) ═══════════════
+// A "fee term" is a monthly Fee record within the academy session.
+// Terms are NOT auto-assigned at admission — staff assign them per
+// student (profile), in bulk, or on the fly at the Fee Collection Desk.
+
+const STAFF_WRITE_ROLES = ['RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'];
+
+// Returns the 12 month labels ("April 2026" ... "March 2027") for the
+// session containing `ref` (session year starts in April).
+const getSessionMonths = (ref = new Date()) => {
+    const startYear = ref.getMonth() >= 3 ? ref.getFullYear() : ref.getFullYear() - 1;
+    return Array.from({ length: 12 }, (_, i) =>
+        new Date(startYear, 3 + i, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    );
+};
+
+const termDueDate = (monthLabel, dueDay = 5) => {
+    const parsed = new Date(`${monthLabel.split(' ')[0]} 1, ${monthLabel.split(' ')[1]}`);
+    if (isNaN(parsed.getTime())) return new Date();
+    parsed.setDate(dueDay);
+    return parsed;
+};
+
+// Creates UNPAID Fee records for the given months (skips months that already
+// have a record). Returns { assigned, skipped }.
+const assignTermsToStudent = async (student, months, tenantId, branchId) => {
+    const perMonthFee = student.adjustedFee !== undefined && student.adjustedFee !== null
+        ? Number(student.adjustedFee)
+        : Number(student.monthlyFee) || 0;
+    const existing = await Fee.find({ studentId: student._id, tenantId, monthFor: { $in: months } }).select('monthFor');
+    const existingSet = new Set(existing.map(f => f.monthFor));
+    const toCreate = months.filter(m => !existingSet.has(m));
+    if (toCreate.length > 0) {
+        await Fee.insertMany(toCreate.map(monthFor => ({
+            tenantId,
+            branchId,
+            studentId: student._id,
+            amountDue: perMonthFee,
+            amountPaid: 0,
+            dueDate: termDueDate(monthFor),
+            monthFor,
+            status: 'UNPAID',
+            adjustmentReason: 'Session fee term'
+        })));
+    }
+    return { assigned: toCreate, skipped: months.filter(m => existingSet.has(m)) };
+};
+
+// List current session months (for dropdowns)
+router.get('/academy/fee-terms/session-months', authenticateToken, STAFF_READ, (req, res) => {
+    const months = getSessionMonths();
+    const startYear = Number(months[0].split(' ')[1]);
+    res.json({ sessionLabel: `${startYear}-${String(startYear + 1).slice(2)}`, months });
+});
+
+// Assign fee terms to ONE student
+router.post('/academy/students/:studentId/fee-terms', authenticateToken, authorizeRoles(...STAFF_WRITE_ROLES), async (req, res) => {
+    const { months } = req.body;
+    const tenantId = req.user.tenantId;
+    if (!Array.isArray(months) || months.length === 0) {
+        return res.status(400).json({ error: 'months array is required.' });
+    }
+    try {
+        const student = await Student.findOne({ _id: req.params.studentId, tenantId });
+        if (!student) return res.status(404).json({ error: 'Student not found.' });
+        const result = await assignTermsToStudent(student, months, tenantId, req.user.branchId);
+        await new AuditLog({
+            tenantId, userId: req.user.username, module: 'Finance',
+            action: 'ASSIGN_FEE_TERMS', newData: { studentId: student._id, months: result.assigned }
+        }).save();
+        res.json({ message: `${result.assigned.length} fee term(s) assigned.`, ...result });
+    } catch (err) {
+        console.error('Error assigning fee terms:', err);
+        res.status(500).json({ error: 'Server error assigning fee terms.' });
+    }
+});
+
+// Remove an UNPAID, zero-paid fee term from a student
+router.post('/academy/students/:studentId/fee-terms/remove', authenticateToken, authorizeRoles(...STAFF_WRITE_ROLES), async (req, res) => {
+    const { monthFor } = req.body;
+    const tenantId = req.user.tenantId;
+    if (!monthFor) return res.status(400).json({ error: 'monthFor is required.' });
+    try {
+        const fee = await Fee.findOne({ studentId: req.params.studentId, tenantId, monthFor });
+        if (!fee) return res.status(404).json({ error: 'Fee term not found.' });
+        if (fee.status !== 'UNPAID' || (Number(fee.amountPaid) || 0) > 0) {
+            return res.status(400).json({ error: 'Only unpaid terms with no payments can be removed.' });
+        }
+        await Fee.deleteOne({ _id: fee._id });
+        await new AuditLog({
+            tenantId, userId: req.user.username, module: 'Finance',
+            action: 'REMOVE_FEE_TERM', newData: { studentId: req.params.studentId, monthFor }
+        }).save();
+        res.json({ message: `Fee term ${monthFor} removed.` });
+    } catch (err) {
+        console.error('Error removing fee term:', err);
+        res.status(500).json({ error: 'Server error removing fee term.' });
+    }
+});
+
+// Bulk assign fee terms to MANY students
+router.post('/academy/fee-terms/bulk-assign', authenticateToken, authorizeRoles(...STAFF_WRITE_ROLES), async (req, res) => {
+    const { studentIds, months } = req.body;
+    const tenantId = req.user.tenantId;
+    if (!Array.isArray(studentIds) || studentIds.length === 0 || !Array.isArray(months) || months.length === 0) {
+        return res.status(400).json({ error: 'studentIds and months arrays are required.' });
+    }
+    try {
+        const students = await Student.find({ _id: { $in: studentIds }, tenantId });
+        let totalAssigned = 0;
+        for (const student of students) {
+            const result = await assignTermsToStudent(student, months, tenantId, req.user.branchId);
+            totalAssigned += result.assigned.length;
+        }
+        await new AuditLog({
+            tenantId, userId: req.user.username, module: 'Finance',
+            action: 'BULK_ASSIGN_FEE_TERMS', newData: { studentCount: students.length, months, totalAssigned }
+        }).save();
+        res.json({ message: `${totalAssigned} fee term(s) assigned across ${students.length} student(s).`, totalAssigned, studentCount: students.length });
+    } catch (err) {
+        console.error('Error bulk assigning fee terms:', err);
+        res.status(500).json({ error: 'Server error bulk assigning fee terms.' });
     }
 });
 
@@ -379,9 +508,16 @@ router.get('/academy/dues', async (req, res) => {
         if (search.match(/^[0-9a-fA-F]{24}$/)) {
             student = await Student.findOne({ _id: search, ...tenantFilter });
         } else {
+            // Require the complete phone number (exact match on the last 10
+            // digits). A suffix regex on partial input would let anyone
+            // enumerate students with a few digits.
             const cleanPhone = search.replace(/\D/g, '');
-            student = await Student.findOne({ 
-                phone: { $regex: cleanPhone + '$' },
+            if (cleanPhone.length < 10) {
+                return res.status(400).json({ error: 'Please enter the complete 10-digit phone number.' });
+            }
+            const last10 = cleanPhone.slice(-10);
+            student = await Student.findOne({
+                phone: { $regex: last10 + '$' },
                 ...tenantFilter
             });
         }
@@ -395,9 +531,28 @@ router.get('/academy/dues', async (req, res) => {
             status: { $in: ['UNPAID', 'PARTIAL'] }
         }).sort({ dueDate: 1 });
 
+        // Expose only what the payment portal needs — never the full document
+        // (which contains parent contact details, notes, etc.)
         res.json({
-            student,
-            dues
+            student: {
+                _id: student._id,
+                name: student.name,
+                parentName: student.parentName,
+                sport: student.sport,
+                batchTime: student.batchTime,
+                monthlyFee: student.monthlyFee,
+                adjustedFee: student.adjustedFee,
+                status: student.status
+            },
+            dues: dues.map(d => ({
+                _id: d._id,
+                monthFor: d.monthFor,
+                dueDate: d.dueDate,
+                amountDue: d.amountDue,
+                amountPaid: d.amountPaid,
+                discount: d.discount,
+                status: d.status
+            }))
         });
 
     } catch (err) {
@@ -448,7 +603,7 @@ router.post('/academy/dues/pay', async (req, res) => {
             customerName: student.parentName,
             customerEmail: student.email,
             customerPhone: student.phone,
-            returnUrl: `https://khelopatna.in/academy/pay-fees?order_id=${orderId}&payment_status=success`
+            returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/academy/pay-fees?order_id=${orderId}&payment_status=success`
         });
 
         res.json({
@@ -524,7 +679,7 @@ router.post('/academy/attendance', authenticateToken, authorizeRoles('RECEPTIONI
 });
 
 // 8. Get Attendance Logs
-router.get('/academy/attendance', authenticateToken, async (req, res) => {
+router.get('/academy/attendance', authenticateToken, STAFF_READ, async (req, res) => {
     const { date } = req.query; // YYYY-MM-DD
 
     if (!date) {
@@ -544,7 +699,7 @@ router.get('/academy/attendance', authenticateToken, async (req, res) => {
 // --- NEW SaaS ERP ROUTINGS ---
 
 // 9. Session Management
-router.get('/academy/sessions', authenticateToken, async (req, res) => {
+router.get('/academy/sessions', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const sessions = await Session.find({ tenantId }).sort({ startDate: -1 });
@@ -609,7 +764,7 @@ router.post('/academy/sessions/promote', authenticateToken, authorizeRoles('BRAN
 });
 
 // 10. Coach Management
-router.get('/academy/coaches', authenticateToken, async (req, res) => {
+router.get('/academy/coaches', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const coaches = await Coach.find({ tenantId }).sort({ name: 1 });
@@ -670,7 +825,7 @@ router.delete('/academy/coaches/:id', authenticateToken, authorizeRoles('ACADEMY
 });
 
 // 11. Batch Management
-router.get('/academy/batches', authenticateToken, async (req, res) => {
+router.get('/academy/batches', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const batches = await Batch.find({ tenantId }).populate('coachId', 'name').populate('members', 'name membershipId');
@@ -924,8 +1079,7 @@ router.post('/academy/enquiries/:id/convert', authenticateToken, authorizeRoles(
 
         await newStudent.save();
 
-        const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        const firstMonthAmount = newStudent.oneTimeAdmissionFee + (newStudent.adjustedFee || newStudent.monthlyFee);
+        // Admission invoice only — monthly fee terms are assigned separately.
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + (feeStructure?.dueDayOfMonth || 5));
 
@@ -933,12 +1087,12 @@ router.post('/academy/enquiries/:id/convert', authenticateToken, authorizeRoles(
             tenantId,
             branchId,
             studentId: newStudent._id,
-            amountDue: firstMonthAmount,
+            amountDue: newStudent.oneTimeAdmissionFee,
             amountPaid: 0,
             dueDate,
-            monthFor: currentMonth,
+            monthFor: 'Admission Fee',
             status: 'UNPAID',
-            adjustmentReason: 'First Month Tuition + Registration (from enquiry)'
+            adjustmentReason: 'One-time registration / admission fee (from enquiry)'
         });
 
         enquiry.status = 'CONVERTED';
