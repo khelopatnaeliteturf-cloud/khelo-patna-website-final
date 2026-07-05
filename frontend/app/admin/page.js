@@ -5647,6 +5647,7 @@ export default function AdminDashboard() {
                     position: relative;
                     width: 100%;
                     letter-spacing: 0.01em;
+                    flex-shrink: 0;
                 }
                 .sidebar-link:focus,
                 .sidebar-link:active,
@@ -5768,6 +5769,10 @@ export default function AdminDashboard() {
                     white-space: nowrap;
                     overflow: hidden;
                     position: relative;
+                    /* Prevent the label being crushed to 0 height when the
+                       flex-column nav overflows (overflow:hidden makes its
+                       automatic minimum size 0, so it shrinks first). */
+                    flex-shrink: 0;
                 }
                 .sidebar-section-label:first-child {
                     padding-top: 4px;
