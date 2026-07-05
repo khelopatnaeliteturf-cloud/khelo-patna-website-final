@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Unbounded:wght@400;600;700;800&display=swap');
+
+/* Global Styles & Dark Mode Theme */
+body {
+    background-color: #0b0f19 !important;
+    color: #94a3b8 !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+
+/* Headings with Sports Font */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #ffffff !important;
+    font-family: 'Unbounded', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px;
+}
+
+/* Accent Typography */
+em, .lead {
+    color: #10b981 !important;
+}
+
+.text-black {
+    color: #34d399 !important; /* change template black text to emerald */
+}
+
+/* Glassmorphic Sidebar Menu */
+.sidebar {
+    background: rgba(10, 15, 25, 0.95) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo-image {
+    max-width: 160px;
+    margin-bottom: 50px;
+}
+
+#sidebarMenu .nav-link {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    padding: 12px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#sidebarMenu .nav-link:hover,
+#sidebarMenu .nav-link.active {
+    color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+/* Hero Section Refactoring */
+.hero-section {
+    background: linear-gradient(135deg, rgba(11, 15, 25, 0.9) 0%, rgba(10, 15, 25, 0.4) 100%), url('../images/hero-section.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    position: relative;
+}
+
+/* Hero Floating Custom Block */
+.hero-section .custom-block {
+    background: rgba(22, 31, 48, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 16px !important;
+    padding: 30px !important;
+}
+
+/* Premium Buttons with Hover Glow */
+.custom-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-radius: 30px !important;
+    padding: 12px 28px !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease !important;
+}
+
+.custom-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+}
+
+.custom-border-btn {
+    background: transparent !important;
+    border: 2px solid #10b981 !important;
+    color: #10b981 !important;
+    box-shadow: none !important;
+}
+
+.custom-border-btn:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
+}
+
+/* Section BG & Overlays */
+.section-bg {
+    background-color: #090d16 !important;
+}
+
+.section-padding {
+    padding: 90px 40px !important;
+}
+
+/* Facilities Cards */
+.services-thumb {
+    background: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.services-thumb:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.services-image {
+    transition: transform 0.5s ease;
+}
+
+.services-thumb:hover .services-image {
+    transform: scale(1.05);
+}
+
+.services-info {
+    background: linear-gradient(to top, rgba(11, 15, 25, 0.98) 40%, rgba(11, 15, 25, 0) 100%) !important;
+    padding: 24px !important;
+}
+
+/* Academy Features cards */
+.academy-feature-card {
+    background: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 14px !important;
+    padding: 26px !important;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.academy-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.feature-icon {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.feature-icon span {
+    font-size: 24px;
+}
+
+.academy-feature-card h4 {
+    font-size: 1.15rem !important;
+    margin-bottom: 10px;
+}
+
+.academy-cta {
+    background: linear-gradient(135deg, #111a2e 0%, #090d16 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 40px;
+}
+
+/* Interactive Booking Form Styling */
+.booking-form {
+    background: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    padding: 40px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+.form-label {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+}
+
+.form-control, .form-select {
+    background-color: #0b0f19 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+    background-color: #0b0f19 !important;
+    color: #ffffff !important;
+}
+
+/* Booking Slots Override */
+.booking-form select[multiple] {
+    border-radius: 8px !important;
+    background-color: #0b0f19 !important;
+}
+
+.booking-form select[multiple] option {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.booking-form select[multiple] option:hover {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.booking-form select[multiple] option:checked {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+}
+
+.booking-form select[multiple] option.disabled-slot {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.booking-form select[multiple] option.blackout-slot {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    color: #ff6b6b !important;
+}
+
+/* Booking details container */
+.day-info, .total-calculation {
+    background-color: #0b0f19 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+/* Step Cards */
+.step-card {
+    background: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+}
+
+.step-number {
+    background: #10b981 !important;
+    font-family: 'Unbounded', sans-serif;
+}
+
+.step-icon {
+    color: #10b981 !important;
+}
+
+/* FAQ Accordion Styling */
+.accordion-item {
+    background-color: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.accordion-button {
+    background-color: #161f30 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 20px 24px !important;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #10b981 !important;
+    background-color: #161f30 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.accordion-button::after {
+    filter: invert(1) brightness(2);
+}
+
+.accordion-body {
+    background-color: #161f30 !important;
+    color: #94a3b8 !important;
+    padding: 20px 24px !important;
+    line-height: 1.6;
+}
+
+/* Contact Info blocks */
+.contact-block-wrap {
+    background-color: #161f30 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    padding: 40px !important;
+}
+
+.contact-block {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* Footer Section styling */
+.site-footer {
+    background-color: #090d16 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding-top: 80px !important;
+}
+
+.site-footer-bottom {
+    background-color: #05070c !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.03) !important;
+    padding: 30px 0 !important;
+}
+
+.footer-list li, .footer-list a {
+    color: rgba(255, 255, 255, 0.6) !important;
+    transition: color 0.3s ease;
+}
+
+.footer-list a:hover {
+    color: #10b981 !important;
+    text-decoration: none;
+}
+
+/* Payment Modal Design */
+.modal-content {
+    background-color: #161f30 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.payment-amount-display {
+    background-color: #0b0f19 !important;
+    border-left: 4px solid #10b981 !important;
+    padding: 15px !important;
+    border-radius: 8px !important;
+}
+
+.payment-amount-display h4 {
+    margin: 0 !important;
+    color: #ffffff !important;
+}
+
+.payment-amount-display #payment-amount {
+    color: #10b981 !important;
+}
+
+.qr-code {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: #ffffff !important;
+    padding: 12px !important;
+}
+
+/* Navigation Hamburger Toggler in Mobile */
+.navbar-toggler {
+    background: #10b981 !important;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Custom Alert styling overrides */
+.alert-info {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    border-radius: 10px !important;
+}
