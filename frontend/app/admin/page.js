@@ -5418,9 +5418,9 @@ export default function AdminDashboard() {
             icon: 'fact_check'
         },
         'membership-billing': {
-            title: 'Billing Setup',
-            eyebrow: 'Fee structures',
-            description: 'Configure terms, fee groups, rebates, and billing templates.',
+            title: 'Billing Ledger',
+            eyebrow: 'Payment records',
+            description: 'Review every recorded payment, filter by month, and audit billing history.',
             icon: 'receipt_long'
         },
         finance: {
@@ -7403,7 +7403,7 @@ export default function AdminDashboard() {
                             onCollectPayment={handleCollectPaymentRedirect}
                             initialStudentId={initialStudentId}
                             clearInitialStudentId={() => setInitialStudentId('')}
-                            activeSubTab="templates"
+                            activeSubTab="ledger"
                         />
                     )}
                     {activeTab === 'finance' && (
