@@ -14,6 +14,7 @@ import WebsiteTab from './components/WebsiteTab';
 import AuditLogsTab from './components/AuditLogsTab';
 import IntegrationsTab from './components/IntegrationsTab';
 import CustomersTab from './components/CustomersTab';
+import AnimatedNumber from './components/AnimatedNumber';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
 const BACKEND_URL = getBackendUrl();
@@ -85,6 +86,18 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+
+    // Auto-dismiss toast notifications (success after 4.5s, errors after 8s).
+    useEffect(() => {
+        if (!successMessage) return;
+        const t = setTimeout(() => setSuccessMessage(''), 4500);
+        return () => clearTimeout(t);
+    }, [successMessage]);
+    useEffect(() => {
+        if (!errorMessage) return;
+        const t = setTimeout(() => setErrorMessage(''), 8000);
+        return () => clearTimeout(t);
+    }, [errorMessage]);
 
     // --- DATA STATES ---
     // Analytics
@@ -2797,7 +2810,7 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                             <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 500, marginBottom: '2px' }}>{m.label}</div>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{m.value}</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}><AnimatedNumber value={m.value} /></div>
                             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '4px' }}>{m.trendLabel}</div>
                         </div>
                     ))}
@@ -6806,6 +6819,160 @@ export default function AdminDashboard() {
                         padding: 16px !important;
                     }
                 }
+
+                /* ═══════════════════════════════════════════════
+                   INTERACTIVE POLISH LAYER
+                   ═══════════════════════════════════════════════ */
+
+                /* Tab content entrance animation */
+                @keyframes tab-enter {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .admin-content-shell > *:not(.toast-stack) {
+                    animation: tab-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+
+                /* KPI metric cards: lift + icon pop on hover */
+                .metric-card {
+                    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+                    cursor: default;
+                }
+                .metric-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: var(--shadow-md);
+                    border-color: rgba(15, 143, 106, 0.28);
+                }
+                .metric-card:hover .material-icons-outlined {
+                    animation: icon-pop 0.35s ease;
+                }
+                @keyframes icon-pop {
+                    50% { transform: scale(1.18); }
+                }
+
+                /* All premium cards: subtle lift */
+                .card-premium {
+                    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+                }
+                .card-premium:hover {
+                    box-shadow: var(--shadow-md);
+                }
+
+                /* Tables: row hover highlight + smooth transitions */
+                .admin-erp-container table tbody tr {
+                    transition: background 0.15s ease;
+                }
+                .admin-erp-container table tbody tr:hover {
+                    background: var(--primary-light);
+                }
+
+                /* Inputs and selects: focus glow */
+                .admin-erp-container input:focus,
+                .admin-erp-container select:focus,
+                .admin-erp-container textarea:focus {
+                    outline: none;
+                    border-color: var(--primary) !important;
+                    box-shadow: 0 0 0 4px var(--primary-light) !important;
+                    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+                }
+
+                /* Buttons: press feedback */
+                .admin-erp-container button {
+                    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+                }
+                .admin-erp-container button:active:not(:disabled) {
+                    transform: scale(0.97);
+                }
+
+                /* Custom scrollbars */
+                .admin-erp-container ::-webkit-scrollbar {
+                    width: 9px;
+                    height: 9px;
+                }
+                .admin-erp-container ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .admin-erp-container ::-webkit-scrollbar-thumb {
+                    background: rgba(15, 143, 106, 0.24);
+                    border-radius: 8px;
+                    border: 2px solid transparent;
+                    background-clip: content-box;
+                }
+                .admin-erp-container ::-webkit-scrollbar-thumb:hover {
+                    background: rgba(15, 143, 106, 0.45);
+                    background-clip: content-box;
+                }
+
+                /* ═══ Floating toast notifications ═══ */
+                .toast-stack {
+                    position: fixed;
+                    top: 84px;
+                    right: 24px;
+                    z-index: 4000;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    max-width: min(420px, calc(100vw - 32px));
+                    pointer-events: none;
+                }
+                .toast-item {
+                    pointer-events: auto;
+                    position: relative;
+                    overflow: hidden;
+                    margin: 0 !important;
+                    box-shadow: var(--shadow-lg) !important;
+                    backdrop-filter: blur(20px) saturate(160%);
+                    -webkit-backdrop-filter: blur(20px) saturate(160%);
+                    animation: toast-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+                @keyframes toast-in {
+                    from { opacity: 0; transform: translateX(40px) scale(0.96); }
+                    to { opacity: 1; transform: translateX(0) scale(1); }
+                }
+                .toast-dismiss {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 6px;
+                    border: none;
+                    background: transparent;
+                    color: inherit;
+                    opacity: 0.6;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                }
+                .toast-dismiss:hover {
+                    opacity: 1;
+                    background: rgba(0, 0, 0, 0.08);
+                }
+                .toast-progress {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    height: 3px;
+                    width: 100%;
+                    background: var(--success);
+                    opacity: 0.55;
+                    transform-origin: left;
+                    animation: toast-countdown 4.5s linear forwards;
+                }
+                @keyframes toast-countdown {
+                    from { transform: scaleX(1); }
+                    to { transform: scaleX(0); }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .admin-content-shell > *:not(.toast-stack),
+                    .toast-item,
+                    .toast-progress {
+                        animation: none !important;
+                    }
+                    .metric-card:hover {
+                        transform: none;
+                    }
+                }
             `}</style>
 
             {/* Sidebar navigation */}
@@ -7070,16 +7237,27 @@ export default function AdminDashboard() {
                             </span>
                         </div>
                     </section>
-                    {errorMessage && (
-                        <div className="alert-premium alert-danger">
-                            <span className="material-icons-outlined">error</span>
-                            <span>{errorMessage}</span>
-                        </div>
-                    )}
-                    {successMessage && (
-                        <div className="alert-premium alert-success">
-                            <span className="material-icons-outlined">check_circle</span>
-                            <span>{successMessage}</span>
+                    {(errorMessage || successMessage) && (
+                        <div className="toast-stack" role="status" aria-live="polite">
+                            {errorMessage && (
+                                <div className="alert-premium alert-danger toast-item">
+                                    <span className="material-icons-outlined">error</span>
+                                    <span style={{ flex: 1 }}>{errorMessage}</span>
+                                    <button className="toast-dismiss" onClick={() => setErrorMessage('')} aria-label="Dismiss error">
+                                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
+                                    </button>
+                                </div>
+                            )}
+                            {successMessage && (
+                                <div className="alert-premium alert-success toast-item">
+                                    <span className="material-icons-outlined">check_circle</span>
+                                    <span style={{ flex: 1 }}>{successMessage}</span>
+                                    <button className="toast-dismiss" onClick={() => setSuccessMessage('')} aria-label="Dismiss notification">
+                                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
+                                    </button>
+                                    <div className="toast-progress" />
+                                </div>
+                            )}
                         </div>
                     )}
 
