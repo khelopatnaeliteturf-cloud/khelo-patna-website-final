@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import AnimatedNumber from './AnimatedNumber';
 
 export default function MembershipTab({ 
     allStudents, 
@@ -261,13 +262,13 @@ export default function MembershipTab({
                 </div>
 
                 {subView === 'list' && !selectedMember && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                         {memberSummaryCards.map(card => (
-                            <div key={card.label} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '14px 16px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '72px' }}>
-                                <span className="material-icons-outlined" style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: card.color }}>{card.icon}</span>
+                            <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': `${card.color}33` }}>
+                                <span className="material-icons-outlined summary-chip__icon" style={{ color: card.color }}>{card.icon}</span>
                                 <div>
-                                    <div style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1, color: 'var(--text-main)' }}>{card.value}</div>
-                                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '5px' }}>{card.label}</div>
+                                    <div className="summary-chip__value"><AnimatedNumber value={card.value} /></div>
+                                    <div className="summary-chip__label">{card.label}</div>
                                 </div>
                             </div>
                         ))}

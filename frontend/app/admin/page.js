@@ -6973,6 +6973,92 @@ export default function AdminDashboard() {
                         transform: none;
                     }
                 }
+
+                /* ═══ Shared premium summary chips (Memberships / Finance) ═══ */
+                .summary-chip {
+                    position: relative;
+                    overflow: hidden;
+                    border: 1px solid var(--border-color);
+                    border-radius: 14px;
+                    padding: 16px 18px;
+                    background: linear-gradient(135deg, rgba(15, 143, 106, 0.06), rgba(255, 255, 255, 0.02) 55%);
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    min-height: 76px;
+                    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+                }
+                .summary-chip::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0 0 auto 0;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, var(--chip-accent, var(--primary)), transparent);
+                    opacity: 0.5;
+                }
+                .summary-chip:hover {
+                    transform: translateY(-3px);
+                    box-shadow: var(--shadow-md);
+                    border-color: rgba(15, 143, 106, 0.3);
+                }
+                .summary-chip:hover .summary-chip__icon {
+                    transform: scale(1.08);
+                    box-shadow: 0 0 18px var(--chip-glow, rgba(15, 143, 106, 0.25));
+                }
+                .summary-chip__icon {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 12px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid var(--border-color);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px !important;
+                    flex-shrink: 0;
+                    transition: transform 0.25s ease, box-shadow 0.25s ease;
+                }
+                .summary-chip__value {
+                    font-size: 1.3rem;
+                    font-weight: 800;
+                    line-height: 1.1;
+                    letter-spacing: -0.02em;
+                    color: var(--text-main);
+                }
+                .summary-chip__label {
+                    font-size: 0.72rem;
+                    color: var(--text-muted);
+                    margin-top: 4px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                }
+
+                /* Finance profile account card */
+                .finance-profile-card {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 16px !important;
+                    background: linear-gradient(120deg, rgba(15, 143, 106, 0.10), rgba(255, 255, 255, 0.02) 45%) !important;
+                    border: 1px solid rgba(15, 143, 106, 0.22) !important;
+                    animation: tab-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
+                .finance-profile-card::before {
+                    content: '';
+                    position: absolute;
+                    top: -60px;
+                    right: -60px;
+                    width: 180px;
+                    height: 180px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, rgba(15, 143, 106, 0.14), transparent 70%);
+                    pointer-events: none;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .summary-chip:hover { transform: none; }
+                    .finance-profile-card { animation: none; }
+                }
             `}</style>
 
             {/* Sidebar navigation */}

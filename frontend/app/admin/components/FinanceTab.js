@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import AnimatedNumber from './AnimatedNumber';
 
 const formatCurrency = (value) => `₹${(Number(value) || 0).toLocaleString('en-IN')}`;
 
@@ -22,12 +23,15 @@ export default function FinanceTab({
     clearInitialStudentId,
     activeSubTab
 }) {
-    const [subTab, setSubTab] = useState(activeSubTab || 'collect'); // 'collect', 'templates', 'ledger', 'pl'
+    // Only 'collect', 'ledger', and 'pl' have rendered views — normalize
+    // anything else (e.g. legacy 'templates') to 'collect' to avoid a blank page.
+    const normalizeSubTab = (t) => (['collect', 'ledger', 'pl'].includes(t) ? t : 'collect');
+    const [subTab, setSubTab] = useState(normalizeSubTab(activeSubTab));
     const students = Array.isArray(allStudents) ? allStudents : [];
 
     useEffect(() => {
         if (activeSubTab) {
-            setSubTab(activeSubTab);
+            setSubTab(normalizeSubTab(activeSubTab));
         }
     }, [activeSubTab]);
 
@@ -413,13 +417,13 @@ export default function FinanceTab({
                     </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
                     {financeSummaryCards.map(card => (
-                        <div key={card.label} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '14px 16px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '72px' }}>
-                            <span className="material-icons-outlined" style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: card.color }}>{card.icon}</span>
+                        <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': `${card.color}33` }}>
+                            <span className="material-icons-outlined summary-chip__icon" style={{ color: card.color }}>{card.icon}</span>
                             <div>
-                                <div style={{ fontSize: '1.05rem', fontWeight: 800, lineHeight: 1.1, color: 'var(--text-main)' }}>{card.value}</div>
-                                <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '5px' }}>{card.label}</div>
+                                <div className="summary-chip__value"><AnimatedNumber value={card.value} /></div>
+                                <div className="summary-chip__label">{card.label}</div>
                             </div>
                         </div>
                     ))}
@@ -466,8 +470,8 @@ export default function FinanceTab({
 
                     {feeStudentData && (
                         <>
-                            <div className="card-premium" style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
-                                <div style={{ position: 'relative', width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--success-text)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div className="card-premium finance-profile-card" style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                <div style={{ position: 'relative', width: '72px', height: '72px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--success-text)', boxShadow: '0 0 20px rgba(15, 143, 106, 0.25)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     {feeStudentData.documents?.photoUrl || feeStudentData.photoUrl ? (
                                         <img src={feeStudentData.documents?.photoUrl || feeStudentData.photoUrl} alt={feeStudentData.name || 'Student'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
