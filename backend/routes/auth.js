@@ -33,6 +33,18 @@ function getJwtSecret() {
     return JWT_SECRET;
 }
 
+// 0. Bootstrap status (Public) — tells the login page whether the very first
+// admin account still needs to be created. Reveals nothing beyond a boolean.
+router.get('/auth/bootstrap-status', async (req, res) => {
+    try {
+        const staffCount = await Staff.countDocuments();
+        res.json({ bootstrapNeeded: staffCount === 0 });
+    } catch (err) {
+        console.error('Error checking bootstrap status:', err);
+        res.status(500).json({ error: 'Server error checking bootstrap status.' });
+    }
+});
+
 // 1. Staff Login (Public)
 router.post('/auth/login', authLimiter, async (req, res) => {
     const { username, password } = req.body;

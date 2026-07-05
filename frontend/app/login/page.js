@@ -7,6 +7,22 @@ import { getBackendUrl } from '../lib/backendUrl';
 
 const BACKEND_URL = getBackendUrl();
 
+// Parses a fetch response as JSON, but converts HTML/error-page responses
+// (backend down, proxy 502, etc.) into a human-readable error instead of
+// the cryptic "Unexpected token '<' ... is not valid JSON".
+async function parseJsonSafe(res) {
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch {
+        throw new Error(
+            res.ok
+                ? 'Server returned an unexpected response. Please try again.'
+                : 'Cannot reach the backend server right now. Please wait a few seconds and try again.'
+        );
+    }
+}
+
 export default function LoginPage() {
     const router = useRouter();
 
@@ -30,15 +46,19 @@ export default function LoginPage() {
     const [firstTimeBootstrap, setFirstTimeBootstrap] = useState(false);
     const [bootstrapRole, setBootstrapRole] = useState('SUPER_ADMIN');
     
-    // Check if staff users count is 0 to prompt bootstrap first Admin
+    // Ask the backend whether the very first admin still needs to be created.
+    // Auto-opens bootstrap mode on a fresh database, and forces normal login
+    // mode when accounts already exist (bootstrap would be rejected anyway).
     const checkBootstrapNeeded = async () => {
         try {
-            // Note: We can quickly fetch if login fail or make a custom check. 
-            // In our route we know `/auth/register` allows registration if staffCount === 0.
-            // Let's do a quiet check or attempt register to see if we can trigger bootstrap prompt.
-            // Actually, we can just allow toggling "First Admin Setup" if the user has no accounts.
+            const res = await fetch(`${BACKEND_URL}/api/auth/bootstrap-status`);
+            const data = await parseJsonSafe(res);
+            if (res.ok) {
+                setFirstTimeBootstrap(Boolean(data.bootstrapNeeded));
+            }
         } catch (e) {
-            console.error(e);
+            // Backend unreachable — leave the normal login form visible.
+            console.error('Bootstrap status check failed:', e);
         }
     };
 
@@ -72,7 +92,7 @@ export default function LoginPage() {
                 credentials: 'include',
                 body: JSON.stringify({ username, password })
             });
-            const data = await res.json();
+            const data = await parseJsonSafe(res);
 
             if (!res.ok) {
                 // If it failed, let's check if the error is due to zero staff records (invalid credentials fallback)
@@ -106,7 +126,7 @@ export default function LoginPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password, role: bootstrapRole })
             });
-            const data = await res.json();
+            const data = await parseJsonSafe(res);
 
             if (!res.ok) {
                 throw new Error(data.error || 'Failed to bootstrap account.');
@@ -119,7 +139,7 @@ export default function LoginPage() {
                 credentials: 'include',
                 body: JSON.stringify({ username, password })
             });
-            const loginData = await loginRes.json();
+            const loginData = await parseJsonSafe(loginRes);
             if (!loginRes.ok) {
                 throw new Error(loginData.error || 'Bootstrap account created, but login failed.');
             }
