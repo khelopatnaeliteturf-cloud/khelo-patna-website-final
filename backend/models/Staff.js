@@ -11,6 +11,8 @@ const StaffSchema = new mongoose.Schema({
         enum: ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'FINANCE_MANAGER', 'RECEPTIONIST', 'COACH', 'GROUND_MANAGER', 'HR_MANAGER', 'PARENT', 'MEMBER'], 
         required: true 
     },
+    permissions: { type: Array, default: [] },
+    status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -74,6 +74,10 @@ router.post('/auth/login', authLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Invalid username or password.' });
         }
 
+        if (staff.status === 'INACTIVE') {
+            return res.status(403).json({ error: 'Your account has been deactivated. Please contact your system administrator.' });
+        }
+
         const isMatch = await staff.comparePassword(password);
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid username or password.' });
@@ -223,6 +227,49 @@ router.get('/auth/me', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error('Error fetching staff profile:', err);
         res.status(500).json({ error: 'Server error loading profile.' });
+    }
+});
+
+// 5. Update staff permissions, role, and status (Protected)
+router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'HR_MANAGER'), async (req, res) => {
+    try {
+        const { role, permissions, status } = req.body;
+        const staff = await Staff.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!staff) {
+            return res.status(404).json({ error: 'Staff member not found.' });
+        }
+        
+        // Prevent self-demotion or self-deactivation
+        if (req.user.id === req.params.id) {
+            if (role && role !== staff.role) {
+                return res.status(403).json({ error: 'You cannot change your own role.' });
+            }
+            if (status && status !== staff.status) {
+                return res.status(403).json({ error: 'You cannot change your own active status.' });
+            }
+        }
+
+        if (role) {
+            const allowedRoles = ASSIGNABLE_ROLES[req.user.role] || [];
+            if (!allowedRoles.includes(role) && req.user.role !== 'SUPER_ADMIN') {
+                return res.status(403).json({ error: `Your role (${req.user.role}) is not permitted to assign the ${role} role.` });
+            }
+            staff.role = role;
+        }
+
+        if (permissions !== undefined) {
+            staff.permissions = permissions;
+        }
+
+        if (status) {
+            staff.status = status;
+        }
+
+        await staff.save();
+        res.json({ message: 'Staff member access controls updated successfully.', staff });
+    } catch (err) {
+        console.error('Error updating staff access control:', err);
+        res.status(500).json({ error: 'Server error updating staff permissions.' });
     }
 });
 

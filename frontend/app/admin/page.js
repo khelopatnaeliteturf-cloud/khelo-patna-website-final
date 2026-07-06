@@ -15,6 +15,7 @@ import AuditLogsTab from './components/AuditLogsTab';
 import IntegrationsTab from './components/IntegrationsTab';
 import CustomersTab from './components/CustomersTab';
 import AnimatedNumber from './components/AnimatedNumber';
+import SettingsTab from './components/SettingsTab';
 import AdmissionStudio from './components/AdmissionStudio';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
@@ -58,6 +59,7 @@ export default function AdminDashboard() {
     // Auth States
     const [token, setToken] = useState('');
     const [role, setRole] = useState('');
+    const [permissions, setPermissions] = useState([]);
     const [username, setUsername] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
     const [theme, setTheme] = useState('light');
@@ -481,15 +483,22 @@ export default function AdminDashboard() {
 
                 const verifiedRole = profile.role;
                 const verifiedUsername = profile.username;
+                const verifiedPermissions = profile.permissions || [];
                 setToken(storedToken || '');
                 setRole(verifiedRole);
                 setUsername(verifiedUsername);
+                setPermissions(verifiedPermissions);
                 localStorage.removeItem('token');
                 localStorage.setItem('user_role', verifiedRole);
                 localStorage.setItem('username', verifiedUsername);
                 setAuthenticated(true);
 
-                const defaultTab = getDefaultTabForRole(verifiedRole);
+                let defaultTab = getDefaultTabForRole(verifiedRole);
+                if (verifiedRole !== 'SUPER_ADMIN' && verifiedPermissions.length > 0) {
+                    if (!verifiedPermissions.includes(defaultTab)) {
+                        defaultTab = verifiedPermissions[0];
+                    }
+                }
                 setActiveTab(defaultTab);
                 setActiveSidebarKey(defaultTab);
             } catch (err) {
@@ -503,6 +512,41 @@ export default function AdminDashboard() {
 
         verifySession();
     }, []);
+
+    const hasTabAccess = (tabId) => {
+        if (!role) return false;
+        if (role === 'SUPER_ADMIN') return true;
+        
+        if (permissions && permissions.length > 0) {
+            return permissions.includes(tabId);
+        }
+        
+        if (tabId === 'dashboard') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'FINANCE_MANAGER', 'HR_MANAGER'].includes(role);
+        }
+        if (tabId === 'turf-management') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'GROUND_MANAGER'].includes(role);
+        }
+        if (tabId === 'admission-studio' || tabId === 'membership-management' || tabId === 'session-management' || tabId === 'batch-management' || tabId === 'coach-management' || tabId === 'attendance-management') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST', 'COACH', 'FINANCE_MANAGER'].includes(role);
+        }
+        if (tabId === 'membership-billing' || tabId === 'finance') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'FINANCE_MANAGER', 'RECEPTIONIST'].includes(role);
+        }
+        if (tabId === 'inventory-management') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'GROUND_MANAGER'].includes(role);
+        }
+        if (tabId === 'hr') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'HR_MANAGER'].includes(role);
+        }
+        if (tabId === 'communication' || tabId === 'customers') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST', 'HR_MANAGER'].includes(role);
+        }
+        if (tabId === 'website' || tabId === 'integrations' || tabId === 'settings' || tabId === 'audit-logs') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER'].includes(role);
+        }
+        return false;
+    };
 
     // --- FINANCE BACKEND SYNC ---
     // Fee data is persisted per-tenant in MongoDB (/api/finance/config).
@@ -7203,123 +7247,164 @@ export default function AdminDashboard() {
                 </div>
 
                 <nav className="sidebar-nav" style={{ paddingLeft: '18px', paddingRight: '18px' }}>
-                    <div className="sidebar-section-label">Command</div>
-                    {[
-                        { id: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
-                        { id: 'turf-management', label: 'Turf Bookings', icon: 'sports_soccer', key: 'bookings' },
-                        { id: 'turf-management', label: 'Turf Management', icon: 'settings_suggest', key: 'calendar' }
-                    ].map(item => (
-                        <button 
-                            key={item.key || item.id}
-                            className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                            onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
-                            title={sidebarCollapsed ? item.label : ''}
-                        >
-                            {activeSidebarKey === (item.key || item.id) && (
-                                <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
-                            )}
-                            <div className="sidebar-icon-wrap">
-                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
-                            </div>
-                            <span className="sidebar-link-label">{item.label}</span>
-                        </button>
-                    ))}
+                    {/* COMMAND SECTION */}
+                    {(() => {
+                        const items = [
+                            { id: 'dashboard', label: 'Dashboard', icon: 'grid_view' },
+                            { id: 'turf-management', label: 'Turf Bookings', icon: 'sports_soccer', key: 'bookings' },
+                            { id: 'turf-management', label: 'Turf Management', icon: 'settings_suggest', key: 'calendar' }
+                        ].filter(item => hasTabAccess(item.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <>
+                                <div className="sidebar-section-label">Command</div>
+                                {items.map(item => (
+                                    <button 
+                                        key={item.key || item.id}
+                                        className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
+                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        title={sidebarCollapsed ? item.label : ''}
+                                    >
+                                        {activeSidebarKey === (item.key || item.id) && (
+                                            <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
+                                        )}
+                                        <div className="sidebar-icon-wrap">
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
+                                        </div>
+                                        <span className="sidebar-link-label">{item.label}</span>
+                                    </button>
+                                ))}
+                            </>
+                        );
+                    })()}
 
                     {/* ACADEMY SECTION */}
-                    <div className="sidebar-section-label">Academy</div>
-                    {[
-                        { id: 'admission-studio', label: 'Admissions', icon: 'how_to_reg' },
-                        { id: 'membership-management', label: 'Memberships', icon: 'people' },
-                        { id: 'session-management', label: 'Sessions', icon: 'schedule' },
-                        { id: 'batch-management', label: 'Batches', icon: 'groups' },
-                        { id: 'coach-management', label: 'Coaches', icon: 'sports' },
-                        { id: 'attendance-management', label: 'Attendance', icon: 'fact_check' }
-                    ].map(item => (
-                        <button 
-                            key={item.key || item.id}
-                            className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                            onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
-                            title={sidebarCollapsed ? item.label : ''}
-                        >
-                            {activeSidebarKey === (item.key || item.id) && (
-                                <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
-                            )}
-                            <div className="sidebar-icon-wrap">
-                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
-                            </div>
-                            <span className="sidebar-link-label">{item.label}</span>
-                        </button>
-                    ))}
+                    {(() => {
+                        const items = [
+                            { id: 'admission-studio', label: 'Admissions', icon: 'how_to_reg' },
+                            { id: 'membership-management', label: 'Memberships', icon: 'people' },
+                            { id: 'session-management', label: 'Sessions', icon: 'schedule' },
+                            { id: 'batch-management', label: 'Batches', icon: 'groups' },
+                            { id: 'coach-management', label: 'Coaches', icon: 'sports' },
+                            { id: 'attendance-management', label: 'Attendance', icon: 'fact_check' }
+                        ].filter(item => hasTabAccess(item.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <>
+                                <div className="sidebar-section-label">Academy</div>
+                                {items.map(item => (
+                                    <button 
+                                        key={item.key || item.id}
+                                        className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
+                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        title={sidebarCollapsed ? item.label : ''}
+                                    >
+                                        {activeSidebarKey === (item.key || item.id) && (
+                                            <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
+                                        )}
+                                        <div className="sidebar-icon-wrap">
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
+                                        </div>
+                                        <span className="sidebar-link-label">{item.label}</span>
+                                    </button>
+                                ))}
+                            </>
+                        );
+                    })()}
 
                     {/* FINANCE SECTION */}
-                    <div className="sidebar-section-label">Finance</div>
-                    {[
-                        { id: 'membership-billing', label: 'Billing', icon: 'receipt_long' },
-                        { id: 'finance', label: 'Accounts', icon: 'account_balance_wallet' }
-                    ].map(item => (
-                        <button 
-                            key={item.key || item.id}
-                            className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                            onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
-                            title={sidebarCollapsed ? item.label : ''}
-                        >
-                            {activeSidebarKey === (item.key || item.id) && (
-                                <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
-                            )}
-                            <div className="sidebar-icon-wrap">
-                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
-                            </div>
-                            <span className="sidebar-link-label">{item.label}</span>
-                        </button>
-                    ))}
+                    {(() => {
+                        const items = [
+                            { id: 'membership-billing', label: 'Billing', icon: 'receipt_long' },
+                            { id: 'finance', label: 'Accounts', icon: 'account_balance_wallet' }
+                        ].filter(item => hasTabAccess(item.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <>
+                                <div className="sidebar-section-label">Finance</div>
+                                {items.map(item => (
+                                    <button 
+                                        key={item.key || item.id}
+                                        className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
+                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        title={sidebarCollapsed ? item.label : ''}
+                                    >
+                                        {activeSidebarKey === (item.key || item.id) && (
+                                            <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
+                                        )}
+                                        <div className="sidebar-icon-wrap">
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
+                                        </div>
+                                        <span className="sidebar-link-label">{item.label}</span>
+                                    </button>
+                                ))}
+                            </>
+                        );
+                    })()}
 
                     {/* OPERATIONS SECTION */}
-                    <div className="sidebar-section-label">Operations</div>
-                    {[
-                        { id: 'inventory-management', label: 'Inventory', icon: 'inventory_2' },
-                        { id: 'hr', label: 'Staff', icon: 'badge' },
-                        { id: 'communication', label: 'Messages', icon: 'chat' },
-                        { id: 'customers', label: 'Customers', icon: 'people' }
-                    ].map(item => (
-                        <button 
-                            key={item.key || item.id}
-                            className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                            onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
-                            title={sidebarCollapsed ? item.label : ''}
-                        >
-                            {activeSidebarKey === (item.key || item.id) && (
-                                <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
-                            )}
-                            <div className="sidebar-icon-wrap">
-                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
-                            </div>
-                            <span className="sidebar-link-label">{item.label}</span>
-                        </button>
-                    ))}
+                    {(() => {
+                        const items = [
+                            { id: 'inventory-management', label: 'Inventory', icon: 'inventory_2' },
+                            { id: 'hr', label: 'Staff', icon: 'badge' },
+                            { id: 'communication', label: 'Messages', icon: 'chat' },
+                            { id: 'customers', label: 'Customers', icon: 'people' }
+                        ].filter(item => hasTabAccess(item.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <>
+                                <div className="sidebar-section-label">Operations</div>
+                                {items.map(item => (
+                                    <button 
+                                        key={item.key || item.id}
+                                        className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
+                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        title={sidebarCollapsed ? item.label : ''}
+                                    >
+                                        {activeSidebarKey === (item.key || item.id) && (
+                                            <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
+                                        )}
+                                        <div className="sidebar-icon-wrap">
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
+                                        </div>
+                                        <span className="sidebar-link-label">{item.label}</span>
+                                    </button>
+                                ))}
+                            </>
+                        );
+                    })()}
 
                     {/* SYSTEM SECTION */}
-                    <div className="sidebar-section-label">System</div>
-                    {[
-                        { id: 'website', label: 'Website', icon: 'web' },
-                        { id: 'integrations', label: 'Integrations', icon: 'hub' },
-                        { id: 'settings', label: 'Settings', icon: 'settings' },
-                        { id: 'audit-logs', label: 'Audit Logs', icon: 'history' }
-                    ].map(item => (
-                        <button 
-                            key={item.key || item.id}
-                            className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                            onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
-                            title={sidebarCollapsed ? item.label : ''}
-                        >
-                            {activeSidebarKey === (item.key || item.id) && (
-                                <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
-                            )}
-                            <div className="sidebar-icon-wrap">
-                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
-                            </div>
-                            <span className="sidebar-link-label">{item.label}</span>
-                        </button>
-                    ))}
+                    {(() => {
+                        const items = [
+                            { id: 'website', label: 'Website', icon: 'web' },
+                            { id: 'integrations', label: 'Integrations', icon: 'hub' },
+                            { id: 'settings', label: 'Settings', icon: 'settings' },
+                            { id: 'audit-logs', label: 'Audit Logs', icon: 'history' }
+                        ].filter(item => hasTabAccess(item.id));
+                        if (items.length === 0) return null;
+                        return (
+                            <>
+                                <div className="sidebar-section-label">System</div>
+                                {items.map(item => (
+                                    <button 
+                                        key={item.key || item.id}
+                                        className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
+                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        title={sidebarCollapsed ? item.label : ''}
+                                    >
+                                        {activeSidebarKey === (item.key || item.id) && (
+                                            <div className="active-indicator" style={{ left: '-10px', borderRadius: '4px' }} />
+                                        )}
+                                        <div className="sidebar-icon-wrap">
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
+                                        </div>
+                                        <span className="sidebar-link-label">{item.label}</span>
+                                    </button>
+                                ))}
+                            </>
+                        );
+                    })()}
                 </nav>
 
                 {/* Venue Card - hidden when collapsed */}
@@ -7576,6 +7661,14 @@ export default function AdminDashboard() {
                         <CustomersTab 
                             backendUrl={BACKEND_URL}
                             getHeaders={getHeaders}
+                        />
+                    )}
+                    {activeTab === 'settings' && hasTabAccess('settings') && (
+                        <SettingsTab 
+                            backendUrl={BACKEND_URL}
+                            getHeaders={getHeaders}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
                         />
                     )}
                     {activeTab === 'audit-logs' && (
