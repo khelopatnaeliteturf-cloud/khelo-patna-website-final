@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 
 const ChatSessionSchema = new mongoose.Schema({
     phone: { type: String, required: true, unique: true },

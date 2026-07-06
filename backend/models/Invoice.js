@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 
 const InvoiceSchema = new mongoose.Schema({
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },

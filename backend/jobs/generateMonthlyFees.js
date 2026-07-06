@@ -6,15 +6,13 @@
  */
 require('dotenv').config();
 
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 const Tenant = require('../models/Tenant');
 const { generateMonthlyFeesForTenant } = require('../services/billing');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/khelopatna';
-
 async function main() {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    await mongoose.connect();
+    console.log('Connected to Database');
 
     const tenants = await Tenant.find({ isActive: { $ne: false } });
     let totalCreated = 0;

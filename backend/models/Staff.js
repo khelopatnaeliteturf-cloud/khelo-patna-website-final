@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 const bcrypt = require('bcryptjs');
 
 const StaffSchema = new mongoose.Schema({

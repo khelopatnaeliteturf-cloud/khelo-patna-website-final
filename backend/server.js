@@ -7,7 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const mongoose = require('mongoose');
+const mongoose = require('./lib/mongoose-pg-bridge');
 const dotenv = require('dotenv');
 const path = require('path');
 
@@ -89,11 +89,9 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// MongoDB Database Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/khelopatna';
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('MongoDB successfully connected.'))
-    .catch(err => console.error('MongoDB connection error:', err));
+// Database Connection
+mongoose.connect()
+    .catch(err => console.error('Database connection error:', err));
 
 // WhatsApp Engine Startup
 const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEnabled } = require('./services/whatsapp');

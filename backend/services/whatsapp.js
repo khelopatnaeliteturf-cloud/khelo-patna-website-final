@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+let makeWASocket, useMultiFileAuthState, DisconnectReason;
 const qrcode = require('qrcode');
 const pino = require('pino');
 const path = require('path');
@@ -55,6 +55,11 @@ async function initWhatsApp() {
     connectionStatus = 'CONNECTING';
 
     try {
+        const baileys = await import('@whiskeysockets/baileys');
+        makeWASocket = baileys.default;
+        useMultiFileAuthState = baileys.useMultiFileAuthState;
+        DisconnectReason = baileys.DisconnectReason;
+
         const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
 
         sock = makeWASocket({

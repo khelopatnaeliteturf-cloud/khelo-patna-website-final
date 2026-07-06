@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 
 /**
  * Per-tenant finance configuration and records.
