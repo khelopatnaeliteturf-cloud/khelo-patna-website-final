@@ -229,16 +229,16 @@ export default function MembershipTab({
 
             {/* Sub View: Member List Grid */}
             {subView === 'list' && !selectedMember && (
-                <div className="card-premium animate-fade-in" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="card-premium animate-fade-in" style={{ padding: '24px', border: '1px solid var(--border-color)' }}>
                     
-                    <div className="d-flex flex-wrap align-items-center justify-content-between gap-4 mb-4 pb-3 border-bottom border-secondary-subtle" style={{ borderColor: 'rgba(255,255,255,0.03) !important' }}>
+                    <div className="d-flex flex-wrap align-items-center justify-content-between gap-4 mb-4 pb-3 border-bottom border-secondary-subtle" style={{ borderColor: 'var(--border-color) !important' }}>
                         <div style={{ position: 'relative', minWidth: '320px', flex: 1 }}>
-                            <span className="material-icons-outlined" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', fontSize: '1.15rem', pointerEvents: 'none' }}>search</span>
+                            <span className="material-icons-outlined" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '1.15rem', pointerEvents: 'none' }}>search</span>
                             <input 
                                 type="text" 
                                 placeholder="Search by ID, name, or contact number..." 
                                 className="input-premium w-100"
-                                style={{ paddingLeft: '46px', borderRadius: '12px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)' }}
+                                style={{ paddingLeft: '46px', borderRadius: '12px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
