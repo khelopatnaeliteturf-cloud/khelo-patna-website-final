@@ -24,12 +24,14 @@ function getPool() {
 // Convert camelCase string to snake_case
 function toSnake(str) {
     if (str === '_id') return 'id';
+    if (str === 'password') return 'password_hash';
     return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
 // Convert snake_case string to camelCase
 function toCamel(str) {
     if (str === 'id') return '_id';
+    if (str === 'password_hash') return 'password';
     return str.replace(/([-_][a-z])/g, group =>
         group.toUpperCase().replace('-', '').replace('_', '')
     );
