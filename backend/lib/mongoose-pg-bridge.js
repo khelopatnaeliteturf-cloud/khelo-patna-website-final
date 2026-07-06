@@ -353,7 +353,12 @@ class Document {
 
         for (const k of keys) {
             const col = toSnake(k);
-            const val = toUuid(this[k]);
+            let val = this[k];
+            if (val && typeof val === 'object' && !(val instanceof Date)) {
+                val = JSON.stringify(val);
+            } else {
+                val = toUuid(val);
+            }
             insertCols.push(col);
             insertVals.push(val);
             setClauses.push(`${col} = $${pCounter}`);
@@ -482,7 +487,12 @@ function createModel(modelName) {
             for (const k of Object.keys(updateObj)) {
                 if (k.startsWith('$')) continue;
                 const col = toSnake(k);
-                const val = toUuid(updateObj[k]);
+                let val = updateObj[k];
+                if (val && typeof val === 'object' && !(val instanceof Date)) {
+                    val = JSON.stringify(val);
+                } else {
+                    val = toUuid(val);
+                }
                 setClauses.push(`${col} = $${pCounter}`);
                 updateValues.push(val);
                 pCounter++;

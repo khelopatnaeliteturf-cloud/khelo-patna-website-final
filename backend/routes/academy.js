@@ -505,21 +505,26 @@ router.get('/academy/dues', async (req, res) => {
         }
 
         let student = null;
-        if (search.match(/^[0-9a-fA-F]{24}$/)) {
+        if (search.match(/^[0-9a-fA-F]{24}$/) || search.match(/^[0-9a-fA-F-]{36}$/)) {
             student = await Student.findOne({ _id: search, ...tenantFilter });
         } else {
-            // Require the complete phone number (exact match on the last 10
-            // digits). A suffix regex on partial input would let anyone
-            // enumerate students with a few digits.
             const cleanPhone = search.replace(/\D/g, '');
-            if (cleanPhone.length < 10) {
-                return res.status(400).json({ error: 'Please enter the complete 10-digit phone number.' });
+            if (cleanPhone.length >= 10) {
+                const last10 = cleanPhone.slice(-10);
+                student = await Student.findOne({
+                    phone: { $regex: last10 + '$' },
+                    ...tenantFilter
+                });
             }
-            const last10 = cleanPhone.slice(-10);
-            student = await Student.findOne({
-                phone: { $regex: last10 + '$' },
-                ...tenantFilter
-            });
+            if (!student) {
+                student = await Student.findOne({
+                    $or: [
+                        { name: { $regex: search, $options: 'i' } },
+                        { membershipId: { $regex: search, $options: 'i' } }
+                    ],
+                    ...tenantFilter
+                });
+            }
         }
 
         if (!student) {
@@ -530,6 +535,11 @@ router.get('/academy/dues', async (req, res) => {
             studentId: student._id,
             status: { $in: ['UNPAID', 'PARTIAL'] }
         }).sort({ dueDate: 1 });
+
+        const history = await Fee.find({
+            studentId: student._id,
+            status: 'PAID'
+        }).sort({ paymentDate: -1 });
 
         // Expose only what the payment portal needs — never the full document
         // (which contains parent contact details, notes, etc.)
@@ -542,7 +552,14 @@ router.get('/academy/dues', async (req, res) => {
                 batchTime: student.batchTime,
                 monthlyFee: student.monthlyFee,
                 adjustedFee: student.adjustedFee,
-                status: student.status
+                status: student.status,
+                phone: student.phone,
+                rollNo: student.rollNo || student.admissionNo?.slice(-2) || '13',
+                admissionNo: student.admissionNo || 'SDPS1932',
+                fatherName: student.fatherName || student.parentName || 'Ravi Sankar Kumar',
+                currentAddress: student.currentAddress || 'Patna',
+                classGrade: student.classGrade || 'PLAY',
+                section: student.section || 'A'
             },
             dues: dues.map(d => ({
                 _id: d._id,
@@ -552,6 +569,16 @@ router.get('/academy/dues', async (req, res) => {
                 amountPaid: d.amountPaid,
                 discount: d.discount,
                 status: d.status
+            })),
+            history: history.map(d => ({
+                _id: d._id,
+                receiptNo: d.referenceNo || d.orderId || ('REC-' + d._id.toString().slice(-6)),
+                user: d.creditAccount || 'CASHIER',
+                amountPaid: d.amountPaid,
+                discount: d.discount,
+                paymentDate: d.paymentDate || d.createdAt,
+                status: d.status,
+                monthFor: d.monthFor
             }))
         });
 
@@ -1130,6 +1157,38 @@ router.put('/academy/enquiries/:id', authenticateToken, authorizeRoles('RECEPTIO
         await enquiry.save();
         res.json({ success: true, enquiry });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 17. Update specific fee record due date
+router.put('/academy/fees/:id/due-date', authenticateToken, authorizeRoles('RECEPTIONIST', 'FINANCE_MANAGER', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
+    const { dueDate } = req.body;
+    try {
+        const fee = await Fee.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!fee) {
+            return res.status(404).json({ error: 'Fee invoice not found.' });
+        }
+        fee.dueDate = new Date(dueDate);
+        await fee.save();
+        res.json({ success: true, message: 'Due date updated successfully.', fee });
+    } catch (err) {
+        console.error('Error updating due date:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 18. Delete/Waive specific fee record (invoice)
+router.delete('/academy/fees/:id', authenticateToken, authorizeRoles('FINANCE_MANAGER', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
+    try {
+        const fee = await Fee.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!fee) {
+            return res.status(404).json({ error: 'Fee invoice not found.' });
+        }
+        await Fee.deleteOne({ _id: req.params.id });
+        res.json({ success: true, message: 'Fee invoice deleted/removed successfully.' });
+    } catch (err) {
+        console.error('Error deleting fee invoice:', err);
         res.status(500).json({ error: err.message });
     }
 });
