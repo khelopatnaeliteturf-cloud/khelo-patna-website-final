@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 const router = express.Router();
 const Booking = require('../models/Booking');
 const Fee = require('../models/Fee');

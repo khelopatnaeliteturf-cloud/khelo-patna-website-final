@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose-pg-bridge');
 const Booking = require('../models/Booking');
 const Student = require('../models/Student');
 const Fee = require('../models/Fee');
