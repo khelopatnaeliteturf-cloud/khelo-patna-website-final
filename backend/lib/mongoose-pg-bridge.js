@@ -88,10 +88,10 @@ function getTableName(modelName) {
 }
 
 // Parser that takes a MongoDB query object and produces SQL clauses + parameterized values
-function parseQuery(queryObj) {
+function parseQuery(queryObj, isSubQuery = false, startParamIndex = 1) {
     const conditions = [];
     const values = [];
-    let paramCounter = 1;
+    let paramCounter = startParamIndex;
 
     if (!queryObj || typeof queryObj !== 'object') {
         return { whereClause: '', values: [] };
@@ -150,20 +150,11 @@ function parseQuery(queryObj) {
         if (key === '$or' && Array.isArray(queryObj.$or)) {
             const orConditions = [];
             for (const subQuery of queryObj.$or) {
-                const subParsed = parseQuery(subQuery);
+                const subParsed = parseQuery(subQuery, true, paramCounter);
                 if (subParsed.whereClause) {
-                    // Re-index sub-parameters to match our parent counter
-                    let sql = subParsed.whereClause;
-                    const subVals = subParsed.values;
-                    for (let i = 0; i < subVals.length; i++) {
-                        const searchStr = `$${i + 1}`;
-                        const replacementStr = `$${paramCounter}`;
-                        // Replace occurrences of this parameter specifically
-                        sql = sql.split(searchStr).join(replacementStr);
-                        values.push(subVals[i]);
-                        paramCounter++;
-                    }
-                    orConditions.push(`(${sql})`);
+                    orConditions.push(`(${subParsed.whereClause})`);
+                    values.push(...subParsed.values);
+                    paramCounter += subParsed.values.length;
                 }
             }
             if (orConditions.length > 0) {
@@ -174,7 +165,7 @@ function parseQuery(queryObj) {
         }
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause = conditions.length > 0 ? (isSubQuery ? conditions.join(' AND ') : `WHERE ${conditions.join(' AND ')}`) : '';
     return { whereClause, values };
 }
 
@@ -460,6 +451,30 @@ function createModel(modelName) {
             const sql = `DELETE FROM ${tableName} ${whereClause}`;
             const res = await client.query(sql, values);
             return { deletedCount: res.rowCount };
+        },
+
+        async updateMany(query, update, options = {}) {
+            const client = getPool();
+            const updateObj = update.$set || update;
+            const setClauses = [];
+            const updateValues = [];
+            let pCounter = 1;
+
+            for (const k of Object.keys(updateObj)) {
+                if (k.startsWith('$')) continue;
+                const col = toSnake(k);
+                const val = toUuid(updateObj[k]);
+                setClauses.push(`${col} = $${pCounter}`);
+                updateValues.push(val);
+                pCounter++;
+            }
+
+            const parsedQuery = parseQuery(query, false, pCounter);
+            const sql = `UPDATE ${tableName} SET ${setClauses.join(', ')} ${parsedQuery.whereClause}`;
+            const finalValues = [...updateValues, ...parsedQuery.values];
+
+            const res = await client.query(sql, finalValues);
+            return { matchedCount: res.rowCount, modifiedCount: res.rowCount };
         },
 
         async findByIdAndDelete(id) {
