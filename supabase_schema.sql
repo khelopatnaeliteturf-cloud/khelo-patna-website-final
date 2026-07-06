@@ -50,7 +50,9 @@ CREATE TABLE turf_settings (
     branch_id UUID NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
     cricket_base_rate NUMERIC(10, 2) DEFAULT 1200.00,
     football_base_rate NUMERIC(10, 2) DEFAULT 1500.00,
+    nets_base_rate NUMERIC(10, 2) DEFAULT 800.00,
     blackout_hours JSONB DEFAULT '{"start": 15, "end": 18}'::jsonb, -- 3 PM - 6 PM
+    weekly_rates JSONB DEFAULT '{"cricket": [1000, 1000, 1000, 1000, 1000, 1000, 1000], "football": [1200, 1200, 1200, 1200, 1200, 1200, 1200], "nets": [800, 800, 800, 800, 800, 800, 800]}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -324,6 +326,23 @@ CREATE TABLE check_in_logs (
     check_out_time TIMESTAMP WITH TIME ZONE
 );
 
+-- 20. Finance Configs Table
+CREATE TABLE finance_configs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL UNIQUE REFERENCES tenants(id) ON DELETE CASCADE,
+    fee_terms JSONB DEFAULT '[]'::jsonb,
+    fee_types JSONB DEFAULT '[]'::jsonb,
+    fee_rebates JSONB DEFAULT '[]'::jsonb,
+    fee_groups JSONB DEFAULT '[]'::jsonb,
+    student_fee_groups JSONB DEFAULT '{}'::jsonb,
+    student_back_dues JSONB DEFAULT '{}'::jsonb,
+    fee_payments JSONB DEFAULT '[]'::jsonb,
+    adjustment_requests JSONB DEFAULT '[]'::jsonb,
+    fee_reminders_log JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ==========================================
 -- Database Indexes for Performance
 -- ==========================================
@@ -342,6 +361,7 @@ CREATE INDEX idx_enquiries_tenant ON enquiries (tenant_id);
 CREATE INDEX idx_inventory_tenant ON inventory_items (tenant_id);
 CREATE INDEX idx_pos_tenant ON pos_sales (tenant_id);
 CREATE INDEX idx_checkin_tenant ON check_in_logs (tenant_id);
+CREATE INDEX idx_finance_tenant ON finance_configs (tenant_id);
 
 -- Operational search and date indexes
 CREATE INDEX idx_bookings_date ON bookings (tenant_id, date);
@@ -370,3 +390,4 @@ CREATE TRIGGER update_coaches_modtime BEFORE UPDATE ON coaches FOR EACH ROW EXEC
 CREATE TRIGGER update_students_modtime BEFORE UPDATE ON students FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_batches_modtime BEFORE UPDATE ON batches FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_inventory_modtime BEFORE UPDATE ON inventory_items FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+CREATE TRIGGER update_finance_modtime BEFORE UPDATE ON finance_configs FOR EACH ROW EXECUTE FUNCTION update_modified_column();
