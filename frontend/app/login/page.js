@@ -259,7 +259,7 @@ export default function LoginPage() {
                         letterSpacing: '1.5px',
                         margin: 0,
                     }}>
-                        {firstTimeBootstrap ? '👑 First Admin Setup' : '🔐 Staff Dashboard Login'}
+                        {firstTimeBootstrap ? 'First Admin Setup' : 'Staff Dashboard Login'}
                     </p>
                 </div>
 
@@ -388,32 +388,8 @@ export default function LoginPage() {
                             boxShadow: loading ? 'none' : '0 0 20px rgba(57,255,20,0.08), 0 4px 16px rgba(0,0,0,0.3)',
                             marginBottom: '16px',
                         }}>
-                            {loading ? '⏳ Authenticating...' : '🔐 Sign In'}
+                            {loading ? 'Authenticating...' : 'Sign In'}
                         </button>
-
-                        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                            <button 
-                                type="button"
-                                onClick={() => setFirstTimeBootstrap(true)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#f5c542',
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    fontFamily: "'Space Grotesk', sans-serif",
-                                    fontWeight: 500,
-                                    letterSpacing: '0.3px',
-                                    textDecoration: 'none',
-                                    opacity: 0.85,
-                                    transition: 'opacity 0.2s ease',
-                                    padding: '4px 8px',
-                                    borderBottom: '1px dashed rgba(245,197,66,0.3)',
-                                }}
-                            >
-                                ✦ First time here? Bootstrap initial Admin
-                            </button>
-                        </div>
                     </form>
                 ) : (
                     /* Initial Admin Bootstrap Form */
