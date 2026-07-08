@@ -1,4 +1,5 @@
 const dns = require('dns');
+const axios = require('axios');
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
@@ -137,7 +138,39 @@ function isWhatsAppEnabled() {
     return true;
 }
 
+let pollInterval = null;
+
+function startServicePolling() {
+    if (pollInterval) clearInterval(pollInterval);
+
+    const poll = async () => {
+        try {
+            const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/status`;
+            const response = await axios.get(url, {
+                headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
+                timeout: 5000
+            });
+            connectionStatus = response.data.connected ? 'CONNECTED' : 'DISCONNECTED';
+            qrCodeImage = response.data.qr || null;
+        } catch (err) {
+            console.error('[WhatsApp Service] Polling status error:', err.message);
+            connectionStatus = 'DISCONNECTED';
+            qrCodeImage = null;
+        }
+    };
+
+    poll(); // Run immediately
+    pollInterval = setInterval(poll, 10000); // Repeat every 10 seconds
+}
+
 async function initWhatsApp() {
+    // If microservice URL is configured, run background status polling instead of local socket
+    if (process.env.WA_SERVICE_URL) {
+        console.log(`🔌 WhatsApp: External microservice configured at ${process.env.WA_SERVICE_URL}. Running in remote mode.`);
+        startServicePolling();
+        return;
+    }
+
     // Skip entirely if WhatsApp is disabled
     if (!isWhatsAppEnabled()) {
         connectionStatus = 'DISABLED';
@@ -289,6 +322,22 @@ async function initWhatsApp() {
  * Useful for the admin dashboard "Reconnect" button.
  */
 function forceReconnect() {
+    if (process.env.WA_SERVICE_URL) {
+        console.log('[WhatsApp Service] Triggering remote disconnect/reconnect via microservice...');
+        const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/disconnect`;
+        axios.post(url, { confirm: true }, {
+            headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
+            timeout: 5000
+        }).then(() => {
+            console.log('[WhatsApp Service] Reconnection command received by microservice.');
+            // Force status polling to run immediately
+            startServicePolling();
+        }).catch(err => {
+            console.error('[WhatsApp Service] Failed to trigger remote reconnect:', err.message);
+        });
+        return;
+    }
+
     retryCount = 0;
     initWhatsApp();
 }
@@ -299,6 +348,31 @@ function forceReconnect() {
  * @param {string} text - Message body
  */
 async function sendWhatsAppMessage(toPhone, text) {
+    if (process.env.WA_SERVICE_URL) {
+        try {
+            // Sanitize phone number: remove non-digits
+            let cleanPhone = toPhone.replace(/\D/g, '');
+            if (cleanPhone.length === 10) {
+                cleanPhone = '91' + cleanPhone;
+            }
+
+            console.log(`[WhatsApp Service] Sending message to ${cleanPhone} via microservice...`);
+            const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/send-text`;
+            const response = await axios.post(url, {
+                phone: cleanPhone,
+                message: text
+            }, {
+                headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
+                timeout: 10000
+            });
+            
+            return response.data.success === true;
+        } catch (err) {
+            console.error(`[WhatsApp Service] Failed to send message via microservice to ${toPhone}:`, err.response?.data || err.message);
+            return false;
+        }
+    }
+
     if (connectionStatus !== 'CONNECTED' || !sock) {
         console.warn(`WhatsApp message not sent to ${toPhone}. Client status: ${connectionStatus}`);
         return false;
