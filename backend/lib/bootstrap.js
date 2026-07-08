@@ -19,7 +19,8 @@ dotenv.config();
 
 const pool = new Pool({
     connectionString: process.env.SUPABASE_DB_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    family: 4
 });
 
 async function ensureDefaultTenant() {

@@ -28,7 +28,8 @@ function getPool() {
     if (!pool) {
         pool = new Pool({
             connectionString: SUPABASE_DB_URL,
-            ssl: { rejectUnauthorized: false }
+            ssl: { rejectUnauthorized: false },
+            family: 4
         });
         pool.on('error', (err) => {
             console.error('PostgreSQL client pool error:', err.message);
