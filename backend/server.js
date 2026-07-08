@@ -50,20 +50,20 @@ const allowedOrigins = new Set([
     'http://127.0.0.1:3000',
     'https://khelopatna.in',
     'https://www.khelopatna.in',
+    'https://khelo-patna-website-final.vercel.app',
     process.env.FRONTEND_URL,
     ...parseOriginList(process.env.FRONTEND_URLS)
 ].filter(Boolean));
 
-const isLocalDevOrigin = (origin) => {
-    if (process.env.NODE_ENV === 'production') return false;
+const isAllowedDynamicOrigin = (origin) => {
     try {
         const parsed = new URL(origin);
-        // Local dev + v0/Vercel preview sandboxes (requests arrive via the
-        // Next.js same-origin proxy, which forwards the browser's Origin).
+        // Allow Vercel preview/deployment URLs and local dev
+        if (parsed.hostname.endsWith('.vercel.app')) return true;
+        if (process.env.NODE_ENV === 'production') return false;
         return (
             ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname) ||
-            parsed.hostname.endsWith('.vusercontent.net') ||
-            parsed.hostname.endsWith('.vercel.app')
+            parsed.hostname.endsWith('.vusercontent.net')
         );
     } catch (e) {
         return false;
@@ -72,7 +72,7 @@ const isLocalDevOrigin = (origin) => {
 
 app.use(cors({
     origin: function(origin, callback) {
-        if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
+        if (!origin || allowedOrigins.has(origin) || isAllowedDynamicOrigin(origin)) {
             callback(null, true);
         } else {
             // Deny CORS without throwing: throwing produces an HTML 500 error
