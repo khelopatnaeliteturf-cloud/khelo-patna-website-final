@@ -1,6 +1,6 @@
 /**
  * bootstrap.js
- * Ensures the default tenant, branch, active session, and default admin user exist in Supabase.
+ * Ensures the default tenant, branch, active session, and environment-defined admin user exist in Supabase.
  * Called once at server startup — safe to re-run (idempotent).
  */
 
@@ -78,20 +78,36 @@ async function ensureDefaultTenant() {
             console.log('  Bootstrap: created active session');
         }
 
-        // ── Default Admin User ────────────────────────────────────────────
-        let adminRes = await client.query(
-            `SELECT id FROM staff WHERE tenant_id = $1 AND username = 'admin' LIMIT 1`, [tenantId]
-        );
-        if (!adminRes.rows.length) {
-            const salt = bcrypt.genSaltSync(10);
-            const passwordHash = bcrypt.hashSync('admin123', salt);
+        // ── Environment-defined Admin User ───────────────────────────────
+        const adminUsername = process.env.ADMIN_USERNAME;
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
-            await client.query(
-                `INSERT INTO staff (tenant_id, branch_id, username, password_hash, role)
-                 VALUES ($1, $2, $3, $4, $5)`,
-                [tenantId, branchId, 'admin', passwordHash, 'SUPER_ADMIN']
+        if (adminUsername && adminPassword) {
+            let adminRes = await client.query(
+                `SELECT id FROM staff WHERE tenant_id = $1 AND username = $2 LIMIT 1`, [tenantId, adminUsername]
             );
-            console.log('  Bootstrap: created default admin user ("admin" / "admin123")');
+            const salt = bcrypt.genSaltSync(10);
+            const passwordHash = bcrypt.hashSync(adminPassword, salt);
+
+            if (adminRes.rows.length) {
+                // Update password of existing admin user
+                const adminId = adminRes.rows[0].id;
+                await client.query(
+                    `UPDATE staff SET password_hash = $1 WHERE id = $2`,
+                    [passwordHash, adminId]
+                );
+                console.log(`  Bootstrap: updated password for admin user "${adminUsername}"`);
+            } else {
+                // Insert new admin user
+                await client.query(
+                    `INSERT INTO staff (tenant_id, branch_id, username, password_hash, role)
+                     VALUES ($1, $2, $3, $4, $5)`,
+                    [tenantId, branchId, adminUsername, passwordHash, 'SUPER_ADMIN']
+                );
+                console.log(`  Bootstrap: seeded admin user "${adminUsername}"`);
+            }
+        } else {
+            console.log('  Bootstrap: ADMIN_USERNAME or ADMIN_PASSWORD not configured. Skipping admin user seeding.');
         }
 
         return { tenantId, branchId };
