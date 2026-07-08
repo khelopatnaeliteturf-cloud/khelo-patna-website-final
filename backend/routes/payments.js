@@ -46,7 +46,12 @@ async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookin
     const existing = await Booking.find(query).select('timeSlots');
     const bookedSlots = new Set();
     existing.forEach(b => b.timeSlots.forEach(slot => bookedSlots.add(slot)));
-    return timeSlots.some(slot => bookedSlots.has(slot));
+    return timeSlots.some(slot => {
+        if (slot === '23-24' || slot === '23-00') {
+            return bookedSlots.has('23-24') || bookedSlots.has('23-00');
+        }
+        return bookedSlots.has(slot);
+    });
 }
 
 // Helper to send booking notifications

@@ -144,7 +144,7 @@ router.get('/available-slots', async (req, res) => {
         }
 
         const slotsResponse = ALL_HOURLY_SLOTS.map(slot => {
-            const isBooked = bookedSlots.has(slot.value);
+            const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
             const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
             const isBlackoutSetting = isWeekday && slot.startHour >= settings.blackoutHours.start && slot.startHour < settings.blackoutHours.end;
 

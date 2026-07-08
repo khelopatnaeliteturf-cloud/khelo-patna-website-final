@@ -189,7 +189,7 @@ async function handleIncomingMessage(sock, m) {
                 const indexToSlotValueMap = {};
 
                 ALL_HOURLY_SLOTS.forEach(slot => {
-                    const isBooked = bookedSlots.has(slot.value);
+                    const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
                     const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
                     const isBlackout = isWeekday && slot.startHour >= settings.blackoutHours.start && slot.startHour < settings.blackoutHours.end;
                     

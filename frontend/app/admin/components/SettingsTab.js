@@ -94,6 +94,11 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
     const [modalPermissions, setModalPermissions] = useState([]);
     const [saving, setSaving] = useState(false);
 
+    // Add User states
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
+    const [newUser, setNewUser] = useState({ username: '', password: '', role: 'SUPER_ADMIN' });
+    const [creatingUser, setCreatingUser] = useState(false);
+
     useEffect(() => {
         loadStaff();
     }, []);
@@ -115,6 +120,65 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
         } finally {
             setLoading(false);
             setRefreshing(false);
+        }
+    };
+
+    const handleDeleteUser = async (user) => {
+        if (user.username === 'owner') {
+            notifyError('The primary owner account cannot be deleted.');
+            return;
+        }
+        if (!window.confirm(`Are you sure you want to permanently delete user "${user.username}"?`)) {
+            return;
+        }
+        try {
+            const res = await fetch(`${backendUrl}/api/auth/staff/${user._id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            const data = await res.json();
+            if (res.ok) {
+                notifySuccess(`User "${user.username}" deleted successfully.`);
+                loadStaff();
+            } else {
+                notifyError(data.error || 'Failed to delete user.');
+            }
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            notifyError('Network error deleting user.');
+        }
+    };
+
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        setCreatingUser(true);
+        try {
+            const res = await fetch(`${backendUrl}/api/auth/register`, {
+                method: 'POST',
+                headers: {
+                    ...getHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: newUser.username.trim(),
+                    password: newUser.password,
+                    role: newUser.role
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                notifySuccess(`User "${newUser.username}" registered successfully.`);
+                setShowAddUserModal(false);
+                setNewUser({ username: '', password: '', role: 'SUPER_ADMIN' });
+                loadStaff();
+            } else {
+                notifyError(data.error || 'Failed to register new user.');
+            }
+        } catch (err) {
+            console.error('Error registering user:', err);
+            notifyError('Network error registering new user.');
+        } finally {
+            setCreatingUser(false);
         }
     };
 
@@ -278,26 +342,49 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                         <h4 style={{ margin: 0, fontSize: '0.94rem', fontWeight: 800, color: 'var(--text-main)' }}>User List & Directory</h4>
                         <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Showing all registered managers, coaches, and administrators.</div>
                     </div>
-                    {/* Beautiful search bar aligned with theme */}
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
-                        <span className="material-icons-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }}>search</span>
-                        <input 
-                            type="text"
-                            placeholder="Search by username or role..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="input-premium"
-                            style={{ width: '100%', paddingLeft: '38px', height: '36px', borderRadius: '8px', fontSize: '0.78rem' }}
-                        />
-                        {searchTerm && (
-                            <button 
-                                type="button" 
-                                onClick={() => setSearchTerm('')} 
-                                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-                            >
-                                <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
-                            </button>
-                        )}
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {/* Beautiful search bar aligned with theme */}
+                        <div style={{ position: 'relative', width: '220px' }}>
+                            <span className="material-icons-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px' }}>search</span>
+                            <input 
+                                type="text"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="input-premium"
+                                style={{ width: '100%', paddingLeft: '38px', height: '36px', borderRadius: '8px', fontSize: '0.78rem' }}
+                            />
+                            {searchTerm && (
+                                <button 
+                                    type="button" 
+                                    onClick={() => setSearchTerm('')} 
+                                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>close</span>
+                                </button>
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowAddUserModal(true)}
+                            className="btn-primary-stripe"
+                            style={{ 
+                                background: '#10b981', 
+                                color: '#ffffff', 
+                                border: 'none', 
+                                padding: '6px 14px', 
+                                borderRadius: '8px', 
+                                fontSize: '0.74rem', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                fontWeight: 700,
+                                height: '36px'
+                            }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>person_add</span>
+                            Add New User
+                        </button>
                     </div>
                 </div>
 
@@ -429,6 +516,29 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                         <span className="material-icons-outlined" style={{ fontSize: '15px' }}>shield</span>
                                                         Access Control
                                                     </button>
+                                                    {user.username !== 'owner' && (
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => handleDeleteUser(user)}
+                                                            className="btn-secondary-stripe"
+                                                            style={{ 
+                                                                background: '#EF4444', 
+                                                                color: '#ffffff', 
+                                                                borderRadius: '6px', 
+                                                                fontSize: '0.74rem', 
+                                                                padding: '4px 10px', 
+                                                                fontWeight: 600,
+                                                                border: 'none',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                marginLeft: '8px'
+                                                            }}
+                                                        >
+                                                            <span className="material-icons-outlined" style={{ fontSize: '15px' }}>delete</span>
+                                                            Delete
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -716,6 +826,76 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                     </div>
                 );
             })()}
+
+            {/* Modal Dialog for Registering a New User */}
+            {showAddUserModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
+                    <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '450px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>Register New User Account</h3>
+                            <button type="button" onClick={() => setShowAddUserModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                                <span className="material-icons-outlined">close</span>
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreateUser} className="d-flex flex-column gap-3">
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Username *</label>
+                                <input 
+                                    type="text" 
+                                    required 
+                                    placeholder="Enter login username" 
+                                    className="input-premium w-100" 
+                                    value={newUser.username} 
+                                    onChange={(e) => setNewUser({...newUser, username: e.target.value})} 
+                                />
+                            </div>
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Password *</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    placeholder="Enter password" 
+                                    className="input-premium w-100" 
+                                    value={newUser.password} 
+                                    onChange={(e) => setNewUser({...newUser, password: e.target.value})} 
+                                />
+                            </div>
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Assigned Role *</label>
+                                <select 
+                                    className="input-premium w-100" 
+                                    value={newUser.role} 
+                                    onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                                >
+                                    <option value="SUPER_ADMIN">SUPER_ADMIN (Owner / Full system access)</option>
+                                    <option value="BRANCH_MANAGER">BRANCH_MANAGER (Roster, POS & Calendar control)</option>
+                                    <option value="RECEPTIONIST">RECEPTIONIST (Admissions, Attendance & Payments)</option>
+                                    <option value="FINANCE_MANAGER">FINANCE_MANAGER (Billing & ledger accounts access)</option>
+                                </select>
+                            </div>
+
+                            <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2" style={{ borderColor: 'var(--border-color)' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowAddUserModal(false)} 
+                                    className="btn btn-secondary py-2 px-3" 
+                                    style={{ fontSize: '0.8rem', borderRadius: '8px' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={creatingUser}
+                                    className="btn text-white py-2 px-4" 
+                                    style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                >
+                                    {creatingUser ? 'Creating...' : 'Register User'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -271,6 +271,30 @@ router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', '
         console.error('Error updating staff access control:', err);
         res.status(500).json({ error: 'Server error updating staff permissions.' });
     }
+// 6. Delete staff member (Protected — SUPER_ADMIN or ACADEMY_OWNER only)
+router.delete('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER'), async (req, res) => {
+    try {
+        // Prevent deleting oneself
+        if (req.user.id === req.params.id) {
+            return res.status(403).json({ error: 'You cannot delete your own account.' });
+        }
+
+        const staff = await Staff.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!staff) {
+            return res.status(404).json({ error: 'Staff member not found.' });
+        }
+
+        // Prevent deleting the owner account
+        if (staff.username === 'owner') {
+            return res.status(403).json({ error: 'The primary owner account cannot be deleted.' });
+        }
+
+        await Staff.deleteOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        res.json({ message: 'Staff member successfully deleted.' });
+    } catch (err) {
+        console.error('Error deleting staff member:', err);
+        res.status(500).json({ error: 'Server error deleting staff member.' });
+    }
 });
 
 module.exports = router;
