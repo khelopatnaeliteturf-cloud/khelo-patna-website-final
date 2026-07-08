@@ -167,6 +167,10 @@ app.get('/api/admin/whatsapp/diagnose', authenticateToken, authorizeRoles('SUPER
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    if (req.query.trigger_reconnect === 'true') {
+        console.log('🔄 Triggering forceReconnect via health endpoint query parameter...');
+        forceReconnect();
+    }
     res.json({ 
         status: 'OK', 
         db_connected: mongoose.connection.readyState === 1,
