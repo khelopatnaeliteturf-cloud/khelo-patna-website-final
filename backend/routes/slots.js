@@ -61,9 +61,21 @@ router.get('/available-slots', async (req, res) => {
             // Find default settings or fallback
             settings = await TurfSettings.findOne();
             if (!settings) {
-                settings = new TurfSettings();
+                settings = new TurfSettings({
+                    cricketBaseRate: 1200,
+                    footballBaseRate: 1500,
+                    netsBaseRate: 800,
+                    blackoutHours: { start: 15, end: 18 }
+                });
             }
         }
+        // Safely ensure nested parameters exist to prevent TypeError crashes
+        if (!settings.blackoutHours) {
+            settings.blackoutHours = { start: 15, end: 18 };
+        }
+        if (settings.cricketBaseRate === undefined || settings.cricketBaseRate === null) settings.cricketBaseRate = 1200;
+        if (settings.footballBaseRate === undefined || settings.footballBaseRate === null) settings.footballBaseRate = 1500;
+        if (settings.netsBaseRate === undefined || settings.netsBaseRate === null) settings.netsBaseRate = 800;
 
         // If query is for cricket or football turf, we check both since they share the same physical ground.
         const sportFilter = (sport === 'cricket' || sport === 'football') 
@@ -200,7 +212,11 @@ router.get('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
         if (!settings) {
             settings = new TurfSettings({
                 tenantId,
-                branchId: req.user.branchId
+                branchId: req.user.branchId,
+                cricketBaseRate: 1200,
+                footballBaseRate: 1500,
+                netsBaseRate: 800,
+                blackoutHours: { start: 15, end: 18 }
             });
             await settings.save();
         }
@@ -219,8 +235,15 @@ router.put('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
         if (!settings) {
             settings = new TurfSettings({
                 tenantId,
-                branchId: req.user.branchId
+                branchId: req.user.branchId,
+                cricketBaseRate: 1200,
+                footballBaseRate: 1500,
+                netsBaseRate: 800,
+                blackoutHours: { start: 15, end: 18 }
             });
+        }
+        if (!settings.blackoutHours) {
+            settings.blackoutHours = { start: 15, end: 18 };
         }
         if (cricketBaseRate !== undefined) settings.cricketBaseRate = cricketBaseRate;
         if (footballBaseRate !== undefined) settings.footballBaseRate = footballBaseRate;

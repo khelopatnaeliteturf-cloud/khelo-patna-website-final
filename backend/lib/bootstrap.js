@@ -117,6 +117,25 @@ async function ensureDefaultTenant() {
             console.log('  Bootstrap: ADMIN_USERNAME or ADMIN_PASSWORD not configured. Skipping admin user seeding.');
         }
 
+        // ── Default Turf Settings ────────────────────────────────────────
+        const settingsRes = await client.query(
+            `SELECT id FROM turf_settings WHERE tenant_id = $1 LIMIT 1`, [tenantId]
+        );
+        if (!settingsRes.rows.length) {
+            await client.query(
+                `INSERT INTO turf_settings (tenant_id, branch_id, cricket_base_rate, football_base_rate, blackout_hours)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [
+                    tenantId,
+                    branchId,
+                    1200.00,
+                    1500.00,
+                    JSON.stringify({ start: 15, end: 18 })
+                ]
+            );
+            console.log('  Bootstrap: created default turf settings');
+        }
+
         return { tenantId, branchId };
     } finally {
         client.release();

@@ -144,12 +144,22 @@ async function handleIncomingMessage(sock, m) {
             }
 
             try {
-                // Fetch settings & closures to calculate availability
                 let settings = await TurfSettings.findOne();
                 if (!settings) {
-                    settings = new TurfSettings();
+                    settings = new TurfSettings({
+                        cricketBaseRate: 1200,
+                        footballBaseRate: 1500,
+                        netsBaseRate: 800,
+                        blackoutHours: { start: 15, end: 18 }
+                    });
                     await settings.save();
                 }
+                // Safely ensure properties exist
+                if (!settings.blackoutHours) {
+                    settings.blackoutHours = { start: 15, end: 18 };
+                }
+                if (settings.cricketBaseRate === undefined || settings.cricketBaseRate === null) settings.cricketBaseRate = 1200;
+                if (settings.footballBaseRate === undefined || settings.footballBaseRate === null) settings.footballBaseRate = 1500;
 
                 const bookings = await Booking.find({
                     date: targetDateStr,
