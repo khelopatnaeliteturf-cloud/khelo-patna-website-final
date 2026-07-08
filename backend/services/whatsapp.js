@@ -139,11 +139,14 @@ function isWhatsAppEnabled() {
 }
 
 let pollInterval = null;
+let lastPollError = null;
+let lastPollTime = null;
 
 function startServicePolling() {
     if (pollInterval) clearInterval(pollInterval);
 
     const poll = async () => {
+        lastPollTime = new Date().toISOString();
         try {
             const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/status`;
             const response = await axios.get(url, {
@@ -152,15 +155,28 @@ function startServicePolling() {
             });
             connectionStatus = response.data.connected ? 'CONNECTED' : 'DISCONNECTED';
             qrCodeImage = response.data.qr || null;
+            lastPollError = null; // Clear on success
         } catch (err) {
-            console.error('[WhatsApp Service] Polling status error:', err.message);
+            const errorMsg = err.response ? `${err.response.status} ${JSON.stringify(err.response.data)}` : err.message;
+            console.error('[WhatsApp Service] Polling status error:', errorMsg);
             connectionStatus = 'DISCONNECTED';
             qrCodeImage = null;
+            lastPollError = errorMsg;
         }
     };
 
     poll(); // Run immediately
     pollInterval = setInterval(poll, 10000); // Repeat every 10 seconds
+}
+
+function getDiagnostics() {
+    return {
+        remote_mode: !!process.env.WA_SERVICE_URL,
+        service_url: process.env.WA_SERVICE_URL || null,
+        has_secret: !!process.env.WA_API_SECRET,
+        last_poll_time: lastPollTime,
+        last_poll_error: lastPollError
+    };
 }
 
 async function initWhatsApp() {
@@ -411,5 +427,6 @@ module.exports = {
     getStatus,
     setBotEnabled,
     getBotEnabled,
-    registerBotListener
+    registerBotListener,
+    getDiagnostics
 };

@@ -105,7 +105,7 @@ mongoose.connect()
     .catch(err => console.error('Database connection error:', err));
 
 // WhatsApp Engine Startup
-const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEnabled } = require('./services/whatsapp');
+const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEnabled, getDiagnostics } = require('./services/whatsapp');
 // Require botStates to register the message listener callback
 require('./services/botStates');
 initWhatsApp();
@@ -159,6 +159,10 @@ app.post('/api/admin/whatsapp/toggle-bot', authenticateToken, authorizeRoles('SU
 app.post('/api/admin/whatsapp/reconnect', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), (req, res) => {
     forceReconnect();
     res.json({ success: true, message: 'WhatsApp reconnection initiated.' });
+});
+
+app.get('/api/admin/whatsapp/diagnose', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), (req, res) => {
+    res.json(getDiagnostics());
 });
 
 // Health check endpoint
