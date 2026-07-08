@@ -1,7 +1,6 @@
 const pg = require('pg');
 const { Pool } = pg;
 const bcrypt = require('bcryptjs');
-const net = require('net');
 
 // OID 1082 is DATE. Parse it as raw string to match MongoDB's YYYY-MM-DD string representation.
 pg.types.setTypeParser(1082, val => val);
@@ -29,14 +28,7 @@ function getPool() {
     if (!pool) {
         pool = new Pool({
             connectionString: SUPABASE_DB_URL,
-            ssl: { rejectUnauthorized: false },
-            stream: (options) => {
-                return net.connect({
-                    host: options.host,
-                    port: options.port,
-                    family: 4
-                });
-            }
+            ssl: { rejectUnauthorized: false }
         });
         pool.on('error', (err) => {
             console.error('PostgreSQL client pool error:', err.message);

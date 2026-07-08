@@ -8,26 +8,13 @@
 
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-const dns = require('dns');
-const net = require('net');
 const dotenv = require('dotenv');
-
-if (typeof dns.setDefaultResultOrder === 'function') {
-    dns.setDefaultResultOrder('ipv4first');
-}
 
 dotenv.config();
 
 const pool = new Pool({
     connectionString: process.env.SUPABASE_DB_URL,
-    ssl: { rejectUnauthorized: false },
-    stream: (options) => {
-        return net.connect({
-            host: options.host,
-            port: options.port,
-            family: 4
-        });
-    }
+    ssl: { rejectUnauthorized: false }
 });
 
 async function ensureDefaultTenant() {
