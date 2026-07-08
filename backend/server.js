@@ -105,7 +105,7 @@ mongoose.connect()
     .catch(err => console.error('Database connection error:', err));
 
 // WhatsApp Engine Startup
-const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEnabled, getDiagnostics } = require('./services/whatsapp');
+const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEnabled, getDiagnostics, getRawRemoteStatus } = require('./services/whatsapp');
 // Require botStates to register the message listener callback
 require('./services/botStates');
 initWhatsApp();
@@ -166,11 +166,12 @@ app.get('/api/admin/whatsapp/diagnose', authenticateToken, authorizeRoles('SUPER
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
     if (req.query.trigger_reconnect === 'true') {
         console.log('🔄 Triggering forceReconnect via health endpoint query parameter...');
         forceReconnect();
     }
+    const rawStatus = await getRawRemoteStatus();
     res.json({ 
         status: 'OK', 
         db_connected: mongoose.connection.readyState === 1,
@@ -180,6 +181,7 @@ app.get('/health', (req, res) => {
             qr_loaded: !!getQR(),
             qr_length: getQR() ? getQR().length : 0
         },
+        raw_remote_status: rawStatus,
         timestamp: new Date() 
     });
 });

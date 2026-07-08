@@ -427,6 +427,25 @@ const setBotEnabled = (enabled) => { botEnabled = enabled; };
 const getBotEnabled = () => botEnabled;
 const registerBotListener = (callback) => { onMessageCallback = callback; };
 
+async function getRawRemoteStatus() {
+    if (!process.env.WA_SERVICE_URL) return { error: 'Not in remote mode' };
+    try {
+        const axios = require('axios');
+        const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/status`;
+        const response = await axios.get(url, {
+            headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
+            timeout: 5000
+        });
+        return response.data;
+    } catch (err) {
+        return {
+            error: err.message,
+            status: err.response ? err.response.status : null,
+            data: err.response ? err.response.data : null
+        };
+    }
+}
+
 module.exports = {
     initWhatsApp,
     forceReconnect,
@@ -436,5 +455,6 @@ module.exports = {
     setBotEnabled,
     getBotEnabled,
     registerBotListener,
-    getDiagnostics
+    getDiagnostics,
+    getRawRemoteStatus
 };
