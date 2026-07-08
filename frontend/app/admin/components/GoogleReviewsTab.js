@@ -316,9 +316,9 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         </div>
                         
                         <div class="footer">
-                            <span>📍 Khelo Patna, Phulwari Sharif, Patna</span>
-                            <span>📧 play@khelopatna.com</span>
-                            <span>🌐 www.khelopatna.com</span>
+                            <span>📍 Kumhrar, Sandalpur Road, Patna</span>
+                            <span>📧 service@khelopatna.in</span>
+                            <span>🌐 www.khelopatna.in</span>
                         </div>
                     </div>
                     <script>
@@ -612,9 +612,9 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
 
                                     {/* Footer */}
                                     <div className="border-t pt-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600 }}>
-                                        <span>📍 Phulwari Sharif, Patna</span>
-                                        <span>📧 play@khelopatna.com</span>
-                                        <span>🌐 www.khelopatna.com</span>
+                                        <span>📍 Kumhrar, Sandalpur Road, Patna</span>
+                                        <span>📧 service@khelopatna.in</span>
+                                        <span>🌐 www.khelopatna.in</span>
                                     </div>
                                 </div>
                             </div>
@@ -712,9 +712,9 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         {/* Informational Alert Box */}
                         <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '16px', padding: '16px', display: 'flex', gap: '12px' }}>
                             <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '20px', marginTop: '2px' }}>info</span>
-                            <div style={{ fontSize: '0.78rem', lineHeight: '1.5', color: '#d1fae5' }}>
-                                <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>How the AI review generator helps:</strong>
-                                <p style={{ margin: 0 }}>
+                            <div style={{ fontSize: '0.78rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                                <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>How the AI review generator helps:</strong>
+                                <p style={{ margin: 0, color: 'var(--text-muted)' }}>
                                     When customers scan the QR code and select a rating, our system calls the Groq Cloud API backend. It generates a unique, highly natural, short sports-focused review matching their score. The review is copied to their clipboard, and they are redirected to Google Maps where they can paste it in one click!
                                 </p>
                             </div>
