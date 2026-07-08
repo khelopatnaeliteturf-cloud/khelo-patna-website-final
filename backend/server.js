@@ -166,12 +166,11 @@ app.get('/api/admin/whatsapp/diagnose', authenticateToken, authorizeRoles('SUPER
 });
 
 // Health check endpoint
-app.get('/health', async (req, res) => {
+app.get('/health', (req, res) => {
     if (req.query.trigger_reconnect === 'true') {
         console.log('🔄 Triggering forceReconnect via health endpoint query parameter...');
         forceReconnect();
     }
-    const rawStatus = await getRawRemoteStatus();
     res.json({ 
         status: 'OK', 
         db_connected: mongoose.connection.readyState === 1,
@@ -181,7 +180,6 @@ app.get('/health', async (req, res) => {
             qr_loaded: !!getQR(),
             qr_length: getQR() ? getQR().length : 0
         },
-        raw_remote_status: rawStatus,
         timestamp: new Date() 
     });
 });
