@@ -167,11 +167,31 @@ async function initWhatsApp() {
         const dbPool = getPgPool();
         const { state, saveCreds } = await useSupabaseAuthState(dbPool);
 
+        // Optional proxy support to bypass Render/cloud datacenter IP blocks
+        let agent;
+        if (process.env.PROXY_URL) {
+            const proxyUrl = process.env.PROXY_URL;
+            console.log(`[WhatsApp] Routing traffic through proxy: ${proxyUrl}`);
+            try {
+                if (proxyUrl.startsWith('socks')) {
+                    const { SocksProxyAgent } = require('socks-proxy-agent');
+                    agent = new SocksProxyAgent(proxyUrl);
+                } else {
+                    const { HttpsProxyAgent } = require('https-proxy-agent');
+                    agent = new HttpsProxyAgent(proxyUrl);
+                }
+            } catch (err) {
+                console.error('[WhatsApp] Failed to initialize proxy agent:', err.message);
+            }
+        }
+
         sock = makeWASocket({
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
-            defaultQueryTimeoutMs: undefined
+            defaultQueryTimeoutMs: undefined,
+            agent: agent,
+            fetchAgent: agent
         });
 
         sock.ev.on('connection.update', async (update) => {
