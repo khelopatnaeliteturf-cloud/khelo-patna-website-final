@@ -665,10 +665,17 @@ router.post('/academy/dues/pay', async (req, res) => {
             returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/academy/pay-fees?order_id=${orderId}&payment_status=success`
         });
 
+        // Determine redirect URL dynamically based on Cashfree credentials mode
+        const backendOrigin = `${req.protocol}://${req.get('host')}`;
+        const redirectUrl = cfOrder.mock 
+            ? `${backendOrigin}/mock-payment.html?order_id=${orderId}&amount=${totalAmount}`
+            : `${backendOrigin}/checkout.html?session_id=${cfOrder.payment_session_id}&env=${process.env.CASHFREE_ENV || 'sandbox'}`;
+
         res.json({
             success: true,
             order_id: orderId,
-            payment_session_id: cfOrder.payment_session_id
+            payment_session_id: cfOrder.payment_session_id,
+            redirect_url: redirectUrl
         });
 
     } catch (err) {

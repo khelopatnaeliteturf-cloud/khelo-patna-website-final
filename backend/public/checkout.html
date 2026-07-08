@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment Checkout - Khelo Patna</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Cashfree SDK -->
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <style>
+        :root {
+            --bg-void: #060810;
+            --emerald-accent: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --radius-card: 16px;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-void);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .checkout-box {
+            background: rgba(10, 16, 30, 0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-card);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px var(--emerald-glow);
+            max-width: 420px;
+            width: 90%;
+            transition: all 0.4s ease;
+        }
+
+        h2 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: #9ca3af;
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        /* Premium Spinner */
+        .spinner-container {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 30px;
+        }
+
+        .spinner-ring {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-top-color: var(--emerald-accent);
+        }
+
+        .spinner-ring:nth-child(1) { animation-delay: -0.45s; }
+        .spinner-ring:nth-child(2) { animation-delay: -0.3s; }
+        .spinner-ring:nth-child(3) { animation-delay: -0.15s; }
+
+        .spinner-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--emerald-accent);
+            filter: blur(15px);
+            opacity: 0.15;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #f87171;
+            font-weight: 500;
+            display: none;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .btn-retry {
+            display: inline-block;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-retry:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-box" id="checkout-card">
+        <div class="spinner-container" id="spinner">
+            <div class="spinner-glow"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <h2 id="status-title">Secure Checkout</h2>
+        <p id="status-desc">Connecting to Cashfree Payment Gateway...</p>
+        
+        <div class="error-message" id="error-box">
+            Failed to initiate checkout session. Please try again.
+        </div>
+        <a href="/" class="btn-retry" id="retry-btn" style="display: none;">Return to Home</a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        const env = urlParams.get('env') || 'sandbox';
+
+        function showError(message) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('status-title').textContent = 'Checkout Error';
+            document.getElementById('status-title').style.background = 'none';
+            document.getElementById('status-title').style.color = '#f87171';
+            document.getElementById('status-title').style.webkitTextFillColor = 'initial';
+            document.getElementById('status-desc').style.display = 'none';
+            
+            const errorBox = document.getElementById('error-box');
+            errorBox.textContent = message || 'Invalid checkout session configuration.';
+            errorBox.style.display = 'block';
+            document.getElementById('retry-btn').style.display = 'inline-block';
+        }
+
+        if (!sessionId) {
+            showError('Payment session ID is missing. Please restart your checkout process.');
+        } else if (typeof Cashfree === 'undefined') {
+            showError('Unable to load Cashfree Payment SDK. Please check your internet connection.');
+        } else {
+            try {
+                // Initialize Cashfree
+                const cashfree = Cashfree({ mode: env });
+                
+                // Open Checkout Redirect
+                cashfree.checkout({
+                    paymentSessionId: sessionId,
+                    redirectTarget: '_self'
+                }).then(() => {
+                    console.log('Cashfree checkout redirection triggered.');
+                }).catch((err) => {
+                    console.error('Checkout error callback:', err);
+                    showError(err.message || 'Error redirecting to Cashfree gateway.');
+                });
+            } catch (e) {
+                console.error('Checkout initialization failed:', e);
+                showError('Failed to initialize secure payment container.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -127,9 +127,14 @@ export default function PayFeesPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to create fee checkout.');
 
-            // Success. Redirect to simulator page
-            const redirectUrl = `${BACKEND_URL}/mock-payment.html?order_id=${data.order_id}&amount=${totalAmount}`;
-            window.location.href = redirectUrl;
+            // Success. Redirect to backend-provided checkout/simulator URL
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                // Fallback in case redirect_url is somehow missing in old versions
+                const fallbackUrl = `${BACKEND_URL}/mock-payment.html?order_id=${data.order_id}&amount=${totalAmount}`;
+                window.location.href = fallbackUrl;
+            }
 
         } catch (err) {
             console.error(err);
