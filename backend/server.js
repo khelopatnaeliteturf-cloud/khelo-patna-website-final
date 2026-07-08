@@ -3,15 +3,6 @@ if (!globalThis.crypto) {
     globalThis.crypto = require('crypto').webcrypto;
 }
 
-// Prefer IPv4 DNS resolution when available.
-// The Supabase pooler hostname (pooler.supabase.com) has IPv4 records;
-// the direct hostname (db.*.supabase.co) is IPv6-only and will not
-// work on hosts without outbound IPv6 (e.g. Render free tier).
-const dns = require('dns');
-if (typeof dns.setDefaultResultOrder === 'function') {
-    dns.setDefaultResultOrder('ipv4first');
-}
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
