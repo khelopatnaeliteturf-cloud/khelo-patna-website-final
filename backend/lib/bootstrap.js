@@ -1,12 +1,13 @@
 /**
  * bootstrap.js
- * Ensures the default tenant, branch, and active session exist in Supabase.
+ * Ensures the default tenant, branch, active session, and default admin user exist in Supabase.
  * Called once at server startup — safe to re-run (idempotent).
  */
 
 'use strict';
 
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -77,10 +78,38 @@ async function ensureDefaultTenant() {
             console.log('  Bootstrap: created active session');
         }
 
+        // ── Default Admin User ────────────────────────────────────────────
+        let adminRes = await client.query(
+            `SELECT id FROM staff WHERE tenant_id = $1 AND username = 'admin' LIMIT 1`, [tenantId]
+        );
+        if (!adminRes.rows.length) {
+            const salt = bcrypt.genSaltSync(10);
+            const passwordHash = bcrypt.hashSync('admin123', salt);
+
+            await client.query(
+                `INSERT INTO staff (tenant_id, branch_id, username, password_hash, role)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [tenantId, branchId, 'admin', passwordHash, 'SUPER_ADMIN']
+            );
+            console.log('  Bootstrap: created default admin user ("admin" / "admin123")');
+        }
+
         return { tenantId, branchId };
     } finally {
         client.release();
     }
 }
 
-module.exports = { ensureDefaultTenant };
+async function bootstrapDatabase() {
+    console.log('[Bootstrap] Checking database structures and initial admin seeding...');
+    try {
+        const { tenantId, branchId } = await ensureDefaultTenant();
+        console.log(`[Bootstrap] Database successfully initialized. Tenant ID: ${tenantId}`);
+        return { tenantId, branchId };
+    } catch (err) {
+        console.error('[Bootstrap] CRITICAL: Failed database bootstrap sequence:', err.message);
+        throw err;
+    }
+}
+
+module.exports = { bootstrapDatabase };

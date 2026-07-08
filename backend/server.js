@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const mongoose = require('./lib/mongoose-pg-bridge');
 const dotenv = require('dotenv');
 const path = require('path');
+const { bootstrapDatabase } = require('./lib/bootstrap');
 
 dotenv.config();
 
@@ -171,8 +172,15 @@ app.get('/health', (req, res) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Backend server successfully listening on port ${PORT}`);
+
+    // Run database bootstrapping and admin user seeding
+    try {
+        await bootstrapDatabase();
+    } catch (err) {
+        console.error('Database bootstrap failed during startup:', err);
+    }
 
     // Self-pinger to prevent free-tier servers from sleeping (every 12 minutes)
     const intervalMs = 12 * 60 * 1000;
