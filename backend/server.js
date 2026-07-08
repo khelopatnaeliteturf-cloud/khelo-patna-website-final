@@ -187,3 +187,5 @@ app.listen(PORT, () => {
         }
     }, intervalMs);
 });
+
+module.exports = app;
