@@ -16,7 +16,11 @@ class ObjectId {
     }
 }
 
-const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL || 'postgresql://postgres:W2UiPL8b2kBARJXQ@db.kpwhnpexuggkjpzduxoq.supabase.co:5432/postgres';
+const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
+if (!SUPABASE_DB_URL) {
+    console.error('CRITICAL ERROR: SUPABASE_DB_URL environment variable is missing.');
+    process.exit(1);
+}
 
 let pool;
 
