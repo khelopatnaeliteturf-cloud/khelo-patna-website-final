@@ -12,11 +12,13 @@ import FinanceTab from './components/FinanceTab';
 import HRTab from './components/HRTab';
 import WebsiteTab from './components/WebsiteTab';
 import AuditLogsTab from './components/AuditLogsTab';
+import GoogleReviewsTab from './components/GoogleReviewsTab';
 import IntegrationsTab from './components/IntegrationsTab';
 import CustomersTab from './components/CustomersTab';
 import AnimatedNumber from './components/AnimatedNumber';
 import SettingsTab from './components/SettingsTab';
 import AdmissionStudio from './components/AdmissionStudio';
+import ReviewsTab from './components/ReviewsTab';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
 const BACKEND_URL = getBackendUrl();
@@ -518,7 +520,7 @@ export default function AdminDashboard() {
         if (role === 'SUPER_ADMIN') return true;
         
         if (permissions && permissions.length > 0) {
-            return permissions.includes(tabId);
+            return permissions.includes(tabId) || permissions.includes(`${tabId}:view`);
         }
         
         if (tabId === 'dashboard') {
@@ -542,7 +544,7 @@ export default function AdminDashboard() {
         if (tabId === 'communication' || tabId === 'customers') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST', 'HR_MANAGER'].includes(role);
         }
-        if (tabId === 'website' || tabId === 'integrations' || tabId === 'settings' || tabId === 'audit-logs') {
+        if (tabId === 'website' || tabId === 'integrations' || tabId === 'settings' || tabId === 'audit-logs' || tabId === 'google-reviews') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER'].includes(role);
         }
         return false;
@@ -7378,6 +7380,7 @@ export default function AdminDashboard() {
                     {(() => {
                         const items = [
                             { id: 'website', label: 'Website', icon: 'web' },
+                            { id: 'google-reviews', label: 'Google Reviews', icon: 'star' },
                             { id: 'integrations', label: 'Integrations', icon: 'hub' },
                             { id: 'settings', label: 'Settings', icon: 'settings' },
                             { id: 'audit-logs', label: 'Audit Logs', icon: 'history' }
@@ -7615,6 +7618,11 @@ export default function AdminDashboard() {
                             initialStudentId={initialStudentId}
                             clearInitialStudentId={() => setInitialStudentId('')}
                             activeSubTab="ledger"
+                            onViewStudentProfile={(studentId) => {
+                                setInitialSelectedMemberId(studentId);
+                                setActiveTab('membership-management');
+                                setActiveSidebarKey('membership-management');
+                            }}
                         />
                     )}
                     {activeTab === 'finance' && (
@@ -7635,6 +7643,11 @@ export default function AdminDashboard() {
                             initialStudentId={initialStudentId}
                             clearInitialStudentId={() => setInitialStudentId('')}
                             activeSubTab="collect"
+                            onViewStudentProfile={(studentId) => {
+                                setInitialSelectedMemberId(studentId);
+                                setActiveTab('membership-management');
+                                setActiveSidebarKey('membership-management');
+                            }}
                         />
                     )}
                     {activeTab === 'inventory-management' && renderInventoryTab()}
@@ -7673,6 +7686,12 @@ export default function AdminDashboard() {
                     )}
                     {activeTab === 'audit-logs' && (
                         <AuditLogsTab 
+                            backendUrl={BACKEND_URL}
+                            getHeaders={getHeaders}
+                        />
+                    )}
+                    {activeTab === 'google-reviews' && (
+                        <GoogleReviewsTab 
                             backendUrl={BACKEND_URL}
                             getHeaders={getHeaders}
                         />

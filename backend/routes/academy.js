@@ -44,16 +44,21 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
         const activeSession = await Session.findOne({ tenantId, status: 'ACTIVE' });
         const currentSessionId = activeSession ? activeSession._id : null;
 
-        // Auto-generate sequential membershipId (KP-XXXX) scoped per tenant
-        const lastStudent = await Student.findOne({ tenantId, membershipId: { $regex: /^KP-\d+/ } }).sort({ membershipId: -1 });
+        // Auto-generate sequential membershipId (KPC001 / KPF001) scoped per tenant
+        const prefix = sport === 'cricket' ? 'KPC' : sport === 'football' ? 'KPF' : 'KP';
+        const lastStudent = await Student.findOne({ 
+            tenantId, 
+            membershipId: { $regex: new RegExp('^' + prefix + '\\d+') } 
+        }).sort({ membershipId: -1 });
+
         let sequenceNumber = 1;
         if (lastStudent && lastStudent.membershipId) {
-            const match = lastStudent.membershipId.match(/KP-(\d+)/);
+            const match = lastStudent.membershipId.match(new RegExp('^' + prefix + '(\\d+)'));
             if (match) {
                 sequenceNumber = parseInt(match[1], 10) + 1;
             }
         }
-        const membershipId = `KP-${String(sequenceNumber).padStart(4, '0')}`;
+        const membershipId = `${prefix}${String(sequenceNumber).padStart(3, '0')}`;
 
         // Backward compatibility mapping
         const pName = fatherName || motherName || guardianName || parentName || 'N/A';
@@ -143,6 +148,33 @@ router.post('/academy/students', authenticateToken, authorizeRoles('RECEPTIONIST
     } catch (err) {
         console.error('Error admitting student:', err);
         res.status(500).json({ error: 'Server error registering student.' });
+    }
+});
+
+// 1.5. Get Next Membership ID
+router.get('/academy/students/next-id', authenticateToken, async (req, res) => {
+    const { sport } = req.query;
+    const tenantId = req.user.tenantId;
+
+    try {
+        const prefix = sport === 'cricket' ? 'KPC' : sport === 'football' ? 'KPF' : 'KP';
+        const lastStudent = await Student.findOne({ 
+            tenantId, 
+            membershipId: { $regex: new RegExp('^' + prefix + '\\d+') } 
+        }).sort({ membershipId: -1 });
+
+        let sequenceNumber = 1;
+        if (lastStudent && lastStudent.membershipId) {
+            const match = lastStudent.membershipId.match(new RegExp('^' + prefix + '(\\d+)'));
+            if (match) {
+                sequenceNumber = parseInt(match[1], 10) + 1;
+            }
+        }
+        const nextId = `${prefix}${String(sequenceNumber).padStart(3, '0')}`;
+        res.json({ nextId });
+    } catch (err) {
+        console.error('Error generating next membership ID:', err);
+        res.status(500).json({ error: 'Server error generating membership ID.' });
     }
 });
 

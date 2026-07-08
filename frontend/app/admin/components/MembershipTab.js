@@ -28,6 +28,8 @@ export default function MembershipTab({
     const [selectedMember, setSelectedMember] = useState(null);
     const [selectedMemberFees, setSelectedMemberFees] = useState([]);
     const [loadingFees, setLoadingFees] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState(null);
     const students = Array.isArray(allStudents) ? allStudents : [];
 
     useEffect(() => {
@@ -59,13 +61,46 @@ export default function MembershipTab({
             const found = allStudents.find(s => s._id === initialSelectedMemberId);
             if (found) {
                 setSelectedMember(found);
-                setSubView('list');
             }
             if (clearInitialSelectedMemberId) {
                 clearInitialSelectedMemberId();
             }
         }
     }, [initialSelectedMemberId, allStudents]);
+
+    useEffect(() => {
+        if (selectedMember && allStudents) {
+            const current = allStudents.find(s => s._id === selectedMember._id);
+            if (current) {
+                setSelectedMember(current);
+            }
+        }
+    }, [allStudents]);
+
+    useEffect(() => {
+        if (isEditing) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isEditing]);
+
+
+    const handleEditClick = () => {
+        setEditForm({ ...selectedMember });
+        setIsEditing(true);
+    };
+
+    const handleSaveProfile = async (e) => {
+        if (e) e.preventDefault();
+        const success = await onUpdateStudent(editForm);
+        if (success) {
+            setIsEditing(false);
+        }
+    };
 
     // Session Promotion State
     const [promoSourceSession, setPromoSourceSession] = useState('');
@@ -539,9 +574,14 @@ export default function MembershipTab({
                                     </div>
                                 </div>
                             </div>
-                            <button className="btn-secondary-stripe" onClick={() => setSelectedMember(null)} style={{ flexShrink: 0 }}>
-                                <span className="material-icons-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>arrow_back</span> Back to Directory
-                            </button>
+                            <div className="d-flex gap-2" style={{ flexShrink: 0 }}>
+                                <button className="btn-secondary-stripe" onClick={() => handleEditClick()} style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>edit</span> Edit Profile
+                                </button>
+                                <button className="btn-secondary-stripe" onClick={() => setSelectedMember(null)}>
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>arrow_back</span> Back to Directory
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -909,6 +949,320 @@ export default function MembershipTab({
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+            {/* Edit Profile Modal */}
+            {isEditing && editForm && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0,
+                        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999, padding: '20px'
+                    }}
+                    onClick={() => setIsEditing(false)}
+                >
+                    <div
+                        style={{
+                            background: 'var(--bg-color)', borderRadius: '24px',
+                            width: '100%', maxWidth: '820px', maxHeight: '90vh',
+                            display: 'flex', flexDirection: 'column',
+                            boxShadow: '0 32px 80px rgba(0,0,0,0.45)', border: '1px solid var(--border-color)',
+                            animation: 'slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1)'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-color)', position: 'relative', flexShrink: 0 }}>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                                style={{
+                                    position: 'absolute', top: '20px', right: '20px',
+                                    background: 'var(--bg-color)', border: '1px solid var(--border-color)',
+                                    borderRadius: '12px', width: '36px', height: '36px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s'
+                                }}
+                            >
+                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>close</span>
+                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                    width: '42px', height: '42px', borderRadius: '12px',
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 4px 14px rgba(99,102,241,0.3)'
+                                }}>
+                                    <span className="material-icons-outlined" style={{ fontSize: '22px' }}>person_edit</span>
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
+                                        Edit Student Profile
+                                    </h3>
+                                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                                        {editForm.membershipId} · Update membership and personal details
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                            <div style={{ padding: '24px 28px', overflowY: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 20px' }}>
+                                
+                                {/* Section 1: Personal Details */}
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '4px' }}>
+                                    Personal Details
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Student Name *</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        required 
+                                        value={editForm.name || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Date of Birth</label>
+                                    <input 
+                                        type="date" 
+                                        className="input-premium w-100" 
+                                        value={editForm.dateOfBirth ? editForm.dateOfBirth.slice(0, 10) : ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Gender</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        value={editForm.gender || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                                    >
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Blood Group</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        placeholder="e.g. O+ve" 
+                                        value={editForm.bloodGroup || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, bloodGroup: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Phone Number</label>
+                                    <input 
+                                        type="tel" 
+                                        className="input-premium w-100" 
+                                        value={editForm.phone || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Email</label>
+                                    <input 
+                                        type="email" 
+                                        className="input-premium w-100" 
+                                        value={editForm.email || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Section 2: Academy/Membership Details */}
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
+                                    Academy Details
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Sport *</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        required 
+                                        value={editForm.sport || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, sport: e.target.value })}
+                                    >
+                                        <option value="cricket">Cricket</option>
+                                        <option value="football">Football</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Batch Time / Schedule *</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        required 
+                                        value={editForm.batchTime || ''} 
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const batch = batchesList?.find(b => b.startTime + ' - ' + b.endTime === val || b.name === val);
+                                            setEditForm({ 
+                                                ...editForm, 
+                                                batchTime: val,
+                                                batchId: batch ? batch._id : editForm.batchId
+                                            });
+                                        }}
+                                    >
+                                        <option value="">Select Batch</option>
+                                        {batchesList?.filter(b => b.sport === editForm.sport).map(b => (
+                                            <option key={b._id} value={`${b.startTime} - ${b.endTime}`}>
+                                                {b.name} ({b.startTime} - {b.endTime})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Membership Status</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        value={editForm.status || 'ACTIVE'} 
+                                        onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                                    >
+                                        <option value="ACTIVE">ACTIVE</option>
+                                        <option value="INACTIVE">INACTIVE</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>School Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        value={editForm.schoolName || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, schoolName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Class / Grade</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        value={editForm.classGrade || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, classGrade: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Previous Experience</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        value={editForm.previousExperience || 'No'} 
+                                        onChange={(e) => setEditForm({ ...editForm, previousExperience: e.target.value })}
+                                    >
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                </div>
+
+                                {/* Section 3: Family & Contact Details */}
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
+                                    Family & Contact Registry
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Father Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        value={editForm.fatherName || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, fatherName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Father Mobile</label>
+                                    <input 
+                                        type="tel" 
+                                        className="input-premium w-100" 
+                                        value={editForm.fatherMobile || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, fatherMobile: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Mother Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        value={editForm.motherName || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, motherName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Mother Mobile</label>
+                                    <input 
+                                        type="tel" 
+                                        className="input-premium w-100" 
+                                        value={editForm.motherMobile || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, motherMobile: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Guardian Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="input-premium w-100" 
+                                        value={editForm.guardianName || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, guardianName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Guardian Mobile</label>
+                                    <input 
+                                        type="tel" 
+                                        className="input-premium w-100" 
+                                        value={editForm.guardianMobile || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, guardianMobile: e.target.value })}
+                                    />
+                                </div>
+                                
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Residential Address</label>
+                                    <textarea 
+                                        className="input-premium w-100" 
+                                        rows="2"
+                                        style={{ resize: 'vertical' }}
+                                        value={editForm.currentAddress || ''} 
+                                        onChange={(e) => setEditForm({ ...editForm, currentAddress: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div style={{
+                                display: 'flex', justifyContent: 'flex-end', gap: '12px',
+                                borderTop: '1px solid var(--border-color)', padding: '20px 28px', flexShrink: 0
+                            }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(false)}
+                                    style={{
+                                        padding: '10px 20px', background: 'var(--bg-color)',
+                                        border: '1px solid var(--border-color)', borderRadius: '10px',
+                                        cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                                        color: 'var(--text-muted)', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        padding: '10px 24px',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                        color: '#fff', border: 'none', borderRadius: '10px',
+                                        cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                                        boxShadow: '0 4px 12px rgba(99,102,241,0.25)',
+                                        display: 'flex', alignItems: 'center', gap: '6px',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>check_circle</span>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

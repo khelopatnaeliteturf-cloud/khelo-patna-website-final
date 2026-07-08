@@ -1,0 +1,5 @@
+- [/] Write sync_legacy_bookings.js
+- [ ] Delete MongoDB/Mongoose files
+- [ ] Strip mongoose from package.json
+- [ ] Update .env.example
+- [ ] Run sync and verify

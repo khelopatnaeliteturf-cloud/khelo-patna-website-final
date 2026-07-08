@@ -24,6 +24,7 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [enrolled, setEnrolled] = useState(null); // created student after success
+    const [generatedMembershipId, setGeneratedMembershipId] = useState('');
 
     // ─── Fee plans (per sport) ───
     const [plans, setPlans] = useState({}); // { cricket: {...}, football: {...} }
@@ -102,6 +103,27 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
     });
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+    useEffect(() => {
+        if (form.sport) {
+            const fetchNextId = async () => {
+                try {
+                    const res = await fetch(`${backendUrl}/api/academy/students/next-id?sport=${form.sport}`, {
+                        headers: getHeaders()
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setGeneratedMembershipId(data.nextId);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch next membership ID', err);
+                }
+            };
+            fetchNextId();
+        } else {
+            setGeneratedMembershipId('');
+        }
+    }, [form.sport, backendUrl]);
+
     const sportBatches = useMemo(
         () => (batchesList || []).filter(b => b.status !== 'INACTIVE' && (b.sport || '').toLowerCase() === form.sport),
         [batchesList, form.sport]
@@ -125,6 +147,7 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
         setForm({ sport: '', name: '', dateOfBirth: '', gender: 'Male', schoolName: '', classGrade: '', guardianName: '', guardianMobile: '', email: '', medicalConditions: '', batchId: '', batchTime: '', feeOverride: '' });
         setStep(1);
         setEnrolled(null);
+        setGeneratedMembershipId('');
     };
 
     const submitAdmission = async () => {
@@ -308,6 +331,20 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                         <div>
                             <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem' }}>Student &amp; Guardian Details</h3>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '14px' }}>
+                                {generatedMembershipId && (
+                                    <div>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            Membership ID
+                                            <span style={{ fontSize: '0.64rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success-text)', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>AUTO GENERATED</span>
+                                        </label>
+                                        <input 
+                                            className="input-premium" 
+                                            style={{ width: '100%', fontWeight: 700, color: 'var(--success-text)', background: 'rgba(16, 185, 129, 0.03)', border: '1px solid rgba(16, 185, 129, 0.3)' }} 
+                                            value={generatedMembershipId} 
+                                            readOnly 
+                                        />
+                                    </div>
+                                )}
                                 <div>
                                     <label>Student Name *</label>
                                     <input className="input-premium" style={{ width: '100%' }} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Full name" />

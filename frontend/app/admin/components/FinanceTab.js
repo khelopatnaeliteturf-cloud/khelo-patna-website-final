@@ -22,7 +22,8 @@ export default function FinanceTab({
     onCollectPayment,
     initialStudentId,
     clearInitialStudentId,
-    activeSubTab
+    activeSubTab,
+    onViewStudentProfile
 }) {
     // Only 'collect', 'ledger', and 'pl' have rendered views — normalize
     // anything else (e.g. legacy 'templates') to 'collect' to avoid a blank page.
@@ -572,7 +573,7 @@ export default function FinanceTab({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {/* Panel 1: Search Student Header */}
                     <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                        <div style={{ background: '#f15b2b', color: '#ffffff', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.92rem' }}>
                                 <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                 Search Student
@@ -583,14 +584,14 @@ export default function FinanceTab({
                                     <button 
                                         type="button" 
                                         onClick={() => setSearchToggle('student')}
-                                        style={{ background: searchToggle === 'student' ? '#ffffff' : 'transparent', color: searchToggle === 'student' ? '#f15b2b' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
+                                        style={{ background: searchToggle === 'student' ? '#ffffff' : 'transparent', color: searchToggle === 'student' ? '#10b981' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
                                     >
                                         By Student
                                     </button>
                                     <button 
                                         type="button" 
                                         onClick={() => setSearchToggle('due_date')}
-                                        style={{ background: searchToggle === 'due_date' ? '#ffffff' : 'transparent', color: searchToggle === 'due_date' ? '#f15b2b' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
+                                        style={{ background: searchToggle === 'due_date' ? '#ffffff' : 'transparent', color: searchToggle === 'due_date' ? '#10b981' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
                                     >
                                         By Due Date
                                     </button>
@@ -608,14 +609,14 @@ export default function FinanceTab({
                                         <span className="material-icons-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '18px', pointerEvents: 'none' }}>search</span>
                                         <input 
                                             type="text" 
-                                            placeholder="Enter student name, ID (e.g. SDPS1932), or contact phone" 
+                                            placeholder="Enter student name, ID (e.g. KP-0001), or contact phone" 
                                             className="input-premium w-100"
                                             style={{ paddingLeft: '42px', borderRadius: '10px' }}
                                             value={feeSearchQuery}
                                             onChange={(e) => setFeeSearchQuery(e.target.value)}
                                         />
                                     </div>
-                                    <button type="submit" className="btn-primary-stripe" disabled={!feeSearchQuery.trim()} style={{ background: '#f15b2b', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', fontWeight: 700 }}>
+                                    <button type="submit" className="btn-primary-stripe" disabled={!feeSearchQuery.trim()} style={{ background: '#10b981', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', fontWeight: 700 }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '16px' }}>search</span>
                                         Search Profile
                                     </button>
@@ -623,7 +624,7 @@ export default function FinanceTab({
                             </div>
                         ) : (
                             <div style={{ padding: '20px', background: 'var(--bg-color)', display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '24px', alignItems: 'center' }}>
-                                <div style={{ position: 'relative', width: '76px', height: '76px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #f15b2b', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ position: 'relative', width: '76px', height: '76px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #10b981', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {feeStudentData.photoUrl || feeStudentData.documents?.photoUrl ? (
                                         <img src={feeStudentData.photoUrl || feeStudentData.documents?.photoUrl} alt={feeStudentData.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
@@ -633,21 +634,39 @@ export default function FinanceTab({
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(130px, 1fr))', gap: '14px 20px', fontSize: '0.78rem' }}>
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Name</div>
-                                        <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#f15b2b' }}>{feeStudentData.name}</div>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>Roll No: <strong>{feeStudentData.rollNo || '13'}</strong></div>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Admission No: <strong>{feeStudentData.admissionNo || 'SDPS1932'}</strong></div>
+                                        <div 
+                                            onClick={() => onViewStudentProfile && onViewStudentProfile(feeStudentData._id)}
+                                            style={{ 
+                                                fontSize: '0.98rem', 
+                                                fontWeight: 700, 
+                                                color: '#10b981', 
+                                                cursor: onViewStudentProfile ? 'pointer' : 'default',
+                                                textDecoration: onViewStudentProfile ? 'underline' : 'none'
+                                            }}
+                                        >
+                                            {feeStudentData.name}
+                                        </div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '4px' }}>
+                                            Membership ID: <strong style={{ color: 'var(--text-main)' }}>{feeStudentData.membershipId || 'N/A'}</strong>
+                                        </div>
                                     </div>
                                     <div>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Class</div>
-                                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{feeStudentData.classGrade || 'PLAY'}</div>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>Section: <strong>{feeStudentData.section || 'A'}</strong></div>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>Father: <strong>{feeStudentData.fatherName || 'Ravi Sankar Kumar'}</strong></div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Sport & Batch</div>
+                                        <div style={{ fontWeight: 600, color: 'var(--text-main)', textTransform: 'capitalize' }}>
+                                            {feeStudentData.sport || 'N/A'}
+                                        </div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>
+                                            Batch: <strong>{feeStudentData.batchTime || 'N/A'}</strong>
+                                        </div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                                            Father: <strong>{feeStudentData.fatherName || 'N/A'}</strong>
+                                        </div>
                                     </div>
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Contact</div>
                                         <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{feeStudentData.phone || '8709113049'}</div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600, marginTop: '5px' }}>Amount Left</div>
-                                        <div style={{ fontWeight: 800, color: '#f15b2b', fontSize: '0.85rem' }}>{formatCurrency(totalSelectedBalance)}</div>
+                                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '0.85rem' }}>{formatCurrency(totalSelectedBalance)}</div>
                                     </div>
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Address</div>
@@ -661,7 +680,7 @@ export default function FinanceTab({
                                         type="button" 
                                         className="btn-primary-stripe py-1 px-3" 
                                         onClick={() => handleSearchDues()} 
-                                        style={{ background: '#f15b2b', color: '#ffffff', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 700 }}
+                                        style={{ background: '#10b981', color: '#ffffff', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 700 }}
                                     >
                                         Refresh
                                     </button>
@@ -682,7 +701,7 @@ export default function FinanceTab({
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '20px' }}>
                             {/* Panel 2: Assign Fee Group / FEE PAYMENT */}
                             <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                                <div style={{ background: '#f15b2b', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
+                                <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                         Assign Fee Group
@@ -690,17 +709,14 @@ export default function FinanceTab({
                                 </div>
                                 <div style={{ padding: '20px' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#f15b2b', letterSpacing: '0.04em' }}>FEE PAYMENT</h4>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#10b981', letterSpacing: '0.04em' }}>FEE PAYMENT</h4>
                                         <div className="d-flex gap-2">
-                                            <button type="button" className="btn btn-sm" style={{ border: '1px solid #f15b2b', color: '#ffffff', background: '#f15b2b', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}>
-                                                Check Inventory Balance
-                                            </button>
                                             <button 
                                                 type="button" 
                                                 onClick={() => setShowProceedPaymentModal(true)}
                                                 disabled={feeDues.length === 0}
                                                 className="btn btn-sm" 
-                                                style={{ border: '1px solid #f15b2b', color: '#ffffff', background: '#f15b2b', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600, opacity: feeDues.length === 0 ? 0.5 : 1 }}
+                                                style={{ border: '1px solid #10b981', color: '#ffffff', background: '#10b981', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600, opacity: feeDues.length === 0 ? 0.5 : 1 }}
                                             >
                                                 Proceed To Payment
                                             </button>
@@ -725,7 +741,7 @@ export default function FinanceTab({
                                                     feeHistory.slice((currentPage - 1) * 5, currentPage * 5).map((row, idx) => (
                                                         <tr key={row._id}>
                                                             <td>
-                                                                <button type="button" style={{ background: 'transparent', border: '1px solid #f15b2b', color: '#f15b2b', borderRadius: '4px', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>+</button>
+                                                                <button type="button" style={{ background: 'transparent', border: '1px solid #10b981', color: '#10b981', borderRadius: '4px', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>+</button>
                                                             </td>
                                                             <td>{row.receiptNo}</td>
                                                             <td>{row.user}</td>
@@ -775,7 +791,7 @@ export default function FinanceTab({
                                             >
                                                 &lt;
                                             </button>
-                                            <span style={{ fontWeight: 700, color: '#f15b2b' }}>{currentPage}</span>
+                                            <span style={{ fontWeight: 700, color: '#10b981' }}>{currentPage}</span>
                                             <button 
                                                 type="button" 
                                                 disabled={currentPage * 5 >= feeHistory.length}
@@ -791,7 +807,7 @@ export default function FinanceTab({
 
                             {/* Panel 3: Adjusted Fee Details / FEE DETAILS */}
                             <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                                <div style={{ background: '#f15b2b', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
+                                <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                         Adjusted Fee Details
@@ -799,19 +815,13 @@ export default function FinanceTab({
                                 </div>
                                 <div style={{ padding: '20px' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#f15b2b', letterSpacing: '0.04em' }}>FEE DETAILS</h4>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#10b981', letterSpacing: '0.04em' }}>FEE DETAILS</h4>
                                         <div className="d-flex gap-2">
-                                            <button type="button" className="btn btn-sm" style={{ border: '1px solid #f15b2b', color: '#ffffff', background: '#f15b2b', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}>
-                                                Purge Transport
-                                            </button>
-                                            <button type="button" className="btn btn-sm" style={{ border: '1px solid #f15b2b', color: '#ffffff', background: '#f15b2b', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}>
-                                                Purge Hostel
-                                            </button>
                                             <button 
                                                 type="button" 
                                                 onClick={() => setShowFeeAdjustmentModal(true)}
                                                 className="btn btn-sm" 
-                                                style={{ border: '1px solid #f15b2b', color: '#ffffff', background: '#f15b2b', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}
+                                                style={{ border: '1px solid #10b981', color: '#ffffff', background: '#10b981', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}
                                             >
                                                 Fee Adjustment
                                             </button>
@@ -836,7 +846,7 @@ export default function FinanceTab({
                                                         <tr key={row._id}>
                                                             <td style={{ fontWeight: 700 }}>{row.monthFor.toUpperCase()}</td>
                                                             <td>{row.amountDue}</td>
-                                                            <td style={{ fontWeight: 700, color: bal > 0 ? '#f15b2b' : 'var(--success-text)' }}>{bal}</td>
+                                                            <td style={{ fontWeight: 700, color: bal > 0 ? '#10b981' : 'var(--success-text)' }}>{bal}</td>
                                                             <td>{row.dueDate ? new Date(row.dueDate).toLocaleDateString('en-GB').replace(/\//g, '-') : '-'}</td>
                                                             <td>
                                                                 {bal > 0 ? (
@@ -899,42 +909,87 @@ export default function FinanceTab({
                     
                     {/* 1. Proceed To Payment Modal */}
                     {showProceedPaymentModal && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
-                            <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '720px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
-                                <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#f15b2b' }}>Counter Fee Payment Entry</h4>
-                                    <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowProceedPaymentModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
+                        <div
+                            style={{
+                                position: 'fixed', inset: 0,
+                                background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(12px)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                zIndex: 9999, padding: '20px'
+                            }}
+                            onClick={() => setShowProceedPaymentModal(false)}
+                        >
+                            <div
+                                style={{
+                                    background: 'var(--bg-color)', borderRadius: '24px',
+                                    width: '100%', maxWidth: '740px', maxHeight: '92vh', overflowY: 'auto',
+                                    boxShadow: '0 32px 80px rgba(0,0,0,0.4)', border: '1px solid var(--border-color)',
+                                    animation: 'slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1)'
+                                }}
+                                onClick={e => e.stopPropagation()}
+                            >
+                                {/* Header */}
+                                <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowProceedPaymentModal(false)}
+                                        style={{
+                                            position: 'absolute', top: '20px', right: '20px',
+                                            background: 'var(--bg-color)', border: '1px solid var(--border-color)',
+                                            borderRadius: '12px', width: '36px', height: '36px',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <span className="material-icons-outlined" style={{ fontSize: '18px' }}>close</span>
+                                    </button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{
+                                            width: '42px', height: '42px', borderRadius: '12px',
+                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            boxShadow: '0 4px 14px rgba(16,185,129,0.35)', flexShrink: 0
+                                        }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '22px' }}>receipt_long</span>
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
+                                                Counter Fee Payment Entry
+                                            </h3>
+                                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                                                Record cash / UPI / card payment against outstanding terms
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <form onSubmit={async (e) => {
                                     await handleCollectPaymentSubmit(e);
                                     setShowProceedPaymentModal(false);
-                                }} className="d-flex flex-column gap-3">
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                                }} style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    {/* Row 1: Date / Receipt / Method */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                                         <div>
-                                            <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Date *</label>
-                                            <input 
-                                                type="date" 
-                                                required 
-                                                className="input-premium w-100" 
+                                            <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Date *</label>
+                                            <input
+                                                type="date" required className="input-premium"
+                                                style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
                                                 value={paymentDetails.date}
                                                 onChange={e => setPaymentDetails(prev => ({ ...prev, date: e.target.value }))}
                                             />
                                         </div>
                                         <div>
-                                            <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Receipt No.</label>
-                                            <input 
-                                                type="text" 
-                                                disabled 
-                                                className="input-premium w-100" 
-                                                style={{ background: 'var(--surface-tint)', color: 'var(--text-muted)' }}
+                                            <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Receipt No.</label>
+                                            <input
+                                                type="text" disabled className="input-premium"
+                                                style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px', opacity: 0.6 }}
                                                 value={paymentDetails.receiptNo}
                                             />
                                         </div>
                                         <div>
-                                            <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Payment Method *</label>
-                                            <select 
-                                                className="input-premium w-100" 
+                                            <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Payment Method *</label>
+                                            <select
+                                                className="input-premium"
+                                                style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
                                                 value={paymentDetails.paymentMethod}
                                                 onChange={e => setPaymentDetails(prev => ({ ...prev, paymentMethod: e.target.value }))}
                                             >
@@ -947,11 +1002,10 @@ export default function FinanceTab({
                                     </div>
 
                                     {paymentDetails.paymentMethod !== 'Cash' && (
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', background: 'rgba(0,0,0,0.12)', padding: '16px', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', background: 'rgba(16,185,129,0.06)', padding: '16px', borderRadius: '14px', border: '1px dashed rgba(16,185,129,0.4)' }}>
                                             <div>
-                                                <label className="d-block mb-1" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Credit To Account *</label>
-                                                <select 
-                                                    className="input-premium w-100" 
+                                                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Credit To Account *</label>
+                                                <select className="input-premium" style={{ width: '100%', fontSize: '0.82rem', padding: '9px 12px', borderRadius: '10px' }}
                                                     value={paymentDetails.creditAccount}
                                                     onChange={e => setPaymentDetails(prev => ({ ...prev, creditAccount: e.target.value }))}
                                                 >
@@ -961,22 +1015,17 @@ export default function FinanceTab({
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="d-block mb-1" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>UPI/Transaction Ref No. *</label>
-                                                <input 
-                                                    type="text" 
-                                                    required
-                                                    placeholder="Reference Number"
-                                                    className="input-premium w-100"
+                                                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>UPI/Transaction Ref No. *</label>
+                                                <input type="text" required placeholder="Reference Number" className="input-premium"
+                                                    style={{ width: '100%', fontSize: '0.82rem', padding: '9px 12px', borderRadius: '10px' }}
                                                     value={paymentDetails.referenceNo}
                                                     onChange={e => setPaymentDetails(prev => ({ ...prev, referenceNo: e.target.value }))}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="d-block mb-1" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Sender Account Name</label>
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Account Name"
-                                                    className="input-premium w-100"
+                                                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Sender Account Name</label>
+                                                <input type="text" placeholder="Account Name" className="input-premium"
+                                                    style={{ width: '100%', fontSize: '0.82rem', padding: '9px 12px', borderRadius: '10px' }}
                                                     value={paymentDetails.senderAccount}
                                                     onChange={e => setPaymentDetails(prev => ({ ...prev, senderAccount: e.target.value }))}
                                                 />
@@ -984,19 +1033,17 @@ export default function FinanceTab({
                                         </div>
                                     )}
 
+                                    {/* Payment Breakdown Table */}
                                     <div>
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Payment Breakdown</label>
-                                            <div style={{ width: '180px' }}>
-                                                <input 
-                                                    type="number" 
-                                                    placeholder="Amount to auto-adjust..." 
-                                                    className="input-premium w-100 py-1"
-                                                    style={{ fontSize: '0.76rem', borderRadius: '6px' }}
-                                                    value={autoAdjustAmount}
-                                                    onChange={e => handleAutoAdjustChange(e.target.value)}
-                                                />
-                                            </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                            <label style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Payment Breakdown</label>
+                                            <input
+                                                type="number" placeholder="Amount to auto-adjust..."
+                                                className="input-premium"
+                                                style={{ fontSize: '0.76rem', borderRadius: '8px', padding: '6px 10px', width: '190px' }}
+                                                value={autoAdjustAmount}
+                                                onChange={e => handleAutoAdjustChange(e.target.value)}
+                                            />
                                         </div>
                                         <div className="table-responsive" style={{ maxHeight: '180px', overflowY: 'auto' }}>
                                             <table className="table-premium text-center" style={{ fontSize: '0.74rem' }}>
@@ -1017,7 +1064,7 @@ export default function FinanceTab({
                                                             <td style={{ fontWeight: 700 }}>{row.monthFor}</td>
                                                             <td>{formatCurrency(row.amountDue)}</td>
                                                             <td>{formatCurrency(row.amountPaid)}</td>
-                                                            <td style={{ color: '#f15b2b', fontWeight: 700 }}>{formatCurrency(row.balanceDue)}</td>
+                                                            <td style={{ color: '#10b981', fontWeight: 700 }}>{formatCurrency(row.balanceDue)}</td>
                                                             <td>
                                                                 <input 
                                                                     type="number"
@@ -1040,7 +1087,7 @@ export default function FinanceTab({
                                                                     onChange={e => handleRowChange(idx, 'discount', e.target.value)}
                                                                 />
                                                             </td>
-                                                            <td style={{ fontWeight: 700, color: row.afterPayment > 0 ? '#f15b2b' : 'var(--success-text)' }}>
+                                                            <td style={{ fontWeight: 700, color: row.afterPayment > 0 ? '#10b981' : 'var(--success-text)' }}>
                                                                 {formatCurrency(row.afterPayment)}
                                                             </td>
                                                         </tr>
@@ -1050,48 +1097,66 @@ export default function FinanceTab({
                                         </div>
                                     </div>
 
-                                    <div style={{ background: 'rgba(241,91,43,0.06)', border: '1px solid rgba(241,91,43,0.18)', borderRadius: '8px', padding: '12px', display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.76rem' }}>
-                                            <div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.64rem', textTransform: 'uppercase' }}>Due</div>
-                                                <div style={{ fontWeight: 800 }}>{formatCurrency(totalDue)}</div>
+                                    {/* Summary Banner */}
+                                    <div style={{
+                                        background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.04) 100%)',
+                                        border: '1px solid rgba(16,185,129,0.2)', borderRadius: '14px',
+                                        padding: '16px 20px', display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center'
+                                    }}>
+                                        {[
+                                            { label: 'Due', value: formatCurrency(totalDue), color: 'var(--text-main)' },
+                                            { label: 'Paying', value: formatCurrency(totalPaying), color: '#10b981' },
+                                            { label: 'Discount', value: formatCurrency(totalDiscount), color: 'var(--text-main)' },
+                                            { label: 'Remaining', value: formatCurrency(remainingBalance), color: remainingBalance > 0 ? '#10b981' : 'var(--success-text)' },
+                                        ].map(({ label, value, color }) => (
+                                            <div key={label}>
+                                                <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+                                                <div style={{ fontSize: '1.05rem', fontWeight: 800, color, marginTop: '1px' }}>{value}</div>
                                             </div>
-                                            <div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.64rem', textTransform: 'uppercase' }}>Paying</div>
-                                                <div style={{ fontWeight: 800, color: '#10B981' }}>{formatCurrency(totalPaying)}</div>
-                                            </div>
-                                            <div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.64rem', textTransform: 'uppercase' }}>Discount</div>
-                                                <div style={{ fontWeight: 800 }}>{formatCurrency(totalDiscount)}</div>
-                                            </div>
-                                            <div>
-                                                <div style={{ color: 'var(--text-muted)', fontSize: '0.64rem', textTransform: 'uppercase' }}>Remaining</div>
-                                                <div style={{ fontWeight: 800, color: remainingBalance > 0 ? '#f15b2b' : 'var(--success-text)' }}>{formatCurrency(remainingBalance)}</div>
-                                            </div>
-                                        </div>
+                                        ))}
                                     </div>
 
+                                    {/* Remarks */}
                                     <div>
-                                        <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remarks Note</label>
-                                        <textarea 
-                                            placeholder="Remarks or waiver reasons..." 
-                                            className="input-premium w-100"
-                                            style={{ minHeight: '50px', fontSize: '0.78rem', borderRadius: '8px' }}
+                                        <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Remarks Note</label>
+                                        <textarea
+                                            placeholder="Remarks or waiver reasons..."
+                                            className="input-premium"
+                                            style={{ width: '100%', minHeight: '60px', fontSize: '0.82rem', borderRadius: '10px', resize: 'vertical' }}
                                             value={paymentDetails.remarks}
                                             onChange={e => setPaymentDetails(prev => ({ ...prev, remarks: e.target.value }))}
                                         />
                                     </div>
 
-                                    <div className="d-flex justify-content-end gap-2 mt-2">
-                                        <button type="button" className="btn btn-secondary py-2 px-4" onClick={() => setShowProceedPaymentModal(false)} style={{ fontSize: '0.8rem', borderRadius: '8px' }}>
+                                    {/* Footer */}
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '4px' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowProceedPaymentModal(false)}
+                                            style={{
+                                                padding: '10px 20px', background: 'var(--bg-color)',
+                                                border: '1px solid var(--border-color)', borderRadius: '10px',
+                                                cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                                                color: 'var(--text-muted)', transition: 'all 0.2s'
+                                            }}
+                                        >
                                             Cancel
                                         </button>
-                                        <button 
-                                            type="submit" 
+                                        <button
+                                            type="submit"
                                             disabled={billingLoading || totalPaying === 0}
-                                            className="btn text-white py-2 px-4" 
-                                            style={{ background: '#f15b2b', border: '1px solid #f15b2b', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                            style={{
+                                                padding: '10px 24px',
+                                                background: (billingLoading || totalPaying === 0) ? 'rgba(16,185,129,0.4)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                color: '#fff', border: 'none', borderRadius: '10px',
+                                                cursor: (billingLoading || totalPaying === 0) ? 'not-allowed' : 'pointer',
+                                                fontSize: '0.82rem', fontWeight: 700,
+                                                boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+                                                display: 'flex', alignItems: 'center', gap: '6px',
+                                                transition: 'all 0.2s'
+                                            }}
                                         >
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>check_circle</span>
                                             {billingLoading ? 'Processing...' : 'Record Counter Payment'}
                                         </button>
                                     </div>
@@ -1105,7 +1170,7 @@ export default function FinanceTab({
                         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
                             <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#f15b2b' }}>Tuition Fee Adjustment</h4>
+                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#10b981' }}>Tuition Fee Adjustment</h4>
                                     <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowFeeAdjustmentModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
                                 </div>
                                 <form onSubmit={handleAdjustFeeSubmit} className="d-flex flex-column gap-3">
@@ -1132,7 +1197,7 @@ export default function FinanceTab({
                                             type="submit"
                                             disabled={billingLoading}
                                             className="btn text-white py-2 px-3" 
-                                            style={{ background: '#f15b2b', border: '1px solid #f15b2b', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                            style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                         >
                                             {billingLoading ? 'Saving...' : 'Save Rules'}
                                         </button>
@@ -1147,7 +1212,7 @@ export default function FinanceTab({
                         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
                             <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#f15b2b' }}>Set Monthly Due Date</h4>
+                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#10b981' }}>Set Monthly Due Date</h4>
                                     <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowDueDateModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
                                 </div>
                                 <div className="d-flex flex-column gap-3">
@@ -1170,7 +1235,7 @@ export default function FinanceTab({
                                             onClick={handleSetDueDate}
                                             disabled={billingLoading}
                                             className="btn text-white py-2 px-3" 
-                                            style={{ background: '#f15b2b', border: '1px solid #f15b2b', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                            style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                         >
                                             {billingLoading ? 'Updating...' : 'Set Due Date'}
                                         </button>

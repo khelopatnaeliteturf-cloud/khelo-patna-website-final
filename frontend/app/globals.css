@@ -880,6 +880,10 @@ select.glass-input option {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
 }
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 .animate-fade-in {
     animation: fadeInUp 0.7s var(--ease-spring) forwards;

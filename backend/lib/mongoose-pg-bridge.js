@@ -59,8 +59,17 @@ function mapRow(row) {
     if (row.id) {
         res._id = row.id;
     }
+    if (row.subscription_plan !== undefined) {
+        res.subscription = {
+            plan: row.subscription_plan,
+            expiresAt: row.subscription_expires_at
+        };
+        delete res.subscriptionPlan;
+        delete res.subscriptionExpiresAt;
+    }
     return res;
 }
+
 
 // Deterministically pad 24-character hexadecimal ObjectIds to v4 UUIDs
 function toUuid(oid) {
@@ -101,7 +110,8 @@ function getTableName(modelName) {
         ChatSession: 'chat_sessions',
         CheckInLog: 'check_in_logs',
         FinanceConfig: 'finance_configs',
-        Invoice: 'invoices'
+        Invoice: 'invoices',
+        MapsReviewUsed: 'maps_reviews_used'
     };
     return mappings[modelName] || `${modelName.toLowerCase()}s`;
 }
@@ -344,7 +354,12 @@ class Document {
             }
         }
 
-        const keys = Object.keys(this).filter(k => !k.startsWith('_') && k !== 'id');
+        if (this._modelName === 'Tenant' && this.subscription) {
+            this.subscriptionPlan = this.subscription.plan || 'ENTERPRISE';
+            this.subscriptionExpiresAt = this.subscription.expiresAt || null;
+        }
+
+        const keys = Object.keys(this).filter(k => !k.startsWith('_') && k !== 'id' && k !== 'subscription');
         const setClauses = [];
         const insertCols = ['id'];
         const insertVals = [uuid];
@@ -355,10 +370,16 @@ class Document {
             const col = toSnake(k);
             let val = this[k];
             if (val && typeof val === 'object' && !(val instanceof Date)) {
-                val = JSON.stringify(val);
+                if (k === 'sports' || k === 'timeSlots') {
+                    val = Array.isArray(val) ? val : [val];
+                } else {
+                    val = JSON.stringify(val);
+                }
             } else {
                 val = toUuid(val);
             }
+
+
             insertCols.push(col);
             insertVals.push(val);
             setClauses.push(`${col} = $${pCounter}`);
@@ -432,9 +453,18 @@ function createModel(modelName) {
         },
 
         async create(data) {
+            if (Array.isArray(data)) {
+                const results = [];
+                for (const item of data) {
+                    const doc = new Document(modelName, item);
+                    results.push(await doc.save());
+                }
+                return results;
+            }
             const doc = new Document(modelName, data);
             return await doc.save();
         },
+
 
         async findOneAndUpdate(query, update, options = {}) {
             const doc = await this.findOne(query);
@@ -626,17 +656,33 @@ const mongooseMock = {
     Schema: Schema,
 
     model: (name, schema) => {
-        return createModel(name);
+        const ModelClass = class extends Document {
+            constructor(properties) {
+                super(name, properties);
+            }
+        };
+
+        const helpers = createModel(name);
+        for (const k of Object.keys(helpers)) {
+            ModelClass[k] = helpers[k];
+        }
+
+        return ModelClass;
     },
+
 
     Types: {
         ObjectId: ObjectId
     },
 
     connection: {
-        readyState: 1
+        readyState: 1,
+        close: async () => {
+            await mongooseMock.disconnect();
+        }
     }
 };
+
 
 mongooseMock.Schema.Types = {
     ObjectId: 'ObjectId'

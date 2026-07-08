@@ -81,13 +81,23 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static mock payment page
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Global API Rate Limiter
+
+// Global API Rate Limiter — generous for admin dashboard usage
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 150, // limit each IP to 150 requests per windowMs
-    message: { error: 'Too many requests from this IP. Please try again later.' }
+    max: 1000, // allow 1000 requests per window (admin dashboards make many calls)
+    message: { error: 'Too many requests from this IP. Please try again later.' },
+    skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1'
 });
 app.use('/api/', apiLimiter);
+
+// Stricter login-specific limiter to block brute force
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50,
+    message: { error: 'Too many login attempts. Please wait 15 minutes before trying again.' }
+});
+app.use('/api/auth/login', loginLimiter);
 
 // Database Connection
 mongoose.connect()
@@ -116,6 +126,7 @@ const checkinRoutes = require('./routes/checkin');
 const reportsRoutes = require('./routes/reports');
 const uploadRoutes = require('./routes/upload');
 const financeRoutes = require('./routes/finance');
+const reviewsRoutes = require('./routes/reviews');
 
 // Apply Routes
 app.use('/api', authRoutes);
@@ -127,6 +138,7 @@ app.use('/api', checkinRoutes);
 app.use('/api', reportsRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', financeRoutes);
+app.use('/api', reviewsRoutes);
 
 // WhatsApp Status API for Admin Dashboard (Secured)
 app.get('/api/admin/whatsapp/status', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), (req, res) => {

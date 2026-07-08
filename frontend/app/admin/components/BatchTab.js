@@ -21,6 +21,50 @@ export default function BatchTab({
     });
 
     const [assignSelectedMembers, setAssignSelectedMembers] = useState([]);
+    const [editingBatch, setEditingBatch] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (isEditing) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isEditing]);
+
+    const handleEditClick = (b) => {
+        setEditingBatch({
+            ...b,
+            coachId: b.coachId?._id || b.coachId || '',
+            sessionId: b.sessionId?._id || b.sessionId || ''
+        });
+        setIsEditing(true);
+    };
+
+    const handleSaveBatch = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${backendUrl}/api/academy/batches/${editingBatch._id}`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(editingBatch)
+            });
+            if (res.ok) {
+                alert('Batch updated successfully!');
+                setIsEditing(false);
+                setEditingBatch(null);
+                onRefresh();
+            } else {
+                const data = await res.json();
+                alert('Error: ' + data.error);
+            }
+        } catch (err) {
+            alert('Failed to update batch.');
+        }
+    };
 
     const handleCreateBatch = async (e) => {
         e.preventDefault();
@@ -133,6 +177,9 @@ export default function BatchTab({
                                             <td><strong>{b.members?.length || 0}</strong> enrolled</td>
                                             <td>
                                                 <div className="d-flex gap-2">
+                                                    <button className="btn-secondary-stripe py-1 px-2" onClick={() => handleEditClick(b)} style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                                        <span className="material-icons-outlined" style={{ fontSize: '15px' }}>edit</span>
+                                                    </button>
                                                     <button className="btn-secondary-stripe py-1 px-2" onClick={() => setSelectedBatch(b)}>View Roster</button>
                                                     <button className="btn-primary-stripe py-1 px-2" onClick={() => { setSelectedBatch(b); setSubView('assign'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                                          <span className="material-icons-outlined" style={{ fontSize: '14px' }}>add_circle</span> Assign
@@ -301,6 +348,219 @@ export default function BatchTab({
                     </form>
                 </div>
             )}
+
+            {/* Edit Batch Modal — styled like Book Turf panel */}
+            {isEditing && editingBatch && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0,
+                        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 9999, padding: '20px'
+                    }}
+                    onClick={() => setIsEditing(false)}
+                >
+                    <div
+                        style={{
+                            background: 'var(--bg-color)', borderRadius: '24px',
+                            width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto',
+                            boxShadow: '0 32px 80px rgba(0,0,0,0.45)', border: '1px solid var(--border-color)',
+                            animation: 'slide-up 0.3s cubic-bezier(0.34,1.56,0.64,1)'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                                style={{
+                                    position: 'absolute', top: '20px', right: '20px',
+                                    background: 'var(--bg-color)', border: '1px solid var(--border-color)',
+                                    borderRadius: '12px', width: '36px', height: '36px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s'
+                                }}
+                            >
+                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>close</span>
+                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                    width: '42px', height: '42px', borderRadius: '12px',
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 4px 14px rgba(16,185,129,0.3)'
+                                }}>
+                                    <span className="material-icons-outlined" style={{ fontSize: '22px' }}>edit</span>
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
+                                        Edit Training Batch
+                                    </h3>
+                                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                                        {editingBatch.name} · Update cohort details and scheduling
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Body Form */}
+                        <form onSubmit={handleSaveBatch}>
+                            <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                                {/* Row 1 */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Batch Name *</label>
+                                        <input
+                                            type="text" required className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.name || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Sport *</label>
+                                        <select
+                                            className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.sport || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, sport: e.target.value })}
+                                        >
+                                            <option value="cricket">Cricket</option>
+                                            <option value="football">Football</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Row 2 */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Session *</label>
+                                        <select
+                                            required className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.sessionId || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, sessionId: e.target.value })}
+                                        >
+                                            <option value="">Select Session</option>
+                                            {sessionsList.map(s => (
+                                                <option key={s._id} value={s._id}>{s.name} ({s.status})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Coach</label>
+                                        <select
+                                            className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.coachId || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, coachId: e.target.value })}
+                                        >
+                                            <option value="">Select Coach (Optional)</option>
+                                            {coachesList.filter(c => c.sports.includes(editingBatch.sport)).map(c => (
+                                                <option key={c._id} value={c._id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Row 3 */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Ground / Turf Slot</label>
+                                        <input
+                                            type="text" className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.groundId || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, groundId: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Start Time *</label>
+                                        <input
+                                            type="text" required placeholder="06:00 AM" className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.startTime || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, startTime: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>End Time *</label>
+                                        <input
+                                            type="text" required placeholder="08:00 AM" className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.endTime || ''}
+                                            onChange={e => setEditingBatch({ ...editingBatch, endTime: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row 4 */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Max Capacity *</label>
+                                        <input
+                                            type="number" required className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.capacity || 20}
+                                            onChange={e => setEditingBatch({ ...editingBatch, capacity: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Status</label>
+                                        <select
+                                            className="input-premium"
+                                            style={{ width: '100%', fontSize: '0.85rem', padding: '10px 14px', borderRadius: '10px' }}
+                                            value={editingBatch.status || 'ACTIVE'}
+                                            onChange={e => setEditingBatch({ ...editingBatch, status: e.target.value })}
+                                        >
+                                            <option value="ACTIVE">ACTIVE</option>
+                                            <option value="INACTIVE">INACTIVE</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Footer */}
+                            <div style={{
+                                display: 'flex', justifyContent: 'flex-end', gap: '12px',
+                                borderTop: '1px solid var(--border-color)', padding: '20px 28px'
+                            }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(false)}
+                                    style={{
+                                        padding: '10px 20px', background: 'var(--bg-color)',
+                                        border: '1px solid var(--border-color)', borderRadius: '10px',
+                                        cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                                        color: 'var(--text-muted)', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{
+                                        padding: '10px 24px',
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        color: '#fff', border: 'none', borderRadius: '10px',
+                                        cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                                        boxShadow: '0 4px 12px rgba(16,185,129,0.25)',
+                                        display: 'flex', alignItems: 'center', gap: '6px',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>check_circle</span>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
