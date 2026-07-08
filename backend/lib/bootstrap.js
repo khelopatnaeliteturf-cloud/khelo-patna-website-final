@@ -8,7 +8,13 @@
 
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const dns = require('dns');
 const dotenv = require('dotenv');
+
+if (typeof dns.setDefaultResultOrder === 'function') {
+    dns.setDefaultResultOrder('ipv4first');
+}
+
 dotenv.config();
 
 const pool = new Pool({
