@@ -171,7 +171,11 @@ app.get('/health', (req, res) => {
         status: 'OK', 
         db_connected: mongoose.connection.readyState === 1,
         whatsapp_status: getStatus(),
-        whatsapp_diagnostics: getDiagnostics(),
+        whatsapp_diagnostics: {
+            ...getDiagnostics(),
+            qr_loaded: !!getQR(),
+            qr_length: getQR() ? getQR().length : 0
+        },
         timestamp: new Date() 
     });
 });
