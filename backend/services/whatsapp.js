@@ -1,8 +1,7 @@
-let makeWASocket, useMultiFileAuthState, DisconnectReason;
+let makeWASocket, DisconnectReason;
 const qrcode = require('qrcode');
 const pino = require('pino');
-const path = require('path');
-const fs = require('fs');
+const { Pool } = require('pg');
 
 let sock = null;
 let qrCodeImage = null;
@@ -17,7 +16,109 @@ let retryCount = 0;
 // Callback to register message upsert bot listener
 let onMessageCallback = null;
 
-const SESSION_DIR = path.join(__dirname, '../whatsapp_session');
+// Database connection pool for session storage
+let pool = null;
+function getPgPool() {
+    if (!pool) {
+        pool = new Pool({
+            connectionString: process.env.SUPABASE_DB_URL,
+            ssl: { rejectUnauthorized: false }
+        });
+    }
+    return pool;
+}
+
+/**
+ * Custom auth state provider storing Baileys session in Supabase PostgreSQL
+ */
+async function useSupabaseAuthState(dbPool) {
+    const { initAuthCreds, BufferJSON } = await import('@whiskeysockets/baileys');
+
+    // Ensure session table exists
+    await dbPool.query(`
+        CREATE TABLE IF NOT EXISTS whatsapp_session (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    `);
+
+    const readData = async (key) => {
+        try {
+            const res = await dbPool.query('SELECT value FROM whatsapp_session WHERE key = $1', [key]);
+            if (res.rows.length > 0) {
+                return JSON.parse(res.rows[0].value, BufferJSON.reviver);
+            }
+        } catch (err) {
+            console.error(`Error reading key ${key} from Supabase WhatsApp session:`, err);
+        }
+        return null;
+    };
+
+    const writeData = async (key, data) => {
+        try {
+            const valueStr = JSON.stringify(data, BufferJSON.replacer);
+            await dbPool.query(`
+                INSERT INTO whatsapp_session (key, value)
+                VALUES ($1, $2)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+            `, [key, valueStr]);
+        } catch (err) {
+            console.error(`Error writing key ${key} to Supabase WhatsApp session:`, err);
+        }
+    };
+
+    const removeData = async (key) => {
+        try {
+            await dbPool.query('DELETE FROM whatsapp_session WHERE key = $1', [key]);
+        } catch (err) {
+            console.error(`Error deleting key ${key} from Supabase WhatsApp session:`, err);
+        }
+    };
+
+    let creds = await readData('creds');
+    if (!creds) {
+        creds = initAuthCreds();
+        await writeData('creds', creds);
+    }
+
+    return {
+        state: {
+            creds,
+            keys: {
+                get: async (type, ids) => {
+                    const data = {};
+                    for (const id of ids) {
+                        let value = await readData(`${type}-${id}`);
+                        if (value) {
+                            if (type === 'app-state-sync-key') {
+                                const baileys = await import('@whiskeysockets/baileys');
+                                value = baileys.proto.Message.AppStateSyncKeyData.fromObject(value);
+                            }
+                            data[id] = value;
+                        }
+                    }
+                    return data;
+                },
+                set: async (data) => {
+                    for (const type in data) {
+                        for (const id in data[type]) {
+                            const value = data[type][id];
+                            const fileKey = `${type}-${id}`;
+                            if (value) {
+                                await writeData(fileKey, value);
+                            } else {
+                                await removeData(fileKey);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        saveCreds: async () => {
+            await writeData('creds', creds);
+        }
+    };
+}
 
 /**
  * Check if WhatsApp is enabled via environment variable.
@@ -25,7 +126,6 @@ const SESSION_DIR = path.join(__dirname, '../whatsapp_session');
  */
 function isWhatsAppEnabled() {
     const flag = process.env.WHATSAPP_ENABLED;
-    // Disabled if explicitly set to 'false', '0', or 'no'
     if (flag && ['false', '0', 'no'].includes(flag.toLowerCase())) {
         return false;
     }
@@ -57,14 +157,14 @@ async function initWhatsApp() {
     try {
         const baileys = await import('@whiskeysockets/baileys');
         makeWASocket = baileys.default;
-        useMultiFileAuthState = baileys.useMultiFileAuthState;
         DisconnectReason = baileys.DisconnectReason;
 
-        const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
+        const dbPool = getPgPool();
+        const { state, saveCreds } = await useSupabaseAuthState(dbPool);
 
         sock = makeWASocket({
             auth: state,
-            printQRInTerminal: true,
+            printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
             defaultQueryTimeoutMs: undefined
         });
@@ -108,12 +208,12 @@ async function initWhatsApp() {
                     console.log(`   Retrying in ${delay / 1000}s...`);
                     setTimeout(initWhatsApp, delay);
                 } else {
-                    // Logged out: clean session folder and reset
+                    // Logged out: clean session from DB and reset
                     console.log('Logged out from WhatsApp. Resetting session credentials...');
                     try {
-                        fs.rmSync(SESSION_DIR, { recursive: true, force: true });
+                        await dbPool.query('DELETE FROM whatsapp_session');
                     } catch (e) {
-                        console.error('Error cleaning session directory:', e);
+                        console.error('Error cleaning session from Supabase:', e);
                     }
                     qrCodeImage = null;
                     retryCount = 0; // Reset retries after logout cleanup
