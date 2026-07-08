@@ -273,6 +273,8 @@ router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', '
         console.error('Error updating staff access control:', err);
         res.status(500).json({ error: 'Server error updating staff permissions.' });
     }
+});
+
 // 6. Delete staff member (Protected — SUPER_ADMIN or ACADEMY_OWNER only)
 router.delete('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER'), async (req, res) => {
     try {
