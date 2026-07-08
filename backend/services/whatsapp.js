@@ -141,6 +141,8 @@ function isWhatsAppEnabled() {
 let pollInterval = null;
 let lastPollError = null;
 let lastPollTime = null;
+let lastReconnectTime = null;
+let lastReconnectResult = null;
 
 function startServicePolling() {
     if (pollInterval) clearInterval(pollInterval);
@@ -175,7 +177,9 @@ function getDiagnostics() {
         service_url: process.env.WA_SERVICE_URL || null,
         has_secret: !!process.env.WA_API_SECRET,
         last_poll_time: lastPollTime,
-        last_poll_error: lastPollError
+        last_poll_error: lastPollError,
+        last_reconnect_time: lastReconnectTime,
+        last_reconnect_result: lastReconnectResult
     };
 }
 
@@ -339,6 +343,7 @@ async function initWhatsApp() {
  */
 function forceReconnect() {
     if (process.env.WA_SERVICE_URL) {
+        lastReconnectTime = new Date().toISOString();
         console.log('[WhatsApp Service] Triggering remote disconnect/reconnect via microservice...');
         const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/disconnect`;
         axios.post(url, { confirm: true }, {
@@ -346,10 +351,13 @@ function forceReconnect() {
             timeout: 5000
         }).then(() => {
             console.log('[WhatsApp Service] Reconnection command received by microservice.');
+            lastReconnectResult = 'SUCCESS';
             // Force status polling to run immediately
             startServicePolling();
         }).catch(err => {
-            console.error('[WhatsApp Service] Failed to trigger remote reconnect:', err.message);
+            const errorMsg = err.response ? `${err.response.status} ${JSON.stringify(err.response.data)}` : err.message;
+            console.error('[WhatsApp Service] Failed to trigger remote reconnect:', errorMsg);
+            lastReconnectResult = `FAILED: ${errorMsg}`;
         });
         return;
     }
