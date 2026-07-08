@@ -1,3 +1,8 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
+
 let makeWASocket, DisconnectReason;
 const qrcode = require('qrcode');
 const pino = require('pino');
