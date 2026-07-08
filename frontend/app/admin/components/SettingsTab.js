@@ -96,7 +96,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
 
     // Add User states
     const [showAddUserModal, setShowAddUserModal] = useState(false);
-    const [newUser, setNewUser] = useState({ username: '', password: '', role: 'SUPER_ADMIN' });
+    const [newUser, setNewUser] = useState({ username: '', password: '', role: 'SUPER_ADMIN', name: '', phone: '' });
     const [creatingUser, setCreatingUser] = useState(false);
 
     useEffect(() => {
@@ -162,14 +162,16 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                 body: JSON.stringify({
                     username: newUser.username.trim(),
                     password: newUser.password,
-                    role: newUser.role
+                    role: newUser.role,
+                    name: newUser.name.trim() || null,
+                    phone: newUser.phone.trim() || null
                 })
             });
             const data = await res.json();
             if (res.ok) {
                 notifySuccess(`User "${newUser.username}" registered successfully.`);
                 setShowAddUserModal(false);
-                setNewUser({ username: '', password: '', role: 'SUPER_ADMIN' });
+                setNewUser({ username: '', password: '', role: 'SUPER_ADMIN', name: '', phone: '' });
                 loadStaff();
             } else {
                 notifyError(data.error || 'Failed to register new user.');
@@ -830,7 +832,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
             {/* Modal Dialog for Registering a New User */}
             {showAddUserModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
-                    <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '450px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
+                    <div style={{ background: 'var(--card-bg, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '450px', boxShadow: 'var(--shadow-lg)' }}>
                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>Register New User Account</h3>
                             <button type="button" onClick={() => setShowAddUserModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -850,6 +852,16 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                 />
                             </div>
                             <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Name</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter employee's name" 
+                                    className="input-premium w-100" 
+                                    value={newUser.name} 
+                                    onChange={(e) => setNewUser({...newUser, name: e.target.value})} 
+                                />
+                            </div>
+                            <div>
                                 <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Password *</label>
                                 <input 
                                     type="password" 
@@ -858,6 +870,16 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     className="input-premium w-100" 
                                     value={newUser.password} 
                                     onChange={(e) => setNewUser({...newUser, password: e.target.value})} 
+                                />
+                            </div>
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>Phone No</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter contact number" 
+                                    className="input-premium w-100" 
+                                    value={newUser.phone} 
+                                    onChange={(e) => setNewUser({...newUser, phone: e.target.value})} 
                                 />
                             </div>
                             <div>

@@ -124,7 +124,7 @@ router.post('/auth/logout', (req, res) => {
 
 // 2. Register Staff Account (Admin permission only, with bootstrap fallback)
 router.post('/auth/register', authLimiter, async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password, role, name, phone } = req.body;
 
     if (!username || !password || !role) {
         return res.status(400).json({ error: 'Username, password, and role are required.' });
@@ -176,6 +176,8 @@ router.post('/auth/register', authLimiter, async (req, res) => {
             username,
             password,
             role,
+            name: name || null,
+            phone: phone || null,
             tenantId,
             branchId
         });
