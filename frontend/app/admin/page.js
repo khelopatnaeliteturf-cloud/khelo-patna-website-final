@@ -2760,7 +2760,7 @@ export default function AdminDashboard() {
         const areaStr = `${chartPad.left},${chartPad.top + plotH} ${lineStr} ${chartPad.left + plotW},${chartPad.top + plotH}`;
 
         const todayStr = new Date().toISOString().split('T')[0];
-        const todayBookings = bookingsLog.filter(b => b.date === todayStr);
+        const todayBookings = bookingsLog.filter(b => b.date === todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED');
         const todaySchedule = todayBookings.map(b => ({
             time: b.timeSlots?.[0] ? b.timeSlots[0].split('-')[0] : '06:00 AM',
             title: `${(b.sport || 'Turf').charAt(0).toUpperCase() + (b.sport || 'turf').slice(1)} Booking`,
@@ -2964,7 +2964,7 @@ export default function AdminDashboard() {
                             <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {bookingsLog.filter(b => b.date >= todayStr).slice(0, 4).map((b, i) => {
+                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').slice(0, 4).map((b, i) => {
                                 const d = new Date(b.date + 'T00:00:00');
                                 return (
                                     <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -2980,7 +2980,7 @@ export default function AdminDashboard() {
                                     </div>
                                 );
                             })}
-                            {bookingsLog.filter(b => b.date >= todayStr).length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', padding: '20px 0' }}>No upcoming bookings</div>}
+                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', padding: '20px 0' }}>No upcoming bookings</div>}
                         </div>
                     </div>
 
