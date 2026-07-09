@@ -458,7 +458,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
         <div className="card-premium animate-fade-in" style={{ padding: '28px' }}>
             {/* Header section with emerald visual tokens */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-main)' }}>
                     <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '24px' }}>reviews</span> Google Maps AI Review System
                 </h3>
             </div>
@@ -475,7 +475,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'poster' ? '#fff' : 'var(--text-primary)',
+                        color: activeSubTab === 'poster' ? '#fff' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -496,7 +496,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'log' ? '#fff' : 'var(--text-primary)',
+                        color: activeSubTab === 'log' ? '#fff' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -523,7 +523,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     style={{
                                         border: 'none',
                                         background: previewType === 'a4' ? 'rgba(255,255,255,0.08)' : 'transparent',
-                                        color: 'var(--text-primary)',
+                                        color: 'var(--text-main)',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
                                         padding: '6px 12px',
@@ -539,7 +539,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     style={{
                                         border: 'none',
                                         background: previewType === 'card' ? 'rgba(255,255,255,0.08)' : 'transparent',
-                                        color: 'var(--text-primary)',
+                                        color: 'var(--text-main)',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
                                         padding: '6px 12px',
@@ -662,7 +662,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         </span>
 
                         <div className="card-premium" style={{ padding: '24px' }}>
-                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>Print Actions</h4>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '16px', color: 'var(--text-main)' }}>Print Actions</h4>
                             <div className="row g-3 mb-4">
                                 <div className="col-12 col-md-6">
                                     <button
@@ -716,8 +716,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         </div>
 
                         <div className="card-premium" style={{ padding: '20px' }}>
-                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>Public Review Landing URL</h4>
-                            <div className="d-flex align-items-center gap-2 p-3 text-mono" style={{ background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', border: '1px dashed var(--emerald)', fontSize: '0.82rem', color: 'var(--text-primary)', wordBreak: 'break-all', fontWeight: 600 }}>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-main)' }}>Public Review Landing URL</h4>
+                            <div className="d-flex align-items-center gap-2 p-3 text-mono" style={{ background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', border: '1px dashed var(--emerald)', fontSize: '0.82rem', color: 'var(--text-main)', wordBreak: 'break-all', fontWeight: 600 }}>
                                 <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>qr_code</span>
                                 <strong style={{ color: 'var(--emerald)' }}>{reviewUrl || 'Loading review url...'}</strong>
                             </div>
@@ -726,9 +726,9 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         {/* Informational Alert Box */}
                         <div style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '16px', padding: '18px', display: 'flex', gap: '14px' }}>
                             <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '22px', marginTop: '2px' }}>info</span>
-                            <div style={{ fontSize: '0.8rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                                <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '6px', fontSize: '0.85rem' }}>How the AI review generator helps:</strong>
-                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                            <div style={{ fontSize: '0.8rem', lineHeight: '1.5', color: 'var(--text-muted)' }}>
+                                <strong style={{ color: 'var(--text-main)', display: 'block', marginBottom: '6px', fontSize: '0.85rem' }}>How the AI review generator helps:</strong>
+                                <p style={{ margin: 0, color: 'var(--text-muted)', fontWeight: 500 }}>
                                     When customers scan the QR code and select a rating, our system calls the Groq Cloud API backend. It generates a unique, highly natural, short sports-focused review matching their score. The review is copied to their clipboard, and they are redirected to Google Maps where they can paste it in one click!
                                 </p>
                             </div>
