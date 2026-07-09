@@ -110,6 +110,9 @@ const { initWhatsApp, forceReconnect, getQR, getStatus, setBotEnabled, getBotEna
 require('./services/botStates');
 initWhatsApp();
 
+// Cashfree integration checks
+const { hasCredentials, CASHFREE_ENV } = require('./services/cashfree');
+
 // Import auth middleware for securing admin routes
 const { authenticateToken, authorizeRoles } = require('./middlewares/auth');
 
@@ -179,6 +182,10 @@ app.get('/health', (req, res) => {
             ...getDiagnostics(),
             qr_loaded: !!getQR(),
             qr_length: getQR() ? getQR().length : 0
+        },
+        cashfree_diagnostics: {
+            has_credentials: hasCredentials(),
+            env: CASHFREE_ENV
         },
         timestamp: new Date() 
     });

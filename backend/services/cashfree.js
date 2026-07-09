@@ -11,7 +11,7 @@ const BASE_URL = CASHFREE_ENV === 'production'
 // Mock payment flows are ONLY allowed in non-production environments.
 // In production, missing credentials must fail closed to prevent
 // attackers from confirming bookings/fees without paying.
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || CASHFREE_ENV === 'production';
+const IS_PRODUCTION = CASHFREE_ENV === 'production';
 const hasCredentials = () => Boolean(CASHFREE_APP_ID && CASHFREE_SECRET_KEY);
 const assertCredentialsInProduction = (operation) => {
     if (IS_PRODUCTION && !hasCredentials()) {
@@ -82,8 +82,8 @@ async function createPaymentLink({ linkId, amount, customerPhone, customerName, 
 
     if (!hasCredentials()) {
         console.log('Cashfree credentials missing (non-production). Generating MOCK Payment Link...');
-        // We link to a simulated mock payment portal on the local backend (dev only)
-        return `http://localhost:5001/mock-payment.html?order_id=${linkId}&amount=${amount}`;
+        const backendUrl = process.env.BACKEND_SELF_URL || 'http://localhost:5001';
+        return `${backendUrl.replace(/\/+$/, '')}/mock-payment.html?order_id=${linkId}&amount=${amount}`;
     }
 
     try {
@@ -211,5 +211,7 @@ module.exports = {
     createOrder,
     createPaymentLink,
     verifyPayment,
-    refundPayment
+    refundPayment,
+    hasCredentials,
+    CASHFREE_ENV
 };
