@@ -594,17 +594,22 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         let newBooking;
 
         if (paymentType === 'link') {
-            // Online Payment Link flow
-            const { createPaymentLink } = require('../services/cashfree');
+            // Online Checkout Session Flow (bypasses care@cashfree.com link approval restriction)
+            const { createOrder } = require('../services/cashfree');
             const returnUrl = `${FRONTEND_URL}/book?order_id=${orderId}&payment_status=success`;
-            const paymentLink = await createPaymentLink({
-                linkId: orderId,
+            const cfOrder = await createOrder({
                 amount: Number(paidAmount),
+                orderId: orderId,
                 customerPhone,
                 customerName,
                 customerEmail: customerEmail || 'no-email@khelopatna.in',
                 returnUrl
             });
+
+            const backendUrl = process.env.BACKEND_SELF_URL || 'https://khelo-patna-website.onrender.com';
+            const paymentLink = cfOrder.mock
+                ? `${backendUrl.replace(/\/+$/, '')}/mock-payment.html?order_id=${orderId}&amount=${paidAmount}`
+                : `${backendUrl.replace(/\/+$/, '')}/checkout.html?session_id=${cfOrder.payment_session_id}&env=${process.env.CASHFREE_ENV || 'sandbox'}`;
 
             newBooking = new Booking({
                 tenantId,
@@ -627,7 +632,20 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
             await newBooking.save();
 
             // Share Payment Link on WhatsApp
-            const waText = `💳 *KheloPatna Turf Payment Link* 💳\n\nDear ${customerName}, a turf booking has been initiated from the admin desk.\n\n*Booking Summary*:\n*   Sport: ${sport.toUpperCase()}\n*   Date: ${date}\n*   Slots: ${timeSlots.join(', ')}\n*   Amount Due: ₹${paidAmount}\n\nTo confirm your booking, please pay using this secure link:\n🔗 ${paymentLink}\n\nThank you! 🏆`;
+            const waText = `💳 *KheloPatna Turf Payment Link* 💳
+
+Dear ${customerName}, a turf booking has been initiated from the admin desk.
+
+*Booking Summary*:
+*   Sport: ${sport.toUpperCase()}
+*   Date: ${date}
+*   Slots: ${timeSlots.join(', ')}
+*   Amount Due: ₹${paidAmount}
+
+To confirm your booking, please pay using this secure link:
+🔗 ${paymentLink}
+
+Thank you! 🏆`;
             try {
                 await sendWhatsAppMessage(customerPhone, waText);
             } catch (waErr) {
