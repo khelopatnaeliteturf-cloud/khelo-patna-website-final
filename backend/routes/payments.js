@@ -700,7 +700,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         });
     } catch (err) {
         console.error('Create offline booking error:', err);
-        res.status(500).json({ error: 'Server error creating booking.' });
+        res.status(500).json({ error: err.message || 'Server error creating booking.' });
     }
 });
 

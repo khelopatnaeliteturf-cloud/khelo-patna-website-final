@@ -47,16 +47,21 @@ async function createOrder({ amount, orderId, customerName, customerEmail, custo
         };
     }
 
+    let cleanPhone = customerPhone.replace(/\D/g, '');
+    if (cleanPhone.length > 10) {
+        cleanPhone = cleanPhone.slice(-10);
+    }
+
     try {
         const response = await axios.post(`${BASE_URL}/orders`, {
             order_amount: amount,
             order_currency: 'INR',
             order_id: orderId,
             customer_details: {
-                customer_id: customerPhone,
+                customer_id: cleanPhone,
                 customer_name: customerName,
                 customer_email: customerEmail,
-                customer_phone: customerPhone
+                customer_phone: cleanPhone
             },
             order_meta: {
                 return_url: returnUrl
@@ -80,6 +85,11 @@ async function createOrder({ amount, orderId, customerName, customerEmail, custo
 async function createPaymentLink({ linkId, amount, customerPhone, customerName, customerEmail, returnUrl }) {
     assertCredentialsInProduction('create a payment link');
 
+    let cleanPhone = customerPhone.replace(/\D/g, '');
+    if (cleanPhone.length > 10) {
+        cleanPhone = cleanPhone.slice(-10);
+    }
+
     if (!hasCredentials()) {
         console.log('Cashfree credentials missing (non-production). Generating MOCK Payment Link...');
         const backendUrl = process.env.BACKEND_SELF_URL || 'http://localhost:5001';
@@ -93,7 +103,7 @@ async function createPaymentLink({ linkId, amount, customerPhone, customerName, 
             link_currency: 'INR',
             link_purpose: 'KheloPatna Turf Booking',
             customer_details: {
-                customer_phone: customerPhone,
+                customer_phone: cleanPhone,
                 customer_name: customerName,
                 customer_email: customerEmail
             },
