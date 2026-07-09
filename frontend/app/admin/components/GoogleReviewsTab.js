@@ -267,8 +267,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                     <div class="a4-container">
                         <div class="a4-inner-border"></div>
                         <div class="header">
-                            <div class="logo" style="display: flex; align-items: center; justify-content: center;">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>
+                            <div class="logo" style="display: flex; align-items: center; justify-content: center; overflow: hidden; background: #059669; padding: 4px;">
+                                <img src="${window.location.origin}/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" />
                             </div>
                             <div class="center-info">
                                 <div class="center-name">Khelo Patna Elite Turf</div>
@@ -401,6 +401,11 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                 </head>
                 <body>
                     <div class="card">
+                        <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                            <div style="width: 55px; height: 55px; border-radius: 12px; background: #059669; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 4px;">
+                                <img src="${window.location.origin}/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+                            </div>
+                        </div>
                         <div class="title">Rate Khelo Patna!</div>
                         <div class="subtitle">Scan this QR code to quickly rate and write a Google review using our AI review generator.</div>
                         <div class="qr-container">
@@ -450,32 +455,33 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
     const mockQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(reviewUrl || 'https://khelopatna.com/review')}`;
 
     return (
-        <div className="card-premium animate-fade-in">
+        <div className="glass-card animate-fade-in" style={{ padding: '28px' }}>
             {/* Header section with emerald visual tokens */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="material-icons-outlined" style={{ color: 'var(--emerald)' }}>reviews</span> Google Maps AI Review System
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#fff' }}>
+                    <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '24px' }}>reviews</span> Google Maps AI Review System
                 </h3>
             </div>
 
             {/* Custom Sub-tabs using Khelo Patna pills design */}
-            <div className="d-flex gap-2 border-bottom pb-3 mb-4">
+            <div className="d-flex gap-2 border-bottom pb-3 mb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                 <button
                     onClick={() => setActiveSubTab('poster')}
                     className={`btn-pill ${activeSubTab === 'poster' ? 'active' : ''}`}
                     style={{
-                        padding: '8px 16px',
-                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        borderRadius: '30px',
                         fontSize: '0.85rem',
                         fontWeight: '700',
                         border: 'none',
-                        background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.05)',
+                        background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
                         color: '#fff',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s'
+                        gap: '8px',
+                        transition: 'all 0.25s',
+                        boxShadow: activeSubTab === 'poster' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
                     }}
                 >
                     <span className="material-icons-outlined" style={{ fontSize: '18px' }}>print</span> QR Poster & Printables
@@ -484,18 +490,19 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                     onClick={() => setActiveSubTab('log')}
                     className={`btn-pill ${activeSubTab === 'log' ? 'active' : ''}`}
                     style={{
-                        padding: '8px 16px',
-                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        borderRadius: '30px',
                         fontSize: '0.85rem',
                         fontWeight: '700',
                         border: 'none',
-                        background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.05)',
+                        background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
                         color: '#fff',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s'
+                        gap: '8px',
+                        transition: 'all 0.25s',
+                        boxShadow: activeSubTab === 'log' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
                     }}
                 >
                     <span className="material-icons-outlined" style={{ fontSize: '18px' }}>insights</span> AI Generated Log & Device Stats
@@ -507,21 +514,22 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                     {/* Left: Design Preview */}
                     <div className="col-12 col-lg-5 d-flex flex-column align-items-center">
                         <div className="w-100 d-flex align-items-center justify-content-between mb-3">
-                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', uppercase: 'true', tracking: '0.1em' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                 DESIGN PREVIEW
                             </span>
-                            <div className="d-flex gap-1 p-1" style={{ background: 'rgba(255, 255, 255, 0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="d-flex gap-1 p-1" style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 <button
                                     onClick={() => setPreviewType('a4')}
                                     style={{
                                         border: 'none',
-                                        background: previewType === 'a4' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                        background: previewType === 'a4' ? 'rgba(255,255,255,0.08)' : 'transparent',
                                         color: '#fff',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
-                                        padding: '4px 10px',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer'
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
                                     }}
                                 >
                                     A4 Poster
@@ -530,13 +538,14 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     onClick={() => setPreviewType('card')}
                                     style={{
                                         border: 'none',
-                                        background: previewType === 'card' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                        background: previewType === 'card' ? 'rgba(255,255,255,0.08)' : 'transparent',
                                         color: '#fff',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
-                                        padding: '4px 10px',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer'
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
                                     }}
                                 >
                                     Compact Card
@@ -553,8 +562,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                 <div className="d-flex flex-column justify-content-between h-100" style={{ zIndex: 10 }}>
                                     {/* Header */}
                                     <div className="d-flex align-items-center gap-3 border-bottom pb-3 text-start" style={{ borderColor: 'rgba(251, 191, 36, 0.3)' }}>
-                                        <div className="logo d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '8px', background: '#059669' }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/></svg>
+                                        <div className="logo d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '8px', background: '#059669', overflow: 'hidden' }}>
+                                            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
                                         </div>
                                         <div>
                                             <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#059669', lineHeight: 1.1 }}>Khelo Patna Elite Turf</div>
@@ -574,7 +583,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                         </div>
-                                        <p style={{ fontSize: '0.68rem', color: '#64748b', lineHeight: 1.4, margin: '0 auto 12px auto', maxWidth: '90%' }}>
+                                        <p style={{ fontSize: '0.68rem', color: '#475569', lineHeight: 1.4, margin: '0 auto 12px auto', maxWidth: '90%', fontWeight: 500 }}>
                                             Your reviews help us grow. Scan the QR code below to quickly rate and write a Google review for our arena.
                                         </p>
 
@@ -591,7 +600,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
 
                                         {/* Steps */}
                                         <div className="w-100 bg-light rounded-3 p-2 text-start" style={{ border: '1px solid #e2e8f0' }}>
-                                            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', textAlign: 'center', marginBottom: '8px' }}>
+                                            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', textAlign: 'center', marginBottom: '8px' }}>
                                                 How to review in 4 steps
                                             </div>
                                             {[
@@ -600,8 +609,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                                 "Copy the generated review description.",
                                                 "Paste the review directly on Google Maps!",
                                             ].map((step, idx) => (
-                                                <div key={idx} className="d-flex gap-2 align-items-start mb-1" style={{ fontSize: '0.58rem', color: '#475569', lineHeight: 1.2 }}>
-                                                    <span style={{ background: '#059669', color: 'white', fontWeight: 'bold', width: '12px', height: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifycontent: 'center', flexShrink: 0, fontSize: '0.5rem', justifyContent: 'center' }}>
+                                                <div key={idx} className="d-flex gap-2 align-items-start mb-1" style={{ fontSize: '0.58rem', color: '#334155', lineHeight: 1.2, fontWeight: 500 }}>
+                                                    <span style={{ background: '#059669', color: 'white', fontWeight: 'bold', width: '12px', height: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.5rem' }}>
                                                         {idx + 1}
                                                     </span>
                                                     <span>{step}</span>
@@ -611,7 +620,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="border-t pt-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600 }}>
+                                    <div className="border-t pt-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.55rem', color: '#475569', fontWeight: 700 }}>
                                         <span>📍 Kumhrar, Sandalpur Road, Patna</span>
                                         <span>📧 service@khelopatna.in</span>
                                         <span>🌐 www.khelopatna.in</span>
@@ -621,10 +630,15 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         ) : (
                             <div className="w-100 max-w-sm bg-white text-dark rounded-4 p-4 text-center shadow-lg"
                                  style={{ border: '3px solid #059669', color: '#0f172a' }}>
+                                <div className="d-flex justify-content-center mb-3">
+                                    <div className="logo d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px', borderRadius: '10px', background: '#059669', overflow: 'hidden' }}>
+                                        <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
+                                    </div>
+                                </div>
                                 <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '8px' }}>
                                     Rate Us on Google!
                                 </h2>
-                                <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5, marginBottom: '20px' }}>
+                                <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.5, marginBottom: '20px', fontWeight: 500 }}>
                                     Scan this QR code to quickly rate and review your experience with Khelo Patna Elite Turf.
                                 </p>
                                 <div className="inline-block bg-light border rounded-3 p-3 mb-4">
@@ -634,7 +648,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                         style={{ width: '160px', height: '160px', display: 'block', margin: '0 auto', borderRadius: '6px' }}
                                     />
                                 </div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#059669', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#059669', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                     ⭐⭐ KHELO PATNA ELITE TURF ⭐⭐
                                 </div>
                             </div>
@@ -643,12 +657,12 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
 
                     {/* Right: Actions and Info */}
                     <div className="col-12 col-lg-7 d-flex flex-column gap-3">
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', uppercase: 'true', tracking: '0.1em' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                             ACTIONS & SETTINGS
                         </span>
 
-                        <div className="card-premium" style={{ border: '1px solid rgba(255,255,255,0.06)', padding: '24px' }}>
-                            <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '16px' }}>Print Actions</h4>
+                        <div className="glass-card" style={{ padding: '24px' }}>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '16px', color: '#fff' }}>Print Actions</h4>
                             <div className="row g-3 mb-4">
                                 <div className="col-12 col-md-6">
                                     <button
@@ -701,20 +715,20 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             </div>
                         </div>
 
-                        <div className="card-premium" style={{ border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
-                            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '8px' }}>Public Review Landing URL</h4>
-                            <div className="d-flex align-items-center gap-2 p-3 text-mono" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.8rem', color: '#68d391', wordBreak: 'break-all' }}>
-                                <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--text-muted)' }}>qr_code</span>
-                                <strong>{reviewUrl || 'Loading review url...'}</strong>
+                        <div className="glass-card" style={{ padding: '20px' }}>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '10px', color: '#fff' }}>Public Review Landing URL</h4>
+                            <div className="d-flex align-items-center gap-2 p-3 text-mono" style={{ background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', border: '1px dashed var(--emerald)', fontSize: '0.82rem', color: 'var(--text-primary)', wordBreak: 'break-all', fontWeight: 600 }}>
+                                <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>qr_code</span>
+                                <strong style={{ color: 'var(--emerald)' }}>{reviewUrl || 'Loading review url...'}</strong>
                             </div>
                         </div>
 
                         {/* Informational Alert Box */}
-                        <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '16px', padding: '16px', display: 'flex', gap: '12px' }}>
-                            <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '20px', marginTop: '2px' }}>info</span>
-                            <div style={{ fontSize: '0.78rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                                <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>How the AI review generator helps:</strong>
-                                <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '16px', padding: '18px', display: 'flex', gap: '14px' }}>
+                            <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '22px', marginTop: '2px' }}>info</span>
+                            <div style={{ fontSize: '0.8rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                                <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '6px', fontSize: '0.85rem' }}>How the AI review generator helps:</strong>
+                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontWeight: 500 }}>
                                     When customers scan the QR code and select a rating, our system calls the Groq Cloud API backend. It generates a unique, highly natural, short sports-focused review matching their score. The review is copied to their clipboard, and they are redirected to Google Maps where they can paste it in one click!
                                 </p>
                             </div>
