@@ -455,16 +455,16 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
     const mockQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(reviewUrl || 'https://khelopatna.com/review')}`;
 
     return (
-        <div className="glass-card animate-fade-in" style={{ padding: '28px' }}>
+        <div className="card-premium animate-fade-in" style={{ padding: '28px' }}>
             {/* Header section with emerald visual tokens */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#fff' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)' }}>
                     <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '24px' }}>reviews</span> Google Maps AI Review System
                 </h3>
             </div>
 
             {/* Custom Sub-tabs using Khelo Patna pills design */}
-            <div className="d-flex gap-2 border-bottom pb-3 mb-4" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
+            <div className="d-flex gap-2 border-bottom pb-3 mb-4" style={{ borderColor: 'var(--border-color)' }}>
                 <button
                     onClick={() => setActiveSubTab('poster')}
                     className={`btn-pill ${activeSubTab === 'poster' ? 'active' : ''}`}
@@ -475,7 +475,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: '#fff',
+                        color: activeSubTab === 'poster' ? '#fff' : 'var(--text-primary)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -496,7 +496,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: '#fff',
+                        color: activeSubTab === 'log' ? '#fff' : 'var(--text-primary)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -517,13 +517,13 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                 DESIGN PREVIEW
                             </span>
-                            <div className="d-flex gap-1 p-1" style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div className="d-flex gap-1 p-1" style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                                 <button
                                     onClick={() => setPreviewType('a4')}
                                     style={{
                                         border: 'none',
                                         background: previewType === 'a4' ? 'rgba(255,255,255,0.08)' : 'transparent',
-                                        color: '#fff',
+                                        color: 'var(--text-primary)',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
                                         padding: '6px 12px',
@@ -539,7 +539,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     style={{
                                         border: 'none',
                                         background: previewType === 'card' ? 'rgba(255,255,255,0.08)' : 'transparent',
-                                        color: '#fff',
+                                        color: 'var(--text-primary)',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
                                         padding: '6px 12px',
@@ -661,8 +661,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             ACTIONS & SETTINGS
                         </span>
 
-                        <div className="glass-card" style={{ padding: '24px' }}>
-                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '16px', color: '#fff' }}>Print Actions</h4>
+                        <div className="card-premium" style={{ padding: '24px' }}>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>Print Actions</h4>
                             <div className="row g-3 mb-4">
                                 <div className="col-12 col-md-6">
                                     <button
@@ -715,8 +715,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             </div>
                         </div>
 
-                        <div className="glass-card" style={{ padding: '20px' }}>
-                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '10px', color: '#fff' }}>Public Review Landing URL</h4>
+                        <div className="card-premium" style={{ padding: '20px' }}>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '10px', color: 'var(--text-primary)' }}>Public Review Landing URL</h4>
                             <div className="d-flex align-items-center gap-2 p-3 text-mono" style={{ background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', border: '1px dashed var(--emerald)', fontSize: '0.82rem', color: 'var(--text-primary)', wordBreak: 'break-all', fontWeight: 600 }}>
                                 <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>qr_code</span>
                                 <strong style={{ color: 'var(--emerald)' }}>{reviewUrl || 'Loading review url...'}</strong>
