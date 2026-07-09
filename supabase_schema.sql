@@ -204,7 +204,7 @@ CREATE TABLE bookings (
     time_slots TEXT[] NOT NULL, -- e.g. {"06:00-07:00", "07:00-08:00"}
     total_amount NUMERIC(10, 2) NOT NULL,
     paid_amount NUMERIC(10, 2) NOT NULL,
-    payment_status TEXT CHECK (payment_status IN ('PENDING', 'SUCCESS', 'FAILED')) DEFAULT 'PENDING',
+    payment_status TEXT CHECK (payment_status IN ('PENDING', 'SUCCESS', 'FAILED', 'CANCELLED')) DEFAULT 'PENDING',
     payment_method TEXT CHECK (payment_method IN ('cashfree', 'upi', 'cash', 'offline', 'card')) NOT NULL,
     discount NUMERIC(10, 2) DEFAULT 0.00,
     order_id TEXT UNIQUE NOT NULL,

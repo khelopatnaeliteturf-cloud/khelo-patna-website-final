@@ -870,7 +870,7 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
         });
     } catch (err) {
         console.error('Cancel-refund booking error:', err);
-        res.status(500).json({ error: 'Server error cancelling booking.' });
+        res.status(500).json({ error: err.message || 'Server error cancelling booking.' });
     }
 });
 
