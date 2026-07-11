@@ -54,10 +54,51 @@ async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookin
     });
 }
 
+const formatSlotTo12Hr = (slotStr) => {
+    if (!slotStr || !slotStr.includes('-')) return slotStr;
+    const parts = slotStr.split('-');
+    if (parts.length !== 2) return slotStr;
+    
+    const formatHour = (hStr) => {
+        let h = parseInt(hStr, 10);
+        if (isNaN(h)) return hStr;
+        h = h % 24;
+        const period = h >= 12 ? 'PM' : 'AM';
+        let h12 = h % 12;
+        if (h12 === 0) h12 = 12;
+        const padHour = String(h12).padStart(2, '0');
+        return `${padHour}:00 ${period}`;
+    };
+    
+    return `${formatHour(parts[0])} - ${formatHour(parts[1])}`;
+};
+
 // Helper to send booking notifications
 async function sendBookingNotifications(booking) {
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const waText = `⚽ *Booking Confirmation* ⚽\n\nDear ${booking.customerName}, your turf booking is confirmed!\n\n*Intake Details*:\n*   Sport: ${booking.sport.toUpperCase()}\n*   Date: ${booking.date}\n*   Slots: ${booking.timeSlots.join(', ')}\n*   Total Paid: ₹${booking.paidAmount}\n*   Order ID: ${booking.orderId}\n\nThank you for choosing KheloPatna! 🏆`;
+    
+    const totalAmount = Number(booking.totalAmount || 0);
+    const advancePaid = Number(booking.paidAmount || 0);
+    const balanceDue = Math.max(0, totalAmount - advancePaid);
+    const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
+
+    const waText = `⚽ *Booking Confirmation* ⚽
+
+Dear ${booking.customerName}, your turf booking is confirmed!
+
+*Booking Summary*:
+*   Sport: ${booking.sport.toUpperCase()}
+*   Date: ${booking.date}
+*   Timing: ${formattedTiming}
+*   Total Amount: ₹${totalAmount}
+*   Advance Paid: ₹${advancePaid}
+*   Balance Due: ₹${balanceDue}
+*   Order ID: ${booking.orderId}
+
+📍 *Location Map*:
+https://maps.app.goo.gl/yP95pL1J4jG8g31v8
+
+Thank you for choosing KheloPatna! 🏆`;
     
     await sendWhatsAppMessage(booking.customerPhone, waText);
     try {
@@ -632,15 +673,22 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
             await newBooking.save();
 
             // Share Payment Link on WhatsApp
+            const totalAmt = Number(totalAmount || 0);
+            const advanceDue = Number(paidAmount || 0);
+            const balanceRemaining = Math.max(0, totalAmt - advanceDue);
+            const formattedTiming = (timeSlots || []).map(formatSlotTo12Hr).join(', ');
+
             const waText = `💳 *KheloPatna Turf Payment Link* 💳
 
-Dear ${customerName}, a turf booking has been initiated from the admin desk.
+Dear ${customerName}, your turf booking has been initiated.
 
 *Booking Summary*:
 *   Sport: ${sport.toUpperCase()}
 *   Date: ${date}
-*   Slots: ${timeSlots.join(', ')}
-*   Amount Due: ₹${paidAmount}
+*   Timing: ${formattedTiming}
+*   Total Amount: ₹${totalAmt}
+*   Advance Due: ₹${advanceDue}
+*   Balance Remaining: ₹${balanceRemaining}
 
 To confirm your booking, please pay using this secure link:
 🔗 ${paymentLink}
