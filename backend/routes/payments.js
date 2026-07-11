@@ -575,14 +575,19 @@ router.post('/admin/customers/merge', authenticateToken, authorizeRoles('SUPER_A
         );
 
         // 5. Log event in system AuditLog
-        await AuditLog.create({
-            userId: req.user.id,
-            username: req.user.username,
-            role: req.user.role,
-            action: `Merged customer profile ${cleanSource} into ${cleanTarget} (Spelling: ${targetName.trim()}, Email: ${(targetEmail || '').trim()})`,
+        const AuditLogModel = require('../models/AuditLog');
+        await new AuditLogModel({
+            tenantId,
+            userId: req.user.username,
             module: 'CUSTOMERS',
-            tenantId
-        });
+            action: 'MERGE_CUSTOMERS',
+            newData: {
+                sourcePhone: cleanSource,
+                targetPhone: cleanTarget,
+                targetName: targetName.trim(),
+                targetEmail: (targetEmail || '').trim()
+            }
+        }).save();
 
         res.json({
             success: true,
@@ -594,7 +599,7 @@ router.post('/admin/customers/merge', authenticateToken, authorizeRoles('SUPER_A
         });
     } catch (err) {
         console.error('Error merging customer profiles:', err);
-        res.status(500).json({ error: 'Server error merging customer profiles.' });
+        res.status(500).json({ error: err.message || 'Server error merging customer profiles.' });
     }
 });
 
