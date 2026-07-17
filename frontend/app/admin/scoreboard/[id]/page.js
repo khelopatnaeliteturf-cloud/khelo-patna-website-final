@@ -416,7 +416,7 @@ export default function ScorekeeperPanel() {
                             {teamAScore} / {cr.wicketsA || 0}
                         </div>
                         <div style={{ fontSize: '20px', color: '#F1F5F9', fontWeight: '600' }}>
-                            Overs: {cr.oversA || '0.0'}
+                            Overs: {cr.oversA || '0.0'}{scoreboard.totalOvers ? ` / ${scoreboard.totalOvers}` : ''}
                         </div>
                         {cr.firstInningsScore != null && (
                             <div style={{ fontSize: '14px', color: '#94A3B8', marginTop: '8px' }}>
@@ -743,6 +743,7 @@ export default function ScorekeeperPanel() {
                         <div style={{ fontSize: '32px', fontWeight: '800', fontFamily: 'monospace', textAlign: 'center', color: '#FBBF24' }}>
                             {Math.floor(displaySeconds / 60).toString().padStart(2, '0')}:
                             {(displaySeconds % 60).toString().padStart(2, '0')}
+                            {scoreboard.matchDuration ? <span style={{ fontSize: '18px', color: '#64748B', marginLeft: '6px' }}>/ {scoreboard.matchDuration} min</span> : ''}
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             {fb.timerRunning ? (
@@ -1049,17 +1050,27 @@ export default function ScorekeeperPanel() {
                 {/* Header Back Link */}
                 <div style={{ marginBottom: '20px' }}>
                     <Link href="/admin/scoreboard" style={{ color: '#38BDF8', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
-                        ← Back to Scoreboard Manager
+                        ← Back to Control Center
                     </Link>
                 </div>
 
                 {/* Scoreboard Info */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
                     <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                             <span style={{ background: '#38BDF8', color: '#0F172A', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
                                 {sport}
                             </span>
+                            {scoreboard.matchFormat && (
+                                <span style={{ background: 'rgba(255,255,255,0.1)', color: '#FFF', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '4px' }}>
+                                    {scoreboard.matchFormat}
+                                </span>
+                            )}
+                            {scoreboard.matchType === 'tournament' && (
+                                <span style={{ background: 'rgba(245,158,11,0.2)', color: '#F59E0B', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '4px' }}>
+                                    🏆 TOURNAMENT
+                                </span>
+                            )}
                             <span style={{ color: '#94A3B8', fontSize: '13px' }}>Match Scorekeeper Panel</span>
                         </div>
                         <h1 style={{ fontSize: '28px', fontWeight: '800', margin: '10px 0 0 0', color: '#FFF' }}>{matchName}</h1>

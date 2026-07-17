@@ -132,6 +132,7 @@ const uploadRoutes = require('./routes/upload');
 const financeRoutes = require('./routes/finance');
 const reviewsRoutes = require('./routes/reviews');
 const scoreboardsRoutes = require('./routes/scoreboards');
+const tournamentsRoutes = require('./routes/tournaments');
 
 // Apply Routes
 app.use('/api', authRoutes);
@@ -145,6 +146,7 @@ app.use('/api', uploadRoutes);
 app.use('/api', financeRoutes);
 app.use('/api', reviewsRoutes);
 app.use('/api', scoreboardsRoutes);
+app.use('/api', tournamentsRoutes);
 
 // WhatsApp Status API for Admin Dashboard (Secured)
 app.get('/api/admin/whatsapp/status', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), (req, res) => {

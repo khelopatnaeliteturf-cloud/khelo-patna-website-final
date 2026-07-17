@@ -101,7 +101,7 @@ router.get('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACA
 
 // 4. ADMIN: Create a new scoreboard
 router.post('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), async (req, res) => {
-    const { sport, matchName, teamAName, teamBName, bookingId } = req.body;
+    const { sport, matchName, teamAName, teamBName, bookingId, matchType, matchFormat, totalOvers, matchDuration, tournamentId, matchNumber, teamAColor, teamBColor } = req.body;
     const tenantId = req.user.tenantId;
     const branchId = req.user.branchId;
     
@@ -121,6 +121,14 @@ router.post('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'AC
             teamAScore: 0,
             teamBScore: 0,
             status: 'LIVE',
+            matchType: matchType || 'standalone',
+            matchFormat: matchFormat || null,
+            totalOvers: totalOvers ? Number(totalOvers) : null,
+            matchDuration: matchDuration ? Number(matchDuration) : null,
+            tournamentId: tournamentId || null,
+            matchNumber: matchNumber || null,
+            teamAColor: teamAColor || '#38BDF8',
+            teamBColor: teamBColor || '#EF4444',
             currentInnings: 1,
             currentBattingTeam: 'A',
             winner: null,
