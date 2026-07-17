@@ -7231,15 +7231,12 @@ export default function AdminDashboard() {
                     <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                         <img 
                             src="/logo.png" 
-                            alt="" 
+                            alt="Logo" 
                             style={{ 
                                 width: '100%', 
                                 height: '100%', 
-                                objectFit: 'contain',
-                                opacity: 0,
-                                transition: 'opacity 0.2s ease'
+                                objectFit: 'contain'
                             }} 
-                            onLoad={(e) => e.currentTarget.style.opacity = 1}
                         />
                     </div>
                     <div className="sidebar-brand-text">

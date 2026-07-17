@@ -4,6 +4,11 @@ export const metadata = {
   title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
   description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling. Play Elite, Play Patna.",
   keywords: "turf booking, indoor cricket, indoor football, Patna sports, KheloPatna, sports academy",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/logo.png",
+  }
 };
 
 export default function RootLayout({ children }) {

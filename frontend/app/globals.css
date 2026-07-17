@@ -586,14 +586,17 @@ h1, h2, h3, h4, h5, h6,
     width: 100%;
 }
 .glass-input::placeholder { color: var(--text-muted); }
-.glass-input::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-    opacity: 0.6;
-    transition: opacity 0.2s ease;
-    cursor: pointer;
+input[type="date"] {
+    color-scheme: dark !important;
 }
-.glass-input::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s ease;
+    cursor: pointer !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1 !important;
 }
 .glass-input:focus {
     border-color: var(--neon) !important;
