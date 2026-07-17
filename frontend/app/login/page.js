@@ -26,6 +26,14 @@ async function parseJsonSafe(res) {
 export default function LoginPage() {
     const router = useRouter();
 
+    const getRedirectUrl = () => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('redirect') || '/admin';
+        }
+        return '/admin';
+    };
+
     useEffect(() => {
         const originalFetch = window.fetch;
         window.fetch = function (url, options = {}) {
@@ -109,8 +117,8 @@ export default function LoginPage() {
             localStorage.setItem('username', data.user.username);
             setSessionMarker();
 
-            // Redirect to dashboard
-            router.push('/admin');
+            // Redirect to dashboard or requested page
+            router.push(getRedirectUrl());
 
         } catch (err) {
             console.error(err);
@@ -153,7 +161,7 @@ export default function LoginPage() {
             localStorage.setItem('username', loginData.user.username);
             setSessionMarker();
 
-            router.push('/admin');
+            router.push(getRedirectUrl());
 
         } catch (err) {
             console.error(err);

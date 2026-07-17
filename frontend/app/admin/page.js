@@ -7273,6 +7273,18 @@ export default function AdminDashboard() {
                                         <span className="sidebar-link-label">{item.label}</span>
                                     </button>
                                 ))}
+
+                                <Link
+                                    href="/admin/scoreboard"
+                                    className="sidebar-link"
+                                    title={sidebarCollapsed ? 'Live Scoreboards' : ''}
+                                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+                                >
+                                    <div className="sidebar-icon-wrap">
+                                        <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--gold)' }}>sports_score</span>
+                                    </div>
+                                    <span className="sidebar-link-label" style={{ color: 'var(--text-primary)' }}>Live Scoreboards</span>
+                                </Link>
                             </>
                         );
                     })()}

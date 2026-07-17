@@ -25,7 +25,7 @@ export default function ScoreboardAdminDashboard() {
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         if (!storedToken) {
-            window.location.href = '/login';
+            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
             return;
         }
         setToken(storedToken);
