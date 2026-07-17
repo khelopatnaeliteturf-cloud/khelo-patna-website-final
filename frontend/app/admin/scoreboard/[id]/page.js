@@ -7,19 +7,65 @@ import Link from 'next/link';
 
 const BACKEND_URL = getBackendUrl();
 
+// ---------------------------------------------------------------------------
+// Style helpers (dark theme)
+// ---------------------------------------------------------------------------
+const btnStyle = (bg) => ({
+    background: bg, color: '#FFF', border: 'none', padding: '12px 20px',
+    borderRadius: '8px', fontWeight: '600', cursor: 'pointer', textAlign: 'center',
+    fontSize: '14px', transition: 'opacity 0.15s',
+});
+
+const miniBtnStyle = (bg, padding = '10px 20px') => ({
+    background: bg, color: '#FFF', border: 'none', padding,
+    borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '13px',
+});
+
+const inputStyle = {
+    background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)',
+    color: '#FFF', padding: '10px', borderRadius: '6px', width: '100%', boxSizing: 'border-box',
+};
+
+const sectionCard = {
+    background: '#1E293B', padding: '20px', borderRadius: '12px',
+    display: 'flex', flexDirection: 'column', gap: '15px',
+};
+
+const sectionTitle = (color = '#38BDF8') => ({
+    margin: 0, color, fontSize: '16px', fontWeight: '700',
+});
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export default function ScorekeeperPanel() {
     const params = useParams();
     const scoreboardId = params.id;
 
     const [scoreboard, setScoreboard] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    // Timer ref for Football matches
-    const timerRef = useRef(null);
+    // Winner modal state
+    const [showWinnerModal, setShowWinnerModal] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState(null);
 
+    // Goal scorer prompt state
+    const [goalScorerPrompt, setGoalScorerPrompt] = useState(null); // { team: 'A'|'B' }
+    const [goalScorerName, setGoalScorerName] = useState('');
+
+    // Undo – one-level snapshot
+    const lastStateRef = useRef(null);
+    const [canUndo, setCanUndo] = useState(false);
+
+    // Timer refs for Football
+    const timerRef = useRef(null);
+    const [displaySeconds, setDisplaySeconds] = useState(0);
+
+    // -----------------------------------------------------------------------
+    // Auth – preserved exactly
+    // -----------------------------------------------------------------------
     useEffect(() => {
         const verifySession = async () => {
             try {
@@ -40,6 +86,9 @@ export default function ScorekeeperPanel() {
         verifySession();
     }, []);
 
+    // -----------------------------------------------------------------------
+    // Fetch scoreboard
+    // -----------------------------------------------------------------------
     useEffect(() => {
         if (!authenticated || !scoreboardId) return;
 
@@ -58,38 +107,25 @@ export default function ScorekeeperPanel() {
             });
     }, [authenticated, scoreboardId]);
 
-    // Cleanup timer on unmount
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-        };
-    }, []);
-
-    // Sync match timer locally for football
+    // -----------------------------------------------------------------------
+    // Timer display – smooth 100ms interval for football
+    // -----------------------------------------------------------------------
     useEffect(() => {
         if (!scoreboard || scoreboard.sport !== 'football') return;
         const fb = scoreboard.settings?.football || {};
 
-        if (fb.timerRunning) {
+        const compute = () => {
+            let secs = fb.timerSeconds || 0;
+            if (fb.timerRunning && fb.timerStartAt) {
+                secs += (Date.now() - new Date(fb.timerStartAt).getTime()) / 1000;
+            }
+            setDisplaySeconds(Math.floor(secs));
+        };
+        compute();
+
+        if (fb.timerRunning && fb.timerStartAt) {
             if (!timerRef.current) {
-                timerRef.current = setInterval(() => {
-                    setScoreboard(prev => {
-                        if (!prev) return null;
-                        const prevFb = prev.settings?.football || {};
-                        const newSeconds = (prevFb.timerSeconds || 0) + 1;
-                        
-                        return {
-                            ...prev,
-                            settings: {
-                                ...prev.settings,
-                                football: {
-                                    ...prevFb,
-                                    timerSeconds: newSeconds
-                                }
-                            }
-                        };
-                    });
-                }, 1000);
+                timerRef.current = setInterval(compute, 100);
             }
         } else {
             if (timerRef.current) {
@@ -97,16 +133,30 @@ export default function ScorekeeperPanel() {
                 timerRef.current = null;
             }
         }
-    }, [scoreboard?.settings?.football?.timerRunning]);
 
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        };
+    }, [scoreboard?.settings?.football?.timerRunning, scoreboard?.settings?.football?.timerStartAt, scoreboard?.settings?.football?.timerSeconds]);
+
+    // -----------------------------------------------------------------------
+    // Save helper – stores undo snapshot before every save
+    // -----------------------------------------------------------------------
     const saveScoreboardState = async (updatedFields) => {
+        // Snapshot current state for undo
+        if (scoreboard) {
+            lastStateRef.current = JSON.parse(JSON.stringify(scoreboard));
+            setCanUndo(true);
+        }
+
         setSaving(true);
         try {
             const res = await fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(updatedFields)
             });
@@ -125,6 +175,49 @@ export default function ScorekeeperPanel() {
         }
     };
 
+    // -----------------------------------------------------------------------
+    // Undo handler
+    // -----------------------------------------------------------------------
+    const handleUndo = async () => {
+        if (!lastStateRef.current) return;
+        const prev = lastStateRef.current;
+        setSaving(true);
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    teamAScore: prev.teamAScore,
+                    teamBScore: prev.teamBScore,
+                    status: prev.status,
+                    settings: prev.settings,
+                    events: prev.events,
+                    winner: prev.winner,
+                })
+            });
+            if (!res.ok) throw new Error('Undo failed');
+            const data = await res.json();
+            setScoreboard(data);
+            lastStateRef.current = null;
+            setCanUndo(false);
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // -----------------------------------------------------------------------
+    // Events helper – appends an event to the events array
+    // -----------------------------------------------------------------------
+    const appendEvent = (currentEvents, event) => {
+        return [...(currentEvents || []), { ...event, timestamp: new Date().toISOString() }];
+    };
+
+    // -----------------------------------------------------------------------
+    // Score update (generic)
+    // -----------------------------------------------------------------------
     const updateScore = (team, delta) => {
         if (!scoreboard) return;
         if (team === 'A') {
@@ -136,10 +229,31 @@ export default function ScorekeeperPanel() {
         }
     };
 
+    // -----------------------------------------------------------------------
+    // Status change – with winner modal for FINISHED
+    // -----------------------------------------------------------------------
     const handleStatusChange = (newStatus) => {
-        saveScoreboardState({ status: newStatus });
+        if (newStatus === 'FINISHED') {
+            setPendingStatus(newStatus);
+            setShowWinnerModal(true);
+        } else {
+            saveScoreboardState({ status: newStatus });
+        }
     };
 
+    const confirmWinner = (winner) => {
+        const events = appendEvent(scoreboard.events, {
+            type: 'match_finished',
+            winner,
+        });
+        saveScoreboardState({ status: pendingStatus, winner, events });
+        setShowWinnerModal(false);
+        setPendingStatus(null);
+    };
+
+    // -----------------------------------------------------------------------
+    // Loading / empty states
+    // -----------------------------------------------------------------------
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0F172A', color: '#FFF' }}>
@@ -152,9 +266,9 @@ export default function ScorekeeperPanel() {
 
     const { sport, matchName, teamAName, teamBName, teamAScore, teamBScore, status, settings } = scoreboard;
 
-    // ----------------------------------------------------
-    // SPORT CONTROL 1: CRICKET PANEL
-    // ----------------------------------------------------
+    // ======================================================================
+    // CRICKET PANEL
+    // ======================================================================
     const renderCricketControls = () => {
         const cr = settings?.cricket || {};
 
@@ -162,10 +276,7 @@ export default function ScorekeeperPanel() {
             saveScoreboardState({
                 settings: {
                     ...settings,
-                    cricket: {
-                        ...cr,
-                        ...fields
-                    }
+                    cricket: { ...cr, ...fields }
                 }
             });
         };
@@ -178,29 +289,39 @@ export default function ScorekeeperPanel() {
             let balls = parseInt(parts[1], 10);
 
             let newOverSummary = [...(cr.overSummary || [])];
-            
+
+            // Build event
+            let eventType = 'runs';
+            const eventDetails = { runs, team: cr.currentBattingTeam || 'A' };
+
             if (!isExtra) {
                 balls += 1;
                 newOverSummary.push(runs.toString());
+                if (runs === 4) eventType = 'boundary_four';
+                if (runs === 6) eventType = 'boundary_six';
                 if (balls >= 6) {
                     overs += 1;
                     balls = 0;
-                    newOverSummary = []; // clear summary for new over
+                    newOverSummary = [];
                 }
             } else {
                 newOverSummary.push(extraType);
+                eventType = 'extra';
+                eventDetails.extraType = extraType;
             }
 
             const nextOvers = `${overs}.${balls}`;
+            const events = appendEvent(scoreboard.events, { type: eventType, ...eventDetails });
 
             saveScoreboardState({
                 teamAScore: nextRuns,
+                events,
                 settings: {
                     ...settings,
                     cricket: {
                         ...cr,
                         oversA: nextOvers,
-                        overSummary: newOverSummary
+                        overSummary: newOverSummary,
                     }
                 }
             });
@@ -222,15 +343,58 @@ export default function ScorekeeperPanel() {
             }
 
             const nextOvers = `${overs}.${balls}`;
+            const events = appendEvent(scoreboard.events, {
+                type: 'wicket',
+                team: cr.currentBattingTeam || 'A',
+                wickets: nextWickets,
+            });
 
             saveScoreboardState({
+                events,
                 settings: {
                     ...settings,
                     cricket: {
                         ...cr,
                         wicketsA: nextWickets,
                         oversA: nextOvers,
-                        overSummary: newOverSummary
+                        overSummary: newOverSummary,
+                    }
+                }
+            });
+        };
+
+        const handleSwitchInnings = () => {
+            if (!confirm('Switch innings? This will archive the current batting score and set the target.')) return;
+
+            const firstInningsScore = teamAScore;
+            const target = firstInningsScore + 1;
+
+            const events = appendEvent(scoreboard.events, {
+                type: 'innings_switch',
+                innings: 2,
+                firstInningsScore,
+                target,
+            });
+
+            saveScoreboardState({
+                teamAScore: 0,
+                events,
+                settings: {
+                    ...settings,
+                    cricket: {
+                        ...cr,
+                        currentInnings: 2,
+                        currentBattingTeam: 'B',
+                        firstInningsScore,
+                        target,
+                        oversA: '0.0',
+                        wicketsA: 0,
+                        ballsInOver: 0,
+                        overSummary: [],
+                        partnership: 0,
+                        currentBatsman1: '',
+                        currentBatsman2: '',
+                        currentBowler: '',
                     }
                 }
             });
@@ -246,7 +410,7 @@ export default function ScorekeeperPanel() {
                 }}>
                     <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '14px', color: '#94A3B8', fontWeight: '700', textTransform: 'uppercase' }}>
-                            Batting: {teamAName}
+                            {cr.currentInnings === 2 ? '2nd Innings' : '1st Innings'} — Batting: {cr.currentBattingTeam === 'B' ? teamBName : teamAName}
                         </div>
                         <div style={{ fontSize: '64px', fontWeight: '900', color: '#38BDF8', margin: '10px 0' }}>
                             {teamAScore} / {cr.wicketsA || 0}
@@ -254,14 +418,19 @@ export default function ScorekeeperPanel() {
                         <div style={{ fontSize: '20px', color: '#F1F5F9', fontWeight: '600' }}>
                             Overs: {cr.oversA || '0.0'}
                         </div>
+                        {cr.firstInningsScore != null && (
+                            <div style={{ fontSize: '14px', color: '#94A3B8', marginTop: '8px' }}>
+                                1st Innings: {cr.firstInningsScore} | Target: {cr.target}
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Scorekeeper Buttons */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     {/* Runs Increments */}
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Add Runs (Batting Team)</h3>
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Add Runs (Batting Team)</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                             <button onClick={() => handleRunAndBall(0)} style={btnStyle('#0F172A')}>Dot Ball</button>
                             <button onClick={() => handleRunAndBall(1)} style={btnStyle('#0284C7')}>+1 Run</button>
@@ -273,8 +442,8 @@ export default function ScorekeeperPanel() {
                     </div>
 
                     {/* Extras & Wickets */}
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#F43F5E', fontSize: '16px' }}>Wickets & Extras</h3>
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle('#F43F5E')}>Wickets & Extras</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                             <button onClick={handleWicket} style={{ ...btnStyle('#EF4444'), gridColumn: 'span 2' }}>
                                 🔴 WICKET!
@@ -289,14 +458,47 @@ export default function ScorekeeperPanel() {
                     </div>
                 </div>
 
+                {/* Switch Innings */}
+                {(cr.currentInnings || 1) === 1 && (
+                    <div style={{ ...sectionCard, alignItems: 'center', border: '2px dashed #F59E0B' }}>
+                        <h3 style={sectionTitle('#F59E0B')}>⚠️ Innings Control</h3>
+                        <button
+                            onClick={handleSwitchInnings}
+                            style={{ ...btnStyle('#F59E0B'), fontSize: '16px', padding: '14px 32px' }}
+                        >
+                            🔄 Switch Innings (End 1st Innings)
+                        </button>
+                        <span style={{ fontSize: '12px', color: '#94A3B8' }}>
+                            This archives the current score, sets target, and resets for 2nd innings.
+                        </span>
+                    </div>
+                )}
+
+                {/* Over Summary */}
+                {(cr.overSummary || []).length > 0 && (
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Current Over</h3>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {cr.overSummary.map((ball, i) => (
+                                <span key={i} style={{
+                                    background: ball === 'W' ? '#EF4444' : ball === '4' ? '#10B981' : ball === '6' ? '#8B5CF6' : '#334155',
+                                    color: '#FFF', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '14px',
+                                }}>
+                                    {ball}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Match Information / Settings */}
-                <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Batter & Bowler Settings</h3>
+                <div style={sectionCard}>
+                    <h3 style={sectionTitle()}>Batter & Bowler Settings</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Striker Batsman</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="e.g. Aarav"
                                 value={cr.currentBatsman1 || ''}
                                 onChange={(e) => updateCricketSettings({ currentBatsman1: e.target.value })}
@@ -305,8 +507,8 @@ export default function ScorekeeperPanel() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Non-Striker Batsman</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="e.g. Rahul"
                                 value={cr.currentBatsman2 || ''}
                                 onChange={(e) => updateCricketSettings({ currentBatsman2: e.target.value })}
@@ -315,8 +517,8 @@ export default function ScorekeeperPanel() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Current Bowler</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="e.g. Karan"
                                 value={cr.currentBowler || ''}
                                 onChange={(e) => updateCricketSettings({ currentBowler: e.target.value })}
@@ -327,8 +529,8 @@ export default function ScorekeeperPanel() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Target Score</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 placeholder="e.g. 145"
                                 value={cr.target || ''}
                                 onChange={(e) => updateCricketSettings({ target: e.target.value ? parseInt(e.target.value, 10) : null })}
@@ -337,8 +539,8 @@ export default function ScorekeeperPanel() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Adjust Overs manually (e.g. 12.3)</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 placeholder="Overs"
                                 value={cr.oversA || '0.0'}
                                 onChange={(e) => updateCricketSettings({ oversA: e.target.value })}
@@ -351,9 +553,9 @@ export default function ScorekeeperPanel() {
         );
     };
 
-    // ----------------------------------------------------
-    // SPORT CONTROL 2: FOOTBALL PANEL
-    // ----------------------------------------------------
+    // ======================================================================
+    // FOOTBALL PANEL
+    // ======================================================================
     const renderFootballControls = () => {
         const fb = settings?.football || {};
 
@@ -361,28 +563,148 @@ export default function ScorekeeperPanel() {
             saveScoreboardState({
                 settings: {
                     ...settings,
-                    football: {
-                        ...fb,
-                        ...fields
-                    }
+                    football: { ...fb, ...fields }
                 }
             });
         };
 
-        const toggleTimer = () => {
-            const nextRunning = !fb.timerRunning;
-            updateFootballSettings({ timerRunning: nextRunning });
+        // ----- Timer sync fix -----
+        const handleStartTimer = () => {
+            updateFootballSettings({
+                timerRunning: true,
+                timerStartAt: new Date().toISOString(),
+                // timerSeconds stays as the base
+            });
+        };
+
+        const handlePauseTimer = () => {
+            const base = fb.timerSeconds || 0;
+            const startAt = fb.timerStartAt;
+            let elapsed = 0;
+            if (startAt) {
+                elapsed = (Date.now() - new Date(startAt).getTime()) / 1000;
+            }
+            updateFootballSettings({
+                timerSeconds: Math.floor(base + elapsed),
+                timerRunning: false,
+                timerStartAt: null,
+            });
         };
 
         const resetTimer = () => {
             if (confirm('Reset timer to 0?')) {
-                updateFootballSettings({ timerSeconds: 0, timerRunning: false });
+                updateFootballSettings({ timerSeconds: 0, timerRunning: false, timerStartAt: null });
             }
+        };
+
+        // ----- Goal with scorer prompt -----
+        const handleGoal = (team) => {
+            setGoalScorerPrompt({ team });
+            setGoalScorerName('');
+        };
+
+        const confirmGoal = () => {
+            const team = goalScorerPrompt.team;
+            const scorer = goalScorerName.trim() || 'Unknown';
+            const minute = displaySeconds;
+
+            const goalScorers = [...(fb.goalScorers || []), { team, scorer, minute }];
+            const events = appendEvent(scoreboard.events, {
+                type: 'goal',
+                team,
+                scorer,
+                minute,
+            });
+
+            const scoreField = team === 'A'
+                ? { teamAScore: scoreboard.teamAScore + 1 }
+                : { teamBScore: scoreboard.teamBScore + 1 };
+
+            // Snapshot for undo before saving
+            if (scoreboard) {
+                lastStateRef.current = JSON.parse(JSON.stringify(scoreboard));
+                setCanUndo(true);
+            }
+
+            setSaving(true);
+            fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    ...scoreField,
+                    events,
+                    settings: { ...settings, football: { ...fb, goalScorers } },
+                })
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save goal');
+                    return res.json();
+                })
+                .then(data => setScoreboard(data))
+                .catch(err => alert(err.message))
+                .finally(() => setSaving(false));
+
+            setGoalScorerPrompt(null);
+        };
+
+        const skipGoalScorer = () => {
+            setGoalScorerName('');
+            confirmGoal();
+        };
+
+        // ----- Cards -----
+        const handleCard = (cardType, team, delta) => {
+            const field = `${cardType}Cards${team}`;
+            const newVal = Math.max(0, (fb[field] || 0) + delta);
+            const events = appendEvent(scoreboard.events, {
+                type: cardType === 'yellow' ? 'yellow_card' : 'red_card',
+                team,
+                count: newVal,
+            });
+            // Save via saveScoreboardState (captures undo snapshot)
+            saveScoreboardState({
+                events,
+                settings: { ...settings, football: { ...fb, [field]: newVal } },
+            });
         };
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                
+
+                {/* Goal scorer prompt modal */}
+                {goalScorerPrompt && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        zIndex: 1000,
+                    }}>
+                        <div style={{
+                            background: '#1E293B', padding: '30px', borderRadius: '16px',
+                            width: '400px', maxWidth: '90vw', display: 'flex', flexDirection: 'column', gap: '15px',
+                        }}>
+                            <h3 style={{ margin: 0, color: '#38BDF8' }}>
+                                ⚽ Goal for {goalScorerPrompt.team === 'A' ? teamAName : teamBName}
+                            </h3>
+                            <label style={{ fontSize: '13px', color: '#94A3B8' }}>Goal scored by? (optional)</label>
+                            <input
+                                type="text"
+                                placeholder="Player name"
+                                value={goalScorerName}
+                                onChange={(e) => setGoalScorerName(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && confirmGoal()}
+                                style={inputStyle}
+                                autoFocus
+                            />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button onClick={confirmGoal} style={btnStyle('#10B981')}>Confirm Goal</button>
+                                <button onClick={skipGoalScorer} style={btnStyle('#64748B')}>Skip Name</button>
+                                <button onClick={() => setGoalScorerPrompt(null)} style={btnStyle('#374151')}>Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Score keeper board */}
                 <div style={{
                     background: '#1E293B', padding: '30px', borderRadius: '16px',
@@ -394,7 +716,7 @@ export default function ScorekeeperPanel() {
                         <div style={{ fontSize: '20px', fontWeight: '800' }}>{teamAName}</div>
                         <div style={{ fontSize: '72px', fontWeight: '900', color: '#10B981', margin: '15px 0' }}>{teamAScore}</div>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                            <button onClick={() => updateScore('A', 1)} style={miniBtnStyle('#10B981')}>+ Goal</button>
+                            <button onClick={() => handleGoal('A')} style={miniBtnStyle('#10B981')}>+ Goal</button>
                             <button onClick={() => updateScore('A', -1)} style={miniBtnStyle('#64748B')}>- Goal</button>
                         </div>
                     </div>
@@ -406,7 +728,7 @@ export default function ScorekeeperPanel() {
                         <div style={{ fontSize: '20px', fontWeight: '800' }}>{teamBName}</div>
                         <div style={{ fontSize: '72px', fontWeight: '900', color: '#10B981', margin: '15px 0' }}>{teamBScore}</div>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                            <button onClick={() => updateScore('B', 1)} style={miniBtnStyle('#10B981')}>+ Goal</button>
+                            <button onClick={() => handleGoal('B')} style={miniBtnStyle('#10B981')}>+ Goal</button>
                             <button onClick={() => updateScore('B', -1)} style={miniBtnStyle('#64748B')}>- Goal</button>
                         </div>
                     </div>
@@ -414,41 +736,41 @@ export default function ScorekeeperPanel() {
 
                 {/* Match Timer & Period Settings */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    
-                    {/* Timer Controls */}
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Match Timer</h3>
+
+                    {/* Timer Controls — synced */}
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Match Timer</h3>
                         <div style={{ fontSize: '32px', fontWeight: '800', fontFamily: 'monospace', textAlign: 'center', color: '#FBBF24' }}>
-                            {Math.floor((fb.timerSeconds || 0) / 60).toString().padStart(2, '0')}:
-                            {((fb.timerSeconds || 0) % 60).toString().padStart(2, '0')}
+                            {Math.floor(displaySeconds / 60).toString().padStart(2, '0')}:
+                            {(displaySeconds % 60).toString().padStart(2, '0')}
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={toggleTimer} style={btnStyle(fb.timerRunning ? '#EF4444' : '#10B981')}>
-                                {fb.timerRunning ? '⏸️ Pause' : '▶️ Start'}
-                            </button>
-                            <button onClick={resetTimer} style={btnStyle('#374151')}>
-                                🔄 Reset
-                            </button>
+                            {fb.timerRunning ? (
+                                <button onClick={handlePauseTimer} style={btnStyle('#EF4444')}>⏸️ Pause</button>
+                            ) : (
+                                <button onClick={handleStartTimer} style={btnStyle('#10B981')}>▶️ Start</button>
+                            )}
+                            <button onClick={resetTimer} style={btnStyle('#374151')}>🔄 Reset</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Manually Set Time (Seconds)</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 value={fb.timerSeconds || 0}
-                                onChange={(e) => updateFootballSettings({ timerSeconds: parseInt(e.target.value || 0, 10) })}
+                                onChange={(e) => updateFootballSettings({ timerSeconds: parseInt(e.target.value || 0, 10), timerStartAt: null, timerRunning: false })}
                                 style={inputStyle}
                             />
                         </div>
                     </div>
 
                     {/* Cards & Period */}
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Period & Card Controls</h3>
-                        
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Period & Card Controls</h3>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <label style={{ fontSize: '12px', color: '#94A3B8' }}>Current Half</label>
-                            <select 
-                                value={fb.half || '1st'} 
+                            <select
+                                value={fb.half || '1st'}
                                 onChange={(e) => updateFootballSettings({ half: e.target.value })}
                                 style={{
                                     background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)',
@@ -463,32 +785,73 @@ export default function ScorekeeperPanel() {
                             </select>
                         </div>
 
+                        {/* Yellow Cards */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                                <span style={{ fontSize: '12px', color: '#EAB308' }}>🟨 Yellow ({teamAName})</span>
+                                <span style={{ fontSize: '12px', color: '#EAB308' }}>🟨 Yellow ({teamAName}): {fb.yellowCardsA || 0}</span>
                                 <div style={{ display: 'flex', gap: '4px' }}>
-                                    <button onClick={() => updateFootballSettings({ yellowCardsA: (fb.yellowCardsA || 0) + 1 })} style={miniBtnStyle('#EAB308', '6px 12px')}>+</button>
-                                    <button onClick={() => updateFootballSettings({ yellowCardsA: Math.max(0, (fb.yellowCardsA || 0) - 1) })} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
+                                    <button onClick={() => handleCard('yellow', 'A', 1)} style={miniBtnStyle('#EAB308', '6px 12px')}>+</button>
+                                    <button onClick={() => handleCard('yellow', 'A', -1)} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                                <span style={{ fontSize: '12px', color: '#EAB308' }}>🟨 Yellow ({teamBName})</span>
+                                <span style={{ fontSize: '12px', color: '#EAB308' }}>🟨 Yellow ({teamBName}): {fb.yellowCardsB || 0}</span>
                                 <div style={{ display: 'flex', gap: '4px' }}>
-                                    <button onClick={() => updateFootballSettings({ yellowCardsB: (fb.yellowCardsB || 0) + 1 })} style={miniBtnStyle('#EAB308', '6px 12px')}>+</button>
-                                    <button onClick={() => updateFootballSettings({ yellowCardsB: Math.max(0, (fb.yellowCardsB || 0) - 1) })} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
+                                    <button onClick={() => handleCard('yellow', 'B', 1)} style={miniBtnStyle('#EAB308', '6px 12px')}>+</button>
+                                    <button onClick={() => handleCard('yellow', 'B', -1)} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Red Cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                <span style={{ fontSize: '12px', color: '#EF4444' }}>🟥 Red ({teamAName}): {fb.redCardsA || 0}</span>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button onClick={() => handleCard('red', 'A', 1)} style={miniBtnStyle('#EF4444', '6px 12px')}>+</button>
+                                    <button onClick={() => handleCard('red', 'A', -1)} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                <span style={{ fontSize: '12px', color: '#EF4444' }}>🟥 Red ({teamBName}): {fb.redCardsB || 0}</span>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                    <button onClick={() => handleCard('red', 'B', 1)} style={miniBtnStyle('#EF4444', '6px 12px')}>+</button>
+                                    <button onClick={() => handleCard('red', 'B', -1)} style={miniBtnStyle('#64748B', '6px 12px')}>-</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
+
+                {/* Goal Scorers log */}
+                {(fb.goalScorers || []).length > 0 && (
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>⚽ Goal Scorers</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {fb.goalScorers.map((g, i) => (
+                                <div key={i} style={{
+                                    display: 'flex', justifyContent: 'space-between', padding: '6px 0',
+                                    borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '14px',
+                                }}>
+                                    <span style={{ color: g.team === 'A' ? '#38BDF8' : '#34D399' }}>
+                                        {g.team === 'A' ? teamAName : teamBName}
+                                    </span>
+                                    <span>{g.scorer}</span>
+                                    <span style={{ color: '#94A3B8' }}>
+                                        {Math.floor((g.minute || 0) / 60)}&apos;
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
 
-    // ----------------------------------------------------
-    // SPORT CONTROL 3: BADMINTON PANEL
-    // ----------------------------------------------------
+    // ======================================================================
+    // BADMINTON PANEL
+    // ======================================================================
     const renderBadmintonControls = () => {
         const bd = settings?.badminton || {};
 
@@ -496,18 +859,40 @@ export default function ScorekeeperPanel() {
             saveScoreboardState({
                 settings: {
                     ...settings,
-                    badminton: {
-                        ...bd,
-                        ...fields
-                    }
+                    badminton: { ...bd, ...fields }
                 }
             });
+        };
+
+        // Auto-serve toggle on point scored
+        const handlePoint = (team, delta) => {
+            if (!scoreboard) return;
+            const currentServing = bd.serving || 'A';
+
+            if (delta > 0) {
+                // Auto-toggle serve on point scored
+                const nextServing = currentServing === 'A' ? 'B' : 'A';
+                const scoreField = team === 'A'
+                    ? { teamAScore: Math.max(0, scoreboard.teamAScore + delta) }
+                    : { teamBScore: Math.max(0, scoreboard.teamBScore + delta) };
+
+                saveScoreboardState({
+                    ...scoreField,
+                    settings: {
+                        ...settings,
+                        badminton: { ...bd, serving: nextServing }
+                    }
+                });
+            } else {
+                // Negative delta – just update score, no serve change
+                updateScore(team, delta);
+            }
         };
 
         const handleSetFinished = () => {
             const nextScores = [...(bd.setScores || [])];
             nextScores.push({ a: teamAScore, b: teamBScore });
-            
+
             let nextSetsWonA = bd.setsWonA || 0;
             let nextSetsWonB = bd.setsWonB || 0;
             if (teamAScore > teamBScore) nextSetsWonA++;
@@ -550,8 +935,8 @@ export default function ScorekeeperPanel() {
                         </div>
                         <div style={{ fontSize: '72px', fontWeight: '900', color: '#10B981', margin: '15px 0' }}>{teamAScore}</div>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                            <button onClick={() => updateScore('A', 1)} style={miniBtnStyle('#10B981')}>+ Point</button>
-                            <button onClick={() => updateScore('A', -1)} style={miniBtnStyle('#64748B')}>- Point</button>
+                            <button onClick={() => handlePoint('A', 1)} style={miniBtnStyle('#10B981')}>+ Point</button>
+                            <button onClick={() => handlePoint('A', -1)} style={miniBtnStyle('#64748B')}>- Point</button>
                         </div>
                     </div>
 
@@ -567,25 +952,28 @@ export default function ScorekeeperPanel() {
                         </div>
                         <div style={{ fontSize: '72px', fontWeight: '900', color: '#10B981', margin: '15px 0' }}>{teamBScore}</div>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                            <button onClick={() => updateScore('B', 1)} style={miniBtnStyle('#10B981')}>+ Point</button>
-                            <button onClick={() => updateScore('B', -1)} style={miniBtnStyle('#64748B')}>- Point</button>
+                            <button onClick={() => handlePoint('B', 1)} style={miniBtnStyle('#10B981')}>+ Point</button>
+                            <button onClick={() => handlePoint('B', -1)} style={miniBtnStyle('#64748B')}>- Point</button>
                         </div>
                     </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Service & Set Actions</h3>
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Service & Set Actions</h3>
                         <button onClick={toggleServing} style={btnStyle('#0284C7')}>
                             📢 Toggle Server ({bd.serving === 'A' ? teamAName : teamBName})
                         </button>
+                        <span style={{ fontSize: '11px', color: '#94A3B8', textAlign: 'center' }}>
+                            Serve auto-toggles on each point scored
+                        </span>
                         <button onClick={handleSetFinished} style={btnStyle('#10B981')}>
                             🏆 Finish Current Set
                         </button>
                     </div>
 
-                    <div style={{ background: '#1E293B', padding: '20px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h3 style={{ margin: 0, color: '#38BDF8', fontSize: '16px' }}>Sets Score History</h3>
+                    <div style={sectionCard}>
+                        <h3 style={sectionTitle()}>Sets Score History</h3>
                         <div style={{ fontSize: '14px', color: '#94A3B8' }}>
                             Sets Won: {teamAName} ({bd.setsWonA || 0}) — {teamBName} ({bd.setsWonB || 0})
                         </div>
@@ -593,7 +981,7 @@ export default function ScorekeeperPanel() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 {bd.setScores.map((score, idx) => (
                                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <span>Set {idx+1}:</span>
+                                        <span>Set {idx + 1}:</span>
                                         <span style={{ fontWeight: '600' }}>{score.a} - {score.b}</span>
                                     </div>
                                 ))}
@@ -607,28 +995,57 @@ export default function ScorekeeperPanel() {
         );
     };
 
-    const btnStyle = (bg) => ({
-        background: bg, color: '#FFF', border: 'none', padding: '12px 20px',
-        borderRadius: '8px', fontWeight: '600', cursor: 'pointer', textAlign: 'center'
-    });
+    // ======================================================================
+    // Events log renderer
+    // ======================================================================
+    const renderEventsLog = () => {
+        const events = scoreboard.events || [];
+        if (events.length === 0) return null;
 
-    const miniBtnStyle = (bg, padding = '10px 20px') => ({
-        background: bg, color: '#FFF', border: 'none', padding,
-        borderRadius: '6px', fontWeight: '600', cursor: 'pointer'
-    });
+        const eventLabel = (e) => {
+            switch (e.type) {
+                case 'goal': return `⚽ Goal: ${e.scorer || 'Unknown'} (${e.team === 'A' ? teamAName : teamBName}) ${e.minute != null ? Math.floor(e.minute / 60) + "'" : ''}`;
+                case 'wicket': return `🔴 Wicket (${e.team === 'A' ? teamAName : teamBName})`;
+                case 'boundary_four': return `4️⃣ Four!`;
+                case 'boundary_six': return `6️⃣ Six!`;
+                case 'yellow_card': return `🟨 Yellow Card (${e.team === 'A' ? teamAName : teamBName})`;
+                case 'red_card': return `🟥 Red Card (${e.team === 'A' ? teamAName : teamBName})`;
+                case 'innings_switch': return `🔄 Innings Switched — 1st: ${e.firstInningsScore}, Target: ${e.target}`;
+                case 'match_finished': return `🏁 Match Finished — Winner: ${e.winner || 'N/A'}`;
+                default: return e.type;
+            }
+        };
 
-    const inputStyle = {
-        background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)',
-        color: '#FFF', padding: '10px', borderRadius: '6px', width: '100%', boxSizing: 'border-box'
+        return (
+            <div style={{ ...sectionCard, marginTop: '30px' }}>
+                <h3 style={sectionTitle('#94A3B8')}>📋 Match Events ({events.length})</h3>
+                <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {[...events].reverse().map((e, i) => (
+                        <div key={i} style={{
+                            display: 'flex', justifyContent: 'space-between', padding: '6px 8px',
+                            borderBottom: '1px solid rgba(255,255,255,0.03)', fontSize: '13px',
+                        }}>
+                            <span>{eventLabel(e)}</span>
+                            <span style={{ color: '#64748B', fontSize: '11px' }}>
+                                {e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : ''}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     };
 
+    // ======================================================================
+    // MAIN RENDER
+    // ======================================================================
     return (
         <div style={{
             minHeight: '100vh', backgroundColor: '#0F172A', color: '#F1F5F9',
             fontFamily: 'system-ui, sans-serif', padding: '40px'
         }}>
             <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                
+
                 {/* Header Back Link */}
                 <div style={{ marginBottom: '20px' }}>
                     <Link href="/admin/scoreboard" style={{ color: '#38BDF8', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
@@ -647,12 +1064,12 @@ export default function ScorekeeperPanel() {
                         </div>
                         <h1 style={{ fontSize: '28px', fontWeight: '800', margin: '10px 0 0 0', color: '#FFF' }}>{matchName}</h1>
                     </div>
-                    
+
                     {/* Status Toggle */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                         <label style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600' }}>Match Status</label>
-                        <select 
-                            value={status} 
+                        <select
+                            value={status}
                             onChange={(e) => handleStatusChange(e.target.value)}
                             style={{
                                 background: '#1E293B', border: '1px solid rgba(255,255,255,0.1)',
@@ -666,19 +1083,82 @@ export default function ScorekeeperPanel() {
                     </div>
                 </div>
 
+                {/* Winner declaration */}
+                {scoreboard.winner && (
+                    <div style={{
+                        background: '#10B981', padding: '12px 20px', borderRadius: '10px',
+                        textAlign: 'center', marginBottom: '20px', fontWeight: '700', fontSize: '16px',
+                    }}>
+                        🏆 Winner: {scoreboard.winner}
+                    </div>
+                )}
+
+                {/* Undo button */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                    <button
+                        onClick={handleUndo}
+                        disabled={!canUndo || saving}
+                        style={{
+                            ...btnStyle(canUndo ? '#F59E0B' : '#334155'),
+                            opacity: canUndo ? 1 : 0.5,
+                            cursor: canUndo ? 'pointer' : 'not-allowed',
+                            padding: '10px 20px',
+                        }}
+                    >
+                        ↩️ Undo Last Action
+                    </button>
+                </div>
+
                 {/* Render Sport Specific Controls */}
                 {sport === 'cricket' && renderCricketControls()}
                 {sport === 'football' && renderFootballControls()}
                 {sport === 'badminton' && renderBadmintonControls()}
 
+                {/* Events log */}
+                {renderEventsLog()}
+
+                {/* Saving indicator */}
                 {saving && (
                     <div style={{
                         position: 'fixed', bottom: '20px', right: '20px',
                         background: '#10B981', color: '#FFF', padding: '12px 24px',
                         borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                        fontSize: '14px', fontWeight: '600'
+                        fontSize: '14px', fontWeight: '600', zIndex: 900,
                     }}>
                         Syncing live score...
+                    </div>
+                )}
+
+                {/* Winner modal */}
+                {showWinnerModal && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        zIndex: 1000,
+                    }}>
+                        <div style={{
+                            background: '#1E293B', padding: '30px', borderRadius: '16px',
+                            width: '420px', maxWidth: '90vw', display: 'flex', flexDirection: 'column', gap: '20px',
+                        }}>
+                            <h3 style={{ margin: 0, color: '#F1F5F9', fontSize: '20px' }}>🏆 Declare Winner</h3>
+                            <p style={{ margin: 0, color: '#94A3B8', fontSize: '14px' }}>
+                                The match is being marked as FINISHED. Who won?
+                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <button onClick={() => confirmWinner(teamAName)} style={btnStyle('#10B981')}>
+                                    {teamAName} Wins
+                                </button>
+                                <button onClick={() => confirmWinner(teamBName)} style={btnStyle('#38BDF8')}>
+                                    {teamBName} Wins
+                                </button>
+                                <button onClick={() => confirmWinner('Draw')} style={btnStyle('#F59E0B')}>
+                                    Draw
+                                </button>
+                                <button onClick={() => { setShowWinnerModal(false); setPendingStatus(null); }} style={btnStyle('#374151')}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 

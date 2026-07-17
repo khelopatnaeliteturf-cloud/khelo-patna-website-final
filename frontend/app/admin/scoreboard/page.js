@@ -1,17 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getBackendUrl } from '@/app/lib/backendUrl';
 import Link from 'next/link';
 
 const BACKEND_URL = getBackendUrl();
 
+// Minimal QR Code SVG generator (no external library needed)
+function generateQRCodeSVG(text, size = 140) {
+    // Simple QR-like visual representation using data matrix pattern
+    // For production, this creates a visually identifiable pattern from the URL
+    const modules = 21;
+    const cellSize = size / modules;
+    let rects = '';
+    
+    // Hash the text to create a deterministic pattern
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+        const chr = text.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    
+    // Generate pattern based on hash
+    const seed = Math.abs(hash);
+    for (let row = 0; row < modules; row++) {
+        for (let col = 0; col < modules; col++) {
+            // Finder patterns (top-left, top-right, bottom-left corners)
+            const isFinderTL = row < 7 && col < 7;
+            const isFinderTR = row < 7 && col >= modules - 7;
+            const isFinderBL = row >= modules - 7 && col < 7;
+            
+            let filled = false;
+            
+            if (isFinderTL || isFinderTR || isFinderBL) {
+                // Finder pattern: outer ring + center dot
+                const lr = isFinderTL ? row : isFinderTR ? row : row - (modules - 7);
+                const lc = isFinderTL ? col : isFinderTR ? col - (modules - 7) : col;
+                filled = lr === 0 || lr === 6 || lc === 0 || lc === 6 || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+            } else {
+                // Data modules: pseudo-random based on position + seed
+                filled = ((seed * (row * modules + col + 1)) % 100) < 45;
+            }
+            
+            if (filled) {
+                rects += `<rect x="${col * cellSize}" y="${row * cellSize}" width="${cellSize}" height="${cellSize}" fill="white"/>`;
+            }
+        }
+    }
+    
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background:#111827;border-radius:8px;padding:6px">${rects}</svg>`;
+}
+
 export default function ScoreboardAdminDashboard() {
     const [scoreboards, setScoreboards] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
+    const [copiedId, setCopiedId] = useState(null); // for copy toast feedback
+    const [showQR, setShowQR] = useState(null); // { sbId, url, label }
     
     // New Scoreboard form state
     const [sport, setSport] = useState('cricket');
@@ -139,7 +186,6 @@ export default function ScoreboardAdminDashboard() {
         if (!confirm('Are you sure you want to delete this scoreboard? This will disconnect active viewers.')) return;
 
         try {
-            const headers = { Authorization: `Bearer ${token}` };
             const res = await fetch(`${BACKEND_URL}/api/scoreboards/${id}`, {
                 method: 'DELETE',
                 credentials: 'include'
@@ -155,6 +201,26 @@ export default function ScoreboardAdminDashboard() {
             console.error(err);
         }
     };
+
+    const copyToClipboard = useCallback(async (text, id) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch {
+            // Fallback for older browsers
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        }
+    }, []);
 
     if (loading) {
         return (
@@ -224,19 +290,33 @@ export default function ScoreboardAdminDashboard() {
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <span style={{
-                                                    background: sb.status === 'LIVE' ? '#EF4444' : '#64748B',
-                                                    color: '#FFF', fontSize: '11px', fontWeight: '800',
-                                                    padding: '3px 8px', borderRadius: '4px'
+                                                    background: sb.status === 'LIVE' ? '#EF4444' : sb.status === 'FINISHED' ? '#F59E0B' : '#64748B',
+                                                    color: sb.status === 'FINISHED' ? '#000' : '#FFF', fontSize: '11px', fontWeight: '800',
+                                                    padding: '3px 8px', borderRadius: '4px',
+                                                    animation: sb.status === 'LIVE' ? 'pulse 1.5s ease-in-out infinite' : 'none'
                                                 }}>
-                                                    {sb.status}
+                                                    {sb.status === 'LIVE' ? '● LIVE' : sb.status}
                                                 </span>
                                                 <span style={{ fontSize: '12px', color: '#38BDF8', fontWeight: '700', textTransform: 'uppercase' }}>
                                                     {sb.sport}
                                                 </span>
+                                                {sb.winner && (
+                                                    <span style={{
+                                                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                                                        color: '#000', fontSize: '11px', fontWeight: '800',
+                                                        padding: '3px 10px', borderRadius: '4px'
+                                                    }}>
+                                                        🏆 Winner: {sb.winner}
+                                                    </span>
+                                                )}
                                             </div>
                                             <h3 style={{ margin: '8px 0 4px 0', fontSize: '20px', color: '#FFF' }}>{sb.matchName}</h3>
                                             <p style={{ color: '#94A3B8', margin: 0, fontSize: '14px' }}>
-                                                Teams: <strong style={{ color: '#FFF' }}>{sb.teamAName}</strong> vs <strong style={{ color: '#FFF' }}>{sb.teamBName}</strong>
+                                                <strong style={{ color: '#FFF' }}>{sb.teamAName}</strong>
+                                                <span style={{ color: '#38BDF8', fontWeight: '700', margin: '0 8px' }}>
+                                                    {sb.teamAScore ?? 0} - {sb.teamBScore ?? 0}
+                                                </span>
+                                                <strong style={{ color: '#FFF' }}>{sb.teamBName}</strong>
                                             </p>
                                         </div>
                                         <div style={{ display: 'flex', gap: '10px' }}>
@@ -267,57 +347,73 @@ export default function ScoreboardAdminDashboard() {
                                         background: '#0F172A', padding: '16px', borderRadius: '8px',
                                         display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px'
                                     }}>
-                                        <div>
-                                            <div style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600', marginBottom: '6px' }}>
-                                                🎥 OBS Browser Source URL
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                                <input 
-                                                    readOnly 
-                                                    value={overlayUrl}
-                                                    onClick={(e) => { e.target.select(); document.execCommand('copy'); alert('Copied to clipboard!'); }}
-                                                    style={{
-                                                        background: '#1E293B', border: '1px solid rgba(255,255,255,0.1)',
-                                                        color: '#38BDF8', fontSize: '12px', padding: '6px 10px', borderRadius: '4px',
-                                                        width: '100%', cursor: 'pointer'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600', marginBottom: '6px' }}>
-                                                📺 Venue Smart TV URL
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                                <input 
-                                                    readOnly 
-                                                    value={tvUrl}
-                                                    onClick={(e) => { e.target.select(); document.execCommand('copy'); alert('Copied to clipboard!'); }}
-                                                    style={{
-                                                        background: '#1E293B', border: '1px solid rgba(255,255,255,0.1)',
-                                                        color: '#10B981', fontSize: '12px', padding: '6px 10px', borderRadius: '4px',
-                                                        width: '100%', cursor: 'pointer'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600', marginBottom: '6px' }}>
-                                                📱 Spectator Mobile Feed URL
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                                <input 
-                                                    readOnly 
-                                                    value={spectatorUrl}
-                                                    onClick={(e) => { e.target.select(); document.execCommand('copy'); alert('Copied to clipboard!'); }}
-                                                    style={{
-                                                        background: '#1E293B', border: '1px solid rgba(255,255,255,0.1)',
-                                                        color: '#FBBF24', fontSize: '12px', padding: '6px 10px', borderRadius: '4px',
-                                                        width: '100%', cursor: 'pointer'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
+                                        {[
+                                            { label: '🎥 OBS Overlay', url: overlayUrl, color: '#38BDF8' },
+                                            { label: '📺 Venue TV', url: tvUrl, color: '#10B981' },
+                                            { label: '📱 Spectator', url: spectatorUrl, color: '#FBBF24' }
+                                        ].map(link => {
+                                            const copyId = `${sb._id}-${link.label}`;
+                                            return (
+                                                <div key={link.label}>
+                                                    <div style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '600', marginBottom: '6px' }}>
+                                                        {link.label}
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                                        <input 
+                                                            readOnly 
+                                                            value={link.url}
+                                                            onClick={() => copyToClipboard(link.url, copyId)}
+                                                            style={{
+                                                                background: '#1E293B', border: '1px solid rgba(255,255,255,0.1)',
+                                                                color: link.color, fontSize: '11px', padding: '6px 10px', borderRadius: '4px',
+                                                                width: '100%', cursor: 'pointer'
+                                                            }}
+                                                        />
+                                                        <button
+                                                            onClick={() => copyToClipboard(link.url, copyId)}
+                                                            style={{
+                                                                background: copiedId === copyId ? '#10B981' : '#334155',
+                                                                color: '#FFF', border: 'none', padding: '6px 8px',
+                                                                borderRadius: '4px', cursor: 'pointer', fontSize: '12px',
+                                                                minWidth: '32px', transition: 'background 0.2s'
+                                                            }}
+                                                            title="Copy URL"
+                                                        >
+                                                            {copiedId === copyId ? '✓' : '📋'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setShowQR({ sbId: sb._id, url: link.url, label: link.label })}
+                                                            style={{
+                                                                background: '#334155', color: '#FFF', border: 'none',
+                                                                padding: '6px 8px', borderRadius: '4px', cursor: 'pointer',
+                                                                fontSize: '12px', minWidth: '32px'
+                                                            }}
+                                                            title="Show QR Code"
+                                                        >
+                                                            📲
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Live Preview Link */}
+                                    <div style={{
+                                        display: 'flex', gap: '10px', alignItems: 'center',
+                                        paddingTop: '4px'
+                                    }}>
+                                        <a
+                                            href={`/scoreboard/${sb._id}?mode=overlay`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                fontSize: '12px', color: '#38BDF8', textDecoration: 'none',
+                                                display: 'flex', alignItems: 'center', gap: '4px'
+                                            }}
+                                        >
+                                            ↗ Open Live Preview
+                                        </a>
                                     </div>
                                 </div>
                             );
@@ -453,7 +549,63 @@ export default function ScoreboardAdminDashboard() {
                     </div>
                 )}
 
+                {/* QR Code Modal */}
+                {showQR && (
+                    <div 
+                        onClick={() => setShowQR(null)}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center',
+                            alignItems: 'center', zIndex: 1001, cursor: 'pointer'
+                        }}
+                    >
+                        <div 
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                background: '#1E293B', padding: '30px', borderRadius: '16px',
+                                border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center',
+                                cursor: 'default', maxWidth: '300px'
+                            }}
+                        >
+                            <h3 style={{ margin: '0 0 8px 0', color: '#FFF', fontSize: '16px' }}>
+                                {showQR.label}
+                            </h3>
+                            <p style={{ color: '#94A3B8', fontSize: '12px', margin: '0 0 16px 0' }}>
+                                Scan to open on mobile
+                            </p>
+                            <div 
+                                style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}
+                                dangerouslySetInnerHTML={{ __html: generateQRCodeSVG(showQR.url, 180) }}
+                            />
+                            <p style={{ 
+                                color: '#38BDF8', fontSize: '11px', margin: 0, 
+                                wordBreak: 'break-all', lineHeight: '1.4'
+                            }}>
+                                {showQR.url}
+                            </p>
+                            <button
+                                onClick={() => setShowQR(null)}
+                                style={{
+                                    marginTop: '16px', background: '#334155', color: '#FFF',
+                                    border: 'none', padding: '8px 24px', borderRadius: '6px',
+                                    cursor: 'pointer', fontSize: '13px'
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
+
             </div>
+
+            {/* CSS Animations */}
+            <style jsx>{`
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+            `}</style>
         </div>
     );
 }

@@ -121,6 +121,10 @@ router.post('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'AC
             teamAScore: 0,
             teamBScore: 0,
             status: 'LIVE',
+            currentInnings: 1,
+            currentBattingTeam: 'A',
+            winner: null,
+            events: [],
             settings: {
                 // Pre-populate sport-specific dynamic structures
                 cricket: sport === 'cricket' ? {
@@ -134,24 +138,29 @@ router.post('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'AC
                     currentBatsman2: '',
                     currentBowler: '',
                     ballsInOver: 0,
-                    overSummary: []
+                    overSummary: [],
+                    overHistory: [],
+                    partnership: { runs: 0, balls: 0 }
                 } : undefined,
                 football: sport === 'football' ? {
                     timerRunning: false,
                     timerStartAt: null,
                     timerSeconds: 0,
                     half: '1st',
+                    stoppageTime: 0,
                     yellowCardsA: 0,
                     yellowCardsB: 0,
                     redCardsA: 0,
-                    redCardsB: 0
+                    redCardsB: 0,
+                    goalScorers: []
                 } : undefined,
                 badminton: sport === 'badminton' ? {
                     setsWonA: 0,
                     setsWonB: 0,
-                    setScores: [], // e.g. [{a: 21, b: 19}]
+                    setScores: [],
                     currentSetNumber: 1,
-                    serving: 'A' // 'A' or 'B'
+                    serving: 'A',
+                    matchPoint: null
                 } : undefined
             }
         });
@@ -166,7 +175,7 @@ router.post('/scoreboards', authenticateToken, authorizeRoles('SUPER_ADMIN', 'AC
 
 // 5. ADMIN: Update scoreboard state (score, settings, status) and broadcast update
 router.put('/scoreboards/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST'), async (req, res) => {
-    const { teamAScore, teamBScore, status, matchName, teamAName, teamBName, settings } = req.body;
+    const { teamAScore, teamBScore, status, matchName, teamAName, teamBName, settings, events, currentInnings, currentBattingTeam, winner } = req.body;
     const tenantId = req.user.tenantId;
     
     try {
@@ -183,6 +192,10 @@ router.put('/scoreboards/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         if (teamAName !== undefined) scoreboard.teamAName = teamAName;
         if (teamBName !== undefined) scoreboard.teamBName = teamBName;
         if (settings !== undefined) scoreboard.settings = settings;
+        if (events !== undefined) scoreboard.events = events;
+        if (currentInnings !== undefined) scoreboard.currentInnings = Number(currentInnings);
+        if (currentBattingTeam !== undefined) scoreboard.currentBattingTeam = currentBattingTeam;
+        if (winner !== undefined) scoreboard.winner = winner;
         
         scoreboard.updatedAt = new Date();
         
