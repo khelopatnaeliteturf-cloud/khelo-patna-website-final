@@ -23,24 +23,34 @@ export default function ScoreboardAdminDashboard() {
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        if (!storedToken) {
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-            return;
-        }
-        setToken(storedToken);
-        setAuthenticated(true);
+        const verifySession = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    credentials: 'include'
+                });
+                if (!res.ok) {
+                    throw new Error('Session expired.');
+                }
+                await res.json();
+                setAuthenticated(true);
+            } catch (err) {
+                // Clear session marker cookie and redirect
+                document.cookie = 'kp_session=; path=/; max-age=0';
+                window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+            }
+        };
+        verifySession();
     }, []);
 
     useEffect(() => {
-        if (!authenticated || !token) return;
+        if (!authenticated) return;
 
         const fetchData = async () => {
             try {
-                const headers = { Authorization: `Bearer ${token}` };
-                
                 // Fetch existing scoreboards
-                const scoreboardsRes = await fetch(`${BACKEND_URL}/api/scoreboards`, { headers });
+                const scoreboardsRes = await fetch(`${BACKEND_URL}/api/scoreboards`, {
+                    credentials: 'include'
+                });
                 const scoreboardsData = await scoreboardsRes.json();
                 
                 if (scoreboardsRes.ok) {
@@ -48,7 +58,9 @@ export default function ScoreboardAdminDashboard() {
                 }
 
                 // Fetch recent bookings (to link optional booking)
-                const bookingsRes = await fetch(`${BACKEND_URL}/api/admin/bookings`, { headers });
+                const bookingsRes = await fetch(`${BACKEND_URL}/api/admin/bookings`, {
+                    credentials: 'include'
+                });
                 if (bookingsRes.ok) {
                     const bookingsData = await bookingsRes.json();
                     // Filter bookings for today/upcoming that aren't cancelled
@@ -62,7 +74,7 @@ export default function ScoreboardAdminDashboard() {
         };
 
         fetchData();
-    }, [authenticated, token]);
+    }, [authenticated]);
 
     // Handle linking booking to pre-populate team names/match details
     const handleBookingChange = (bookingId) => {
@@ -87,14 +99,12 @@ export default function ScoreboardAdminDashboard() {
 
         setSubmitting(true);
         try {
-            const headers = {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            };
-
             const res = await fetch(`${BACKEND_URL}/api/scoreboards`, {
                 method: 'POST',
-                headers,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
                 body: JSON.stringify({
                     sport,
                     matchName,
@@ -132,7 +142,7 @@ export default function ScoreboardAdminDashboard() {
             const headers = { Authorization: `Bearer ${token}` };
             const res = await fetch(`${BACKEND_URL}/api/scoreboards/${id}`, {
                 method: 'DELETE',
-                headers
+                credentials: 'include'
             });
 
             if (res.ok) {

@@ -21,19 +21,31 @@ export default function ScorekeeperPanel() {
     const timerRef = useRef(null);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        if (!storedToken) {
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-            return;
-        }
-        setToken(storedToken);
-        setAuthenticated(true);
+        const verifySession = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                    credentials: 'include'
+                });
+                if (!res.ok) {
+                    throw new Error('Session expired.');
+                }
+                await res.json();
+                setAuthenticated(true);
+            } catch (err) {
+                // Clear session marker cookie and redirect
+                document.cookie = 'kp_session=; path=/; max-age=0';
+                window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+            }
+        };
+        verifySession();
     }, []);
 
     useEffect(() => {
-        if (!authenticated || !token || !scoreboardId) return;
+        if (!authenticated || !scoreboardId) return;
 
-        fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`)
+        fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`, {
+            credentials: 'include'
+        })
             .then(res => res.json())
             .then(data => {
                 setScoreboard(data);
@@ -44,7 +56,7 @@ export default function ScorekeeperPanel() {
                 alert('Failed to load match scoreboard.');
                 setLoading(false);
             });
-    }, [authenticated, token, scoreboardId]);
+    }, [authenticated, scoreboardId]);
 
     // Cleanup timer on unmount
     useEffect(() => {
@@ -90,14 +102,12 @@ export default function ScorekeeperPanel() {
     const saveScoreboardState = async (updatedFields) => {
         setSaving(true);
         try {
-            const headers = {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            };
-
             const res = await fetch(`${BACKEND_URL}/api/scoreboards/${scoreboardId}`, {
                 method: 'PUT',
-                headers,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
                 body: JSON.stringify(updatedFields)
             });
 
