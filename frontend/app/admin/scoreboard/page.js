@@ -547,40 +547,76 @@ export default function ScoreboardAdminDashboard() {
     // ── Score Display ───
     const renderScoreBlock = (sb) => {
         const scores = formatScore(sb);
-        const sport = (sb.sport || '').toLowerCase();
-        const isFootball = sport === 'football';
+        const isLive = sb.status === 'LIVE';
 
         return (
-            <div style={{ margin: '12px 0 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{
+                margin: '16px 0 16px',
+                padding: '12px 14px',
+                background: 'rgba(15, 23, 42, 0.4)',
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.03)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+            }}>
                 {/* Team A */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '15px', color: '#F1F5F9' }}>
-                        {sb.teamAName || 'Team A'}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '24px', color: '#F1F5F9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: sb.teamAColor || '#38BDF8',
+                            boxShadow: `0 0 6px ${sb.teamAColor || '#38BDF8'}`
+                        }} />
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#CBD5E1' }}>
+                            {sb.teamAName || 'Team A'}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                            fontFamily: "'Oswald', sans-serif",
+                            fontWeight: 700,
+                            fontSize: '22px',
+                            color: isLive ? '#38BDF8' : '#F1F5F9',
+                            letterSpacing: '0.5px'
+                        }}>
                             {scores.teamA}
                         </span>
                         {scores.teamAExtra && (
-                            <span style={{ fontSize: '13px', color: '#94A3B8', fontFamily: "'Inter', sans-serif" }}>
+                            <span style={{ fontSize: '11px', color: '#64748B', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
                                 {scores.teamAExtra}
                             </span>
                         )}
                     </div>
                 </div>
-                {/* Divider */}
-                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+
+                {/* Subtle Divider */}
+                <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.05)' }} />
+
                 {/* Team B */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '15px', color: '#F1F5F9' }}>
-                        {sb.teamBName || 'Team B'}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span style={{ fontFamily: "'Oswald', sans-serif", fontWeight: 700, fontSize: '24px', color: '#F1F5F9' }}>
-                            {isFootball && scores.center ? scores.center + ' ' : ''}{scores.teamB}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                            width: '8px', height: '8px', borderRadius: '50%',
+                            background: sb.teamBColor || '#EF4444',
+                            boxShadow: `0 0 6px ${sb.teamBColor || '#EF4444'}`
+                        }} />
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#CBD5E1' }}>
+                            {sb.teamBName || 'Team B'}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                            fontFamily: "'Oswald', sans-serif",
+                            fontWeight: 700,
+                            fontSize: '22px',
+                            color: isLive ? '#38BDF8' : '#F1F5F9',
+                            letterSpacing: '0.5px'
+                        }}>
+                            {scores.teamB}
                         </span>
                         {scores.teamBExtra && (
-                            <span style={{ fontSize: '13px', color: '#94A3B8', fontFamily: "'Inter', sans-serif" }}>
+                            <span style={{ fontSize: '11px', color: '#64748B', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
                                 {scores.teamBExtra}
                             </span>
                         )}
@@ -598,44 +634,84 @@ export default function ScoreboardAdminDashboard() {
         const spectatorUrl = `${origin}/scoreboard/${sb._id}?mode=spectator`;
         const isExpanded = expandedShare === sb._id;
         const links = [
-            { label: '🎥 OBS Overlay', url: overlayUrl, color: '#38BDF8' },
-            { label: '📺 Venue TV', url: tvUrl, color: '#10B981' },
-            { label: '📱 Spectator', url: spectatorUrl, color: '#FBBF24' },
+            { label: '🎥 OBS Overlay', url: overlayUrl, color: '#38BDF8', glow: 'rgba(56, 189, 248, 0.15)' },
+            { label: '📺 Venue TV', url: tvUrl, color: '#10B981', glow: 'rgba(16, 185, 129, 0.15)' },
+            { label: '📱 Spectator', url: spectatorUrl, color: '#FBBF24', glow: 'rgba(251, 191, 36, 0.15)' },
         ];
 
         return (
             <>
                 {isExpanded && (
                     <div style={{
-                        background: 'rgba(15,23,42,0.6)', padding: '14px', borderRadius: '10px',
-                        marginTop: '8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px',
-                        border: '1px solid rgba(255,255,255,0.04)',
+                        background: 'rgba(9, 13, 22, 0.95)',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        marginTop: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        border: '1px solid rgba(56, 189, 248, 0.18)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)',
+                        animation: 'fadeIn 0.2s ease-out'
                     }}>
+                        <div style={{
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            color: '#64748B',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            paddingBottom: '6px',
+                            marginBottom: '2px'
+                        }}>
+                            Broadcast Feed URLs
+                        </div>
                         {links.map(link => {
                             const copyId = `${sb._id}-${link.label}`;
                             return (
-                                <div key={link.label}>
-                                    <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, marginBottom: '5px', letterSpacing: '0.3px' }}>
+                                <div key={link.label} style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px'
+                                }}>
+                                    <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, letterSpacing: '0.3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: link.color, boxShadow: `0 0 6px ${link.color}` }} />
                                         {link.label}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                                         <input
                                             readOnly
                                             value={link.url}
                                             onClick={() => copyToClipboard(link.url, copyId)}
                                             style={{
-                                                background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(255,255,255,0.08)',
-                                                color: link.color, fontSize: '10px', padding: '6px 8px', borderRadius: '6px',
-                                                width: '100%', cursor: 'pointer', outline: 'none',
+                                                background: 'rgba(15, 23, 42, 0.8)',
+                                                border: '1px solid rgba(255,255,255,0.06)',
+                                                color: '#CBD5E1',
+                                                fontSize: '11px',
+                                                padding: '8px 10px',
+                                                borderRadius: '8px',
+                                                width: '100%',
+                                                cursor: 'pointer',
+                                                outline: 'none',
+                                                fontFamily: "'Fira Code', 'Courier New', monospace",
+                                                transition: 'border 0.2s',
                                             }}
+                                            onFocus={(e) => e.target.style.borderColor = link.color}
+                                            onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.06)'}
                                         />
                                         <button
                                             onClick={() => copyToClipboard(link.url, copyId)}
                                             style={{
-                                                background: copiedId === copyId ? '#10B981' : 'rgba(51,65,85,0.8)',
-                                                color: '#FFF', border: 'none', padding: '6px 8px',
-                                                borderRadius: '6px', cursor: 'pointer', fontSize: '11px',
-                                                minWidth: '30px', transition: 'background 0.2s',
+                                                background: copiedId === copyId ? '#10B981' : 'rgba(51,65,85,0.4)',
+                                                color: '#FFF',
+                                                border: '1px solid rgba(255,255,255,0.06)',
+                                                padding: '8px 12px',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                minWidth: '38px',
+                                                transition: 'all 0.2s',
+                                                fontWeight: 600
                                             }}
                                             title="Copy URL"
                                         >
@@ -644,9 +720,15 @@ export default function ScoreboardAdminDashboard() {
                                         <button
                                             onClick={() => setShowQR({ sbId: sb._id, url: link.url, label: link.label })}
                                             style={{
-                                                background: 'rgba(51,65,85,0.8)', color: '#FFF', border: 'none',
-                                                padding: '6px 8px', borderRadius: '6px', cursor: 'pointer',
-                                                fontSize: '11px', minWidth: '30px',
+                                                background: 'rgba(51,65,85,0.4)',
+                                                color: '#FFF',
+                                                border: '1px solid rgba(255,255,255,0.06)',
+                                                padding: '8px 12px',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                minWidth: '38px',
+                                                transition: 'all 0.2s'
                                             }}
                                             title="Show QR Code"
                                         >
@@ -667,6 +749,7 @@ export default function ScoreboardAdminDashboard() {
         const sport = (sb.sport || '').toLowerCase();
         const sportConf = SPORT_CONFIG[sport] || { icon: '🎯', color: '#64748B', label: sb.sport || 'Sport' };
         const isHovered = hoveredCard === sb._id;
+        const isLive = sb.status === 'LIVE';
 
         return (
             <div
@@ -674,98 +757,115 @@ export default function ScoreboardAdminDashboard() {
                 onMouseEnter={() => setHoveredCard(sb._id)}
                 onMouseLeave={() => setHoveredCard(null)}
                 style={{
-                    background: 'rgba(30,41,59,0.7)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderLeft: `3px solid ${sportConf.color}`,
+                    background: 'linear-gradient(145deg, rgba(26, 36, 56, 0.7) 0%, rgba(13, 19, 33, 0.85) 100%)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: isHovered ? '1px solid rgba(56, 189, 248, 0.25)' : '1px solid rgba(255, 255, 255, 0.06)',
+                    borderLeft: `4px solid ${sportConf.color}`,
                     borderRadius: '16px',
-                    padding: '20px',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
-                    boxShadow: isHovered ? '0 8px 32px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    padding: '22px 20px',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
+                    boxShadow: isHovered 
+                        ? `0 12px 30px rgba(0, 0, 0, 0.4), 0 0 16px ${sportConf.color}15` 
+                        : '0 4px 16px rgba(0, 0, 0, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                 }}
             >
-                {/* Top row: status + sport + format */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                    {renderStatusBadge(sb.status, sb.winner)}
-                    <span style={{
-                        fontSize: '11px', fontWeight: 700, color: sportConf.color,
-                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                <div>
+                    {/* Top row: status + sport + format */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        {renderStatusBadge(sb.status, sb.winner)}
+                        <span style={{
+                            fontSize: '10px', fontWeight: 800, color: sportConf.color,
+                            textTransform: 'uppercase', letterSpacing: '1px',
+                            background: `${sportConf.color}10`,
+                            padding: '3px 8px', borderRadius: '6px',
+                            display: 'flex', alignItems: 'center', gap: '4px'
+                        }}>
+                            <span>{sportConf.icon}</span> <span>{sportConf.label}</span>
+                        </span>
+                        {sb.format && (
+                            <span style={{
+                                fontSize: '10px', fontWeight: 600, color: '#94A3B8',
+                                background: 'rgba(255, 255, 255, 0.05)', padding: '3px 8px', borderRadius: '6px',
+                            }}>
+                                {sb.format}
+                            </span>
+                        )}
+                        {sb.matchType === 'tournament' && (
+                            <span style={{
+                                fontSize: '10px', fontWeight: 800, color: '#FBBF24',
+                                background: 'rgba(251, 191, 36, 0.1)', padding: '3px 8px', borderRadius: '6px',
+                                border: '1px solid rgba(251, 191, 36, 0.15)'
+                            }}>
+                                🏆 Tournament
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Match name */}
+                    <div style={{
+                        fontSize: '13px', color: '#64748B', fontWeight: 500, margin: '4px 0 0',
                     }}>
-                        {sportConf.icon} {sportConf.label}
-                    </span>
-                    {sb.format && (
-                        <span style={{
-                            fontSize: '10px', fontWeight: 600, color: '#94A3B8',
-                            background: 'rgba(100,116,139,0.15)', padding: '2px 8px', borderRadius: '10px',
-                        }}>
-                            {sb.format}
-                        </span>
-                    )}
-                    {sb.matchType === 'tournament' && (
-                        <span style={{
-                            fontSize: '10px', fontWeight: 700, color: '#F59E0B',
-                            background: 'rgba(245,158,11,0.12)', padding: '2px 8px', borderRadius: '10px',
-                        }}>
-                            🏆 Tournament
-                        </span>
-                    )}
+                        {sb.matchName || `Match #${sb._id?.slice(-4)}`}
+                        {sb.tournamentName && <span style={{ color: '#475569' }}> • {sb.tournamentName}</span>}
+                    </div>
+
+                    {/* Scores */}
+                    {renderScoreBlock(sb)}
                 </div>
 
-                {/* Match name */}
-                <div style={{
-                    fontSize: '13px', color: '#94A3B8', margin: '2px 0 0',
-                }}>
-                    {sb.matchName || `Match #${sb._id?.slice(-4)}`}
-                    {sb.tournamentName && <span style={{ color: '#64748B' }}> • {sb.tournamentName}</span>}
-                </div>
-
-                {/* Scores */}
-                {renderScoreBlock(sb)}
-
-                {/* Action row */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
-                    <Link href={`/admin/scoreboard/${sb._id}`} style={{ textDecoration: 'none' }}>
-                        <button style={{
-                            background: 'linear-gradient(135deg, #059669, #10B981)',
-                            color: '#FFF', border: 'none', padding: '7px 14px', borderRadius: '8px',
-                            fontWeight: 600, fontSize: '12px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '4px',
-                            transition: 'opacity 0.2s',
-                        }}>
-                            ✏️ Scorekeeper
+                <div>
+                    {/* Action row */}
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '4px' }}>
+                        <Link href={`/admin/scoreboard/${sb._id}`} style={{ textDecoration: 'none' }}>
+                            <button style={{
+                                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                color: '#FFF', border: 'none', padding: '8px 16px', borderRadius: '8px',
+                                fontWeight: 700, fontSize: '12px', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                                transition: 'all 0.2s',
+                            }}
+                            className="hover-bright"
+                            >
+                                ✏️ Scorekeeper
+                            </button>
+                        </Link>
+                        <button
+                            onClick={() => setExpandedShare(expandedShare === sb._id ? null : sb._id)}
+                            style={{
+                                background: expandedShare === sb._id ? 'rgba(56,189,248,0.18)' : 'rgba(255,255,255,0.04)',
+                                color: expandedShare === sb._id ? '#38BDF8' : '#94A3B8',
+                                border: '1px solid ' + (expandedShare === sb._id ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.08)'),
+                                padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '12px',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            🔗 Share
                         </button>
-                    </Link>
-                    <button
-                        onClick={() => setExpandedShare(expandedShare === sb._id ? null : sb._id)}
-                        style={{
-                            background: expandedShare === sb._id ? 'rgba(56,189,248,0.15)' : 'rgba(51,65,85,0.5)',
-                            color: expandedShare === sb._id ? '#38BDF8' : '#94A3B8',
-                            border: '1px solid ' + (expandedShare === sb._id ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.08)'),
-                            padding: '7px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '12px',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        🔗 Share
-                    </button>
-                    <button
-                        onClick={() => handleDeleteScoreboard(sb._id)}
-                        style={{
-                            background: 'transparent', color: '#EF4444',
-                            border: '1px solid rgba(239,68,68,0.3)',
-                            padding: '7px 14px', borderRadius: '8px', fontWeight: 600, fontSize: '12px',
-                            cursor: 'pointer', marginLeft: 'auto',
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        🗑️
-                    </button>
-                </div>
+                        <button
+                            onClick={() => handleDeleteScoreboard(sb._id)}
+                            style={{
+                                background: 'transparent', color: '#EF4444',
+                                border: '1px solid rgba(239,68,68,0.25)',
+                                padding: '8px 12px', borderRadius: '8px', fontWeight: 600, fontSize: '12px',
+                                cursor: 'pointer', marginLeft: 'auto',
+                                transition: 'all 0.2s',
+                            }}
+                            className="hover-danger-bg"
+                        >
+                            🗑️
+                        </button>
+                    </div>
 
-                {/* Share URLs (expandable) */}
-                {renderShareSection(sb)}
+                    {/* Share URLs (expandable) */}
+                    {renderShareSection(sb)}
+                </div>
             </div>
         );
     };
@@ -1727,12 +1827,20 @@ export default function ScoreboardAdminDashboard() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#0B0F19',
+            background: 'radial-gradient(ellipse at top, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0) 60%), #070B14',
             color: '#F1F5F9',
             fontFamily: "'Inter', sans-serif",
-            padding: '32px 40px',
+            padding: '36px 40px',
+            position: 'relative',
         }}>
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            {/* Ambient Background Glow */}
+            <div style={{
+                position: 'absolute', top: 0, left: '20%', right: '20%', height: '300px',
+                background: 'radial-gradient(50% 50% at 50% 0%, rgba(56, 189, 248, 0.06) 0%, rgba(56, 189, 248, 0) 100%)',
+                pointerEvents: 'none', zIndex: 0
+            }} />
+
+            <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
                 {/* ── Header ─────────────────────────────────────── */}
                 <div style={{
@@ -1741,26 +1849,36 @@ export default function ScoreboardAdminDashboard() {
                 }}>
                     <div>
                         <h1 style={{
-                            fontSize: '28px', fontFamily: "'Oswald', sans-serif", fontWeight: 700,
-                            margin: 0, color: '#F1F5F9',
-                            display: 'flex', alignItems: 'center', gap: '10px',
+                            fontSize: '32px',
+                            fontFamily: "'Oswald', sans-serif",
+                            fontWeight: 700,
+                            margin: 0,
+                            backgroundImage: 'linear-gradient(135deg, #FFFFFF 40%, #A5F3FC 100%)',
+                            WebkitBackgroundClip: 'text',
+                            backgroundClip: 'text',
+                            color: 'transparent',
+                            letterSpacing: '0.5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
                         }}>
                             🏏 Match & Tournament Control Center
                         </h1>
-                        <p style={{ fontSize: '14px', color: '#64748B', margin: '4px 0 0' }}>
+                        <p style={{ fontSize: '14px', color: '#94A3B8', margin: '6px 0 0', fontWeight: 500 }}>
                             Host live scoreboards for streaming on YouTube, OBS, and TV
                         </p>
                     </div>
                     <button
                         onClick={openWizard}
                         style={{
-                            background: 'linear-gradient(135deg, #0284C7, #0EA5E9)',
-                            color: '#FFF', border: 'none', padding: '12px 24px', borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
+                            color: '#FFF', border: 'none', padding: '12px 26px', borderRadius: '10px',
                             fontWeight: 700, fontSize: '14px', cursor: 'pointer',
-                            boxShadow: '0 4px 16px rgba(2,132,199,0.35)',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                            display: 'flex', alignItems: 'center', gap: '6px',
+                            boxShadow: '0 4px 20px rgba(56, 189, 248, 0.25)',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            display: 'flex', alignItems: 'center', gap: '8px',
                         }}
+                        className="btn-primary-glow"
                     >
                         + New Match
                     </button>
@@ -1768,10 +1886,14 @@ export default function ScoreboardAdminDashboard() {
 
                 {/* ── Tab Bar ────────────────────────────────────── */}
                 <div style={{
-                    display: 'flex', gap: '4px', marginBottom: '28px',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    paddingBottom: '0',
+                    display: 'flex', gap: '8px', marginBottom: '32px',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    padding: '6px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255, 255, 255, 0.04)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
                     overflowX: 'auto',
+                    width: 'fit-content'
                 }}>
                     {TABS.map(tab => {
                         const isActive = activeTab === tab.key;
@@ -1781,24 +1903,25 @@ export default function ScoreboardAdminDashboard() {
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key)}
                                 style={{
-                                    background: isActive ? 'rgba(56,189,248,0.1)' : 'transparent',
-                                    color: isActive ? '#38BDF8' : '#64748B',
-                                    border: 'none',
-                                    borderBottom: isActive ? '2px solid #38BDF8' : '2px solid transparent',
-                                    padding: '10px 20px', borderRadius: '10px 10px 0 0',
+                                    background: isActive ? 'linear-gradient(180deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.02) 100%)' : 'transparent',
+                                    color: isActive ? '#38BDF8' : '#94A3B8',
+                                    border: isActive ? '1px solid rgba(56, 189, 248, 0.25)' : '1px solid transparent',
+                                    padding: '8px 20px', borderRadius: '10px',
                                     fontWeight: 600, fontSize: '13px', cursor: 'pointer',
                                     display: 'flex', alignItems: 'center', gap: '8px',
-                                    transition: 'all 0.2s',
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                                     whiteSpace: 'nowrap',
+                                    boxShadow: isActive ? '0 4px 12px rgba(56, 189, 248, 0.06)' : 'none',
                                 }}
                             >
-                                {tab.label}
+                                <span style={{ transition: 'transform 0.2s' }}>{tab.label}</span>
                                 <span style={{
-                                    background: isActive ? 'rgba(56,189,248,0.2)' : 'rgba(100,116,139,0.2)',
-                                    color: isActive ? '#38BDF8' : '#94A3B8',
+                                    background: isActive ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                                    color: isActive ? '#38BDF8' : '#64748B',
                                     fontSize: '11px', fontWeight: 700,
                                     padding: '1px 8px', borderRadius: '10px',
                                     minWidth: '20px', textAlign: 'center',
+                                    transition: 'all 0.2s',
                                 }}>
                                     {count}
                                 </span>
@@ -1849,11 +1972,39 @@ export default function ScoreboardAdminDashboard() {
                     50% { opacity: 0.5; transform: scale(1.1); }
                 }
 
+                /* Button & Input micro-interactions */
+                .btn-primary-glow:hover {
+                    box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35) !important;
+                    transform: translateY(-1px);
+                    filter: brightness(1.05);
+                }
+                .btn-primary-glow:active {
+                    transform: translateY(0);
+                }
+
+                .hover-bright:hover {
+                    filter: brightness(1.12);
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25) !important;
+                }
+                .hover-bright:active {
+                    transform: translateY(0);
+                }
+
+                .hover-danger-bg {
+                    transition: all 0.2s ease;
+                }
+                .hover-danger-bg:hover {
+                    background: rgba(239, 68, 68, 0.12) !important;
+                    border-color: rgba(239, 68, 68, 0.6) !important;
+                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+                }
+
                 /* Scrollbar styling */
                 ::-webkit-scrollbar { width: 6px; }
                 ::-webkit-scrollbar-track { background: transparent; }
-                ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 3px; }
-                ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.5); }
+                ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }
+                ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.45); }
             `}</style>
         </div>
     );
