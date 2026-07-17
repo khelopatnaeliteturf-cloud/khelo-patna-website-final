@@ -549,6 +549,12 @@ export default function BookPage() {
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
                                     min={new Date().toISOString().split('T')[0]}
+                                    onClick={(e) => {
+                                        try {
+                                            e.target.showPicker();
+                                        } catch (err) {}
+                                    }}
+                                    style={{ cursor: 'pointer' }}
                                 />
                             </div>
                         </div>

@@ -130,6 +130,28 @@ async function ensureDefaultTenant() {
             console.log('  Bootstrap: created default turf settings');
         }
 
+        // ── Scoreboards Table ─────────────────────────────────────────────
+        console.log('  Bootstrap: ensuring scoreboards table exists...');
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS scoreboards (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+                branch_id UUID REFERENCES branches(id) ON DELETE SET NULL,
+                booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+                sport TEXT NOT NULL,
+                match_name TEXT NOT NULL,
+                team_a_name TEXT NOT NULL,
+                team_b_name TEXT NOT NULL,
+                team_a_score INT DEFAULT 0,
+                team_b_score INT DEFAULT 0,
+                status TEXT CHECK (status IN ('UPCOMING', 'LIVE', 'FINISHED')) DEFAULT 'LIVE',
+                settings JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('  Bootstrap: scoreboards table checked/created');
+
         return { tenantId, branchId };
     } finally {
         client.release();
