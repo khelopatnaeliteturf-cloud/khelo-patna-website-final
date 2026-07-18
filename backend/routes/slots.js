@@ -180,6 +180,7 @@ router.get('/available-slots', async (req, res) => {
         let filteredSlotsResponse = slotsResponse;
         if (date === todayISTStr) {
             filteredSlotsResponse = slotsResponse.filter(slot => {
+                if (slot.booked) return true; // Retain booked slots so they show up as BOOKED rather than disappearing
                 const slotDef = ALL_HOURLY_SLOTS.find(s => s.value === slot.value);
                 return slotDef && slotDef.startHour > currentHourIST;
             });
