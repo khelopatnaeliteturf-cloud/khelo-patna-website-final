@@ -87,9 +87,9 @@ export default function FeeTermsManager({ student, backendUrl, getHeaders, notif
 
     const statusStyle = (fee) => {
         if (!fee) return { border: '1px dashed var(--border-color)', color: 'var(--text-muted)', background: 'transparent' };
-        if (fee.status === 'PAID') return { border: '1px solid rgba(16,185,129,0.4)', color: 'var(--success-text, #10b981)', background: 'rgba(16,185,129,0.08)' };
-        if (fee.status === 'PARTIAL') return { border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b', background: 'rgba(245,158,11,0.08)' };
-        return { border: '1px solid rgba(239,68,68,0.35)', color: 'var(--danger, #ef4444)', background: 'rgba(239,68,68,0.06)' };
+        if (fee.status === 'PAID') return { border: '1px solid var(--success-border)', color: 'var(--success-text)', background: 'var(--success-bg)' };
+        if (fee.status === 'PARTIAL') return { border: '1px solid var(--warning-border)', color: 'var(--warning)', background: 'var(--warning-light)' };
+        return { border: '1px solid var(--danger-border)', color: 'var(--danger)', background: 'var(--danger-light)' };
     };
 
     return (
@@ -148,8 +148,8 @@ export default function FeeTermsManager({ student, backendUrl, getHeaders, notif
                                             style={{
                                                 position: 'absolute', top: '6px', right: '6px',
                                                 width: '20px', height: '20px', borderRadius: '6px',
-                                                border: 'none', background: 'rgba(239,68,68,0.12)',
-                                                color: 'var(--danger, #ef4444)', cursor: 'pointer',
+                                                border: 'none', background: 'var(--danger-light)',
+                                                color: 'var(--danger)', cursor: 'pointer',
                                                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
                                             }}
                                         >

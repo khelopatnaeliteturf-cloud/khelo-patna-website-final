@@ -362,7 +362,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                 </div>
 
                 <div className="card-premium" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', color: '#3B82F6', padding: '12px', borderRadius: '12px', display: 'flex' }}>
+                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'var(--info)', padding: '12px', borderRadius: '12px', display: 'flex' }}>
                         <span className="material-icons-outlined" style={{ fontSize: '28px' }}>school</span>
                     </div>
                     <div>
@@ -390,7 +390,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                             setShowMergeModal(true);
                         }}
                         className="btn-secondary-stripe"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'var(--primary)', color: 'var(--white)', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem' }}
                     >
                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>merge_type</span>
                         Merge Profiles
@@ -471,7 +471,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                         </td>
                                         <td style={{ padding: '16px' }}>
                                             {cust.isStudent ? (
-                                                <span className="badge-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', fontSize: '0.68rem', fontWeight: 700 }}>
+                                                <span className="badge-pill" style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--info)', fontSize: '0.68rem', fontWeight: 700 }}>
                                                     🎓 Student
                                                 </span>
                                             ) : (
@@ -611,7 +611,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                             <div style={{ fontWeight: 700, color: 'var(--danger)' }}>Source to be merged & deleted</div>
                                             <div style={{ fontWeight: 800, marginTop: '4px', fontSize: '0.8rem' }}>{sourcePreview.name}</div>
                                             <div style={{ color: 'var(--text-muted)' }}>📊 {sourcePreview.totalBookings} Bookings (₹{sourcePreview.totalSpent} Spent)</div>
-                                            {sourcePreview.isStudent && <div style={{ color: '#3B82F6', fontWeight: 600 }}>🎓 Active Academy Member</div>}
+                                            {sourcePreview.isStudent && <div style={{ color: 'var(--info)', fontWeight: 600 }}>🎓 Active Academy Member</div>}
                                         </div>
                                     ) : mergeForm.sourcePhone && (
                                         <div style={{ padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
@@ -639,7 +639,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                             <div style={{ fontWeight: 700, color: 'var(--success)' }}>Target destination profile</div>
                                             <div style={{ fontWeight: 800, marginTop: '4px', fontSize: '0.8rem' }}>{targetPreview.name}</div>
                                             <div style={{ color: 'var(--text-muted)' }}>📊 {targetPreview.totalBookings} Bookings (₹{targetPreview.totalSpent} Spent)</div>
-                                            {targetPreview.isStudent && <div style={{ color: '#3B82F6', fontWeight: 600 }}>🎓 Active Academy Member</div>}
+                                            {targetPreview.isStudent && <div style={{ color: 'var(--info)', fontWeight: 600 }}>🎓 Active Academy Member</div>}
                                         </div>
                                     ) : mergeForm.targetPhone && (
                                         <div style={{ padding: '8px 12px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
@@ -697,7 +697,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                         padding: '10px 24px', 
                                         borderRadius: '10px', 
                                         background: 'var(--danger)', 
-                                        color: '#fff', 
+                                        color: 'var(--white)', 
                                         border: 'none', 
                                         fontWeight: 700, 
                                         cursor: 'pointer', 
@@ -710,7 +710,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                 >
                                     {mergeSubmitting ? (
                                         <>
-                                            <div className="spinner" style={{ width: '14px', height: '14px', border: '1.5px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                                            <div className="spinner" style={{ width: '14px', height: '14px', border: '1.5px solid rgba(255,255,255,0.2)', borderTopColor: 'var(--white)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                                             Merging Profiles...
                                         </>
                                     ) : (
@@ -773,7 +773,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                         </div>
                                         <div style={{ padding: '14px', background: 'var(--bg-color)', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'left' }}>
                                             <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Academy Status</div>
-                                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: customerHistory.student ? '#3B82F6' : 'var(--text-muted)', marginTop: '6px' }}>
+                                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: customerHistory.student ? 'var(--info)' : 'var(--text-muted)', marginTop: '6px' }}>
                                                 {customerHistory.student ? `🎓 ${customerHistory.student.status}` : '👤 Regular Player'}
                                             </div>
                                         </div>

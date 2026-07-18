@@ -180,8 +180,8 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                 .launcher-modal {
                     width: 100%;
                     max-width: 650px;
-                    background: #0f172a;
-                    border: 1px solid #334155;
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border-color);
                     border-radius: 16px;
                     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
                     overflow: hidden;
@@ -195,26 +195,26 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     display: flex;
                     align-items: center;
                     padding: 16px 20px;
-                    border-bottom: 1px solid #1e293b;
+                    border-bottom: 1px solid var(--border-color);
                     gap: 12px;
                 }
                 .search-icon {
-                    color: #94a3b8;
+                    color: var(--text-muted);
                     font-size: 24px;
                 }
                 .launcher-input {
                     flex: 1;
                     background: transparent;
                     border: none;
-                    color: #f8fafc;
+                    color: var(--text-main);
                     font-size: 1.1rem;
                     outline: none;
                 }
                 .launcher-close-btn {
-                    background: #1e293b;
-                    border: 1px solid #334155;
+                    background: var(--bg-color);
+                    border: 1px solid var(--border-color);
                     border-radius: 4px;
-                    color: #64748b;
+                    color: var(--text-muted);
                     font-size: 0.75rem;
                     font-weight: 700;
                     padding: 4px 8px;
@@ -232,7 +232,7 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     margin-bottom: 0;
                 }
                 .launcher-section-title {
-                    color: #64748b;
+                    color: var(--text-muted);
                     font-size: 0.75rem;
                     font-weight: 700;
                     text-transform: uppercase;
@@ -245,22 +245,22 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     gap: 12px;
                 }
                 .launcher-card {
-                    background: #1e293b;
-                    border: 1px solid #334155;
+                    background: var(--bg-color);
+                    border: 1px solid var(--border-color);
                     border-radius: 10px;
                     padding: 16px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     gap: 8px;
-                    color: #e2e8f0;
+                    color: var(--text-main);
                     cursor: pointer;
                     transition: all 0.2s ease;
                 }
                 .launcher-card:hover {
-                    background: #3b82f6;
-                    border-color: #60a5fa;
-                    color: #fff;
+                    background: var(--info);
+                    border-color: var(--primary);
+                    color: var(--white);
                     transform: translateY(-2px);
                 }
                 .launcher-card span:first-child {
@@ -283,22 +283,22 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     display: flex;
                     align-items: center;
                     gap: 12px;
-                    color: #cbd5e1;
+                    color: var(--text-main);
                     width: 100%;
                     text-align: left;
                     cursor: pointer;
                     transition: all 0.15s ease;
                 }
                 .launcher-item:hover {
-                    background: rgba(59, 130, 246, 0.15);
-                    color: #3b82f6;
+                    background: var(--info-light);
+                    color: var(--info);
                 }
                 .launcher-item span {
                     font-size: 20px;
-                    color: #94a3b8;
+                    color: var(--text-muted);
                 }
                 .launcher-item:hover span {
-                    color: #3b82f6;
+                    color: var(--info);
                 }
                 .launcher-item div {
                     display: flex;
@@ -310,17 +310,17 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     font-size: 0.7rem;
                     font-weight: 700;
                     text-transform: uppercase;
-                    background: #1e293b;
+                    background: var(--bg-color);
                     padding: 2px 6px;
                     border-radius: 4px;
-                    color: #94a3b8;
+                    color: var(--text-muted);
                 }
                 .member-item {
-                    border: 1px solid #1e293b;
+                    border: 1px solid var(--border-color);
                     background: rgba(30, 41, 59, 0.3);
                 }
                 .member-item:hover {
-                    border-color: #3b82f6;
+                    border-color: var(--info);
                 }
                 .member-item div {
                     display: flex;
@@ -329,9 +329,9 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                 }
                 .member-id {
                     font-size: 0.75rem;
-                    background: rgba(16, 185, 129, 0.1);
-                    color: #10b981;
-                    border: 1px solid rgba(16, 185, 129, 0.2);
+                    background: var(--success-light);
+                    color: var(--success);
+                    border: 1px solid var(--success-border);
                     padding: 1px 6px;
                     border-radius: 4px;
                     font-weight: 700;
@@ -340,7 +340,7 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                 }
                 .member-subtext {
                     font-size: 0.75rem;
-                    color: #64748b;
+                    color: var(--text-muted);
                     margin-top: 2px;
                 }
                 .launcher-footer {
@@ -348,9 +348,9 @@ export default function Launcher({ isOpen, onClose, allStudents, onSelectStudent
                     align-items: center;
                     gap: 16px;
                     padding: 10px 20px;
-                    background: #090d16;
-                    border-top: 1px solid #1e293b;
-                    color: #475569;
+                    background: var(--bg-color);
+                    border-top: 1px solid var(--border-color);
+                    color: var(--text-muted);
                     font-size: 0.75rem;
                     font-weight: 600;
                 }
