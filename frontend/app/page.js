@@ -288,9 +288,9 @@ export default function HomePage() {
             <div className="floating-ball floating-ball--cricket" />
 
             {/* Ambient Liquid Orbs */}
-            <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 255, 136, 0.06) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 30s ease-in-out infinite' }} />
-            <div style={{ position: 'fixed', bottom: '-15%', right: '-8%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 200, 255, 0.04) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 25s ease-in-out infinite reverse' }} />
-            <div style={{ position: 'fixed', top: '40%', left: '50%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 215, 0, 0.03) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 35s ease-in-out infinite' }} />
+            <div className="ambient-orb" style={{ position: 'fixed', top: '-10%', left: '-5%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 255, 136, 0.06) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 30s ease-in-out infinite' }} />
+            <div className="ambient-orb" style={{ position: 'fixed', bottom: '-15%', right: '-8%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0, 200, 255, 0.04) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 25s ease-in-out infinite reverse' }} />
+            <div className="ambient-orb" style={{ position: 'fixed', top: '40%', left: '50%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 215, 0, 0.03) 0%, transparent 70%)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 0, animation: 'float-drift 35s ease-in-out infinite' }} />
 
             {/* ═══ Sticky Navbar ═══ */}
             <nav style={{
@@ -491,7 +491,7 @@ export default function HomePage() {
                                         <span style={{ fontSize: '0.8rem', color: '#ff4d4d' }}>{quickError}</span>
                                     </div>
                                 ) : (
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                                    <div className="grid-responsive-3" style={{ marginBottom: '20px' }}>
                                         {quickSlots.map((slot, index) => {
                                             const isSelected = selectedQuickSlots.includes(slot.value);
                                             let cardClass = 'slot-card available';
@@ -746,7 +746,7 @@ export default function HomePage() {
                             </p>
 
                             {/* Small feature bullets */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div className="grid-responsive-2">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <span className="material-icons-outlined" style={{ color: 'var(--neon)', fontSize: '20px' }}>check_circle</span>
                                     <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>FIFA certified synthetic grass</span>
@@ -881,7 +881,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '24px' }}>
                                         Join our structured development program covering technical skills, physical coordination, tactical awareness, and regular academy friendly league matches.
                                     </p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
+                                    <div className="grid-responsive-2" style={{ gap: '12px', marginBottom: '28px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span className="material-icons-outlined" style={{ color: 'var(--neon)', fontSize: '18px' }}>check</span>
                                             <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Age groups 6 to 18</span>
@@ -925,7 +925,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: '1.7', marginBottom: '24px' }}>
                                         Master cricket fundamentals under national-level guidance. Integrated speed analytics, bowling drill feeds, and professional nets configuration.
                                     </p>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '28px' }}>
+                                    <div className="grid-responsive-2" style={{ gap: '12px', marginBottom: '28px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span className="material-icons-outlined" style={{ color: 'var(--cyan)', fontSize: '18px' }}>check</span>
                                             <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Age groups 6 to 18</span>
