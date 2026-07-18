@@ -18,8 +18,8 @@ export function middleware(request) {
         return NextResponse.next();
     }
 
-    // Redirect all other requests to the maintenance page
-    return NextResponse.redirect(new URL('/maintenance', request.url));
+    // Rewrite all other requests to the maintenance page internally
+    return NextResponse.rewrite(new URL('/maintenance', request.url));
 }
 
 export const config = {
