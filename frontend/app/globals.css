@@ -40,7 +40,7 @@
     /* Typography */
     --text-primary: #FFFFFF;
     --text-secondary: #A0A0A0;
-    --text-muted: #6C727A;
+    --text-muted: #8E959D;
 
     /* Borders */
     --border-ghost: rgba(0, 255, 136, 0.04);
@@ -1259,4 +1259,55 @@ select.glass-input option {
 
 @media (prefers-reduced-motion: reduce) {
     .anniversary-marquee__track { animation: none; }
+    .ambient-orb { animation: none !important; }
+}
+
+/* ─── Responsive Grid Utilities ─── */
+.grid-responsive-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.grid-responsive-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 560px) {
+    .grid-responsive-2 {
+        grid-template-columns: 1fr;
+    }
+    .grid-responsive-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 420px) {
+    .grid-responsive-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─── Mobile Performance Guards ─── */
+@media (max-width: 768px) {
+    /* Reduce heavy blur on glass cards for budget Android GPUs */
+    .liquid-glass-card,
+    .glass-card,
+    .glass-card-premium {
+        backdrop-filter: blur(12px) saturate(140%) !important;
+        -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    }
+
+    /* Shrink ambient orbs and reduce blur on mobile */
+    .ambient-orb {
+        width: 200px !important;
+        height: 200px !important;
+        filter: blur(40px) !important;
+    }
+
+    /* Enforce 44px minimum touch targets */
+    button, a, [role="button"], input[type="submit"],
+    input[type="checkbox"], select {
+        min-height: 44px;
+    }
 }

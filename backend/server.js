@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 5001;
 
 // Enable security headers
 app.use(helmet({
-    contentSecurityPolicy: false // Disable CSP locally to allow embedded maps/APIs in dev
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
 }));
 
 // CORS Configuration (credentials require a strict origin allow-list)
@@ -99,6 +99,14 @@ const loginLimiter = rateLimit({
     message: { error: 'Too many login attempts. Please wait 15 minutes before trying again.' }
 });
 app.use('/api/auth/login', loginLimiter);
+
+// Rate limiter for public dues lookup (prevents phone-number enumeration)
+const duesLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    message: { error: 'Too many fee lookup requests. Please try again later.' }
+});
+app.use('/api/academy/dues', duesLimiter);
 
 // Database Connection
 mongoose.connect()
