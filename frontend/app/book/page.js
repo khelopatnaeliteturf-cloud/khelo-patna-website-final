@@ -196,7 +196,7 @@ export default function BookPage() {
         }
     };
 
-    const handleConfirm = async (e) => {
+    const handleBookingSubmit = async (e) => {
         e.preventDefault();
         
         if (!bookingDetails.name || !bookingDetails.phone) {
