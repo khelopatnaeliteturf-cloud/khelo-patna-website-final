@@ -293,7 +293,7 @@ export function middleware(request) {
         <div class="grid-buttons">
             <div>
                 <div class="support-label">Need slot support?</div>
-                <a href="tel:+919999999999" class="support-btn">📞 Call Turf Support</a>
+                <a href="tel:+919709701400" class="support-btn">📞 Call Turf Support</a>
             </div>
             <div>
                 <div class="support-label">General queries?</div>
