@@ -28,6 +28,10 @@ export default function BookPage() {
         email: ''
     });
     const [errorMessage, setErrorMessage] = useState('');
+    const [showMockModal, setShowMockModal] = useState(false);
+    const [mockOrderDetails, setMockOrderDetails] = useState(null);
+    const [mockPaymentProcessing, setMockPaymentProcessing] = useState(false);
+    const [mockMessage, setMockMessage] = useState('');
     
     // Status from redirection
     const [paymentSuccessInfo, setPaymentSuccessInfo] = useState(null);
@@ -137,10 +141,66 @@ export default function BookPage() {
         }, 0);
     };
 
-    const handleBookingSubmit = async (e) => {
+    const initiateCashfreeCheckout = async (data, amount) => {
+        const isMock = data.redirect_url && data.redirect_url.includes('mock-payment.html');
+        
+        if (isMock) {
+            setMockOrderDetails({ orderId: data.order_id, amount: amount });
+            setMockMessage('');
+            setMockPaymentProcessing(false);
+            setShowMockModal(true);
+            setLoading(false);
+            return;
+        }
+
+        // Live checkout via SDK
+        try {
+            const loadSDK = () => {
+                return new Promise((resolve) => {
+                    if (window.Cashfree) {
+                        resolve(window.Cashfree);
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+                    script.async = true;
+                    script.onload = () => resolve(window.Cashfree);
+                    document.body.appendChild(script);
+                });
+            };
+
+            const CashfreeClass = await loadSDK();
+            
+            let envMode = 'sandbox';
+            if (data.redirect_url && data.redirect_url.includes('env=production')) {
+                envMode = 'production';
+            }
+
+            const cashfree = CashfreeClass({ mode: envMode });
+            
+            setLoading(true);
+            cashfree.checkout({
+                paymentSessionId: data.payment_session_id,
+                redirectTarget: '_modal'
+            }).then(() => {
+                setLoading(false);
+            }).catch((err) => {
+                console.error('Checkout error:', err);
+                setErrorMessage(err.message || 'Error triggering payment checkout.');
+                setLoading(false);
+            });
+        } catch (e) {
+            console.error('Error loading payment SDK:', e);
+            setErrorMessage('Unable to load Payment SDK. Please check your network connection.');
+            setLoading(false);
+        }
+    };
+
+    const handleConfirm = async (e) => {
         e.preventDefault();
-        if (selectedSlots.length === 0) {
-            setErrorMessage('Please select at least one time slot.');
+        
+        if (!bookingDetails.name || !bookingDetails.phone) {
+            setErrorMessage('Please fill in your name and phone number.');
             return;
         }
         
@@ -171,14 +231,8 @@ export default function BookPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to create booking.');
 
-            // Success. Redirect to backend-provided checkout/simulator URL
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else {
-                // Fallback in case redirect_url is somehow missing in old versions
-                const fallbackUrl = `${BACKEND_URL}/mock-payment.html?order_id=${data.order_id}&amount=${totalAmount}`;
-                window.location.href = fallbackUrl;
-            }
+            // Success. Trigger pop checkout
+            await initiateCashfreeCheckout(data, totalAmount);
 
         } catch (err) {
             console.error(err);
@@ -758,6 +812,132 @@ export default function BookPage() {
                     </div>
                 )}
             </main>
+
+            {showMockModal && mockOrderDetails && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 10000,
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(10px)',
+                    animation: 'fadeIn 0.25s ease-out'
+                }}>
+                    <div style={{
+                        background: 'rgba(10, 16, 30, 0.75)', backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '16px',
+                        padding: '36px', maxWidth: '420px', width: '90%', textAlign: 'center',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(16, 185, 129, 0.15)',
+                        animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}>
+                        <div style={{
+                            fontSize: '44px', marginBottom: '16px', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.4))'
+                        }}>💳</div>
+                        
+                        <h3 style={{
+                            fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px',
+                            background: 'linear-gradient(135deg, #ffffff 30%, #a7f3d0 100%)',
+                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                            letterSpacing: '0.5px'
+                        }}>
+                            Cashfree Simulator (Modal)
+                        </h3>
+                        <p style={{ color: '#9CA3AF', fontSize: '0.88rem', margin: '0 0 24px', lineHeight: 1.5 }}>
+                            This simulates the Cashfree secure checkout modal overlay for local development.
+                        </p>
+
+                        <div style={{
+                            background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.04)',
+                            borderRadius: '10px', padding: '16px', textAlign: 'left', marginBottom: '28px',
+                            display: 'flex', flexDirection: 'column', gap: '8px'
+                        }}>
+                            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Payment Details
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#9CA3AF' }}>Order ID:</span>
+                                <span style={{ color: '#F3F4F6', fontFamily: 'monospace', fontWeight: 600 }}>{mockOrderDetails.orderId}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                                <span style={{ color: '#9CA3AF' }}>Amount:</span>
+                                <span style={{ color: '#10B981', fontWeight: 700 }}>₹{mockOrderDetails.amount}</span>
+                            </div>
+                        </div>
+
+                        {mockMessage && (
+                            <div style={{
+                                fontSize: '0.85rem', color: mockMessage.includes('failed') || mockMessage.includes('error') ? '#EF4444' : '#10B981',
+                                fontWeight: 500, marginBottom: '16px'
+                            }}>
+                                {mockMessage}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <button
+                                onClick={async () => {
+                                    setMockPaymentProcessing(true);
+                                    setMockMessage('Processing simulated payment...');
+                                    try {
+                                        const res = await fetch(`${BACKEND_URL}/api/payment/webhook`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                data: {
+                                                    order: { order_id: mockOrderDetails.orderId },
+                                                    payment: {
+                                                        payment_status: 'SUCCESS',
+                                                        cf_payment_id: 'MOCK_TX_' + Date.now()
+                                                    }
+                                                }
+                                            })
+                                        });
+
+                                        if (res.ok) {
+                                            setMockMessage('Payment Success Simulated! Confirming...');
+                                            setTimeout(() => {
+                                                setShowMockModal(false);
+                                                verifyBookingPayment(mockOrderDetails.orderId);
+                                            }, 1200);
+                                        } else {
+                                            setMockMessage('Webhook simulation failed.');
+                                            setMockPaymentProcessing(false);
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        setMockMessage('Connection error simulating payment.');
+                                        setMockPaymentProcessing(false);
+                                    }
+                                }}
+                                disabled={mockPaymentProcessing}
+                                style={{
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    border: 'none', color: '#fff', fontWeight: 600, padding: '14px 20px',
+                                    borderRadius: '30px', cursor: 'pointer', fontSize: '0.95rem',
+                                    boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+                                    transition: 'all 0.2s', width: '100%'
+                                }}
+                            >
+                                {mockPaymentProcessing ? 'Confirming...' : 'Simulate Success'}
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setShowMockModal(false);
+                                    setLoading(false);
+                                }}
+                                disabled={mockPaymentProcessing}
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.04)',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    color: '#9CA3AF', fontWeight: 500, padding: '10px 20px',
+                                    borderRadius: '30px', cursor: 'pointer', fontSize: '0.88rem',
+                                    transition: 'all 0.2s', width: '100%'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
