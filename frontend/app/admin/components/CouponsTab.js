@@ -113,12 +113,12 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
 
     return (
         <div style={{ padding: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', fontFamily: 'Space Grotesk' }}>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px', color: 'var(--text-main)' }}>
                         🎫 Promo & Discount Coupons
                     </h2>
-                    <p style={{ color: '#94A3B8', fontSize: '0.88rem', margin: 0 }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: 0 }}>
                         Create and manage active promo codes for checkout discount validation.
                     </p>
                 </div>
@@ -139,89 +139,92 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
                     <div style={{
                         width: '32px', height: '32px', border: '3px solid transparent',
-                        borderTopColor: '#10B981', borderRadius: '50%',
+                        borderTopColor: 'var(--success)', borderRadius: '50%',
                         animation: 'spin 0.8s linear infinite'
                     }} />
                 </div>
             ) : coupons.length === 0 ? (
                 <div style={{
-                    background: 'rgba(15, 23, 42, 0.4)', border: '1px dashed rgba(255,255,255,0.06)',
-                    borderRadius: '16px', padding: '48px', textAlign: 'center', color: '#94A3B8'
+                    background: 'var(--card-bg)', border: '1px dashed var(--border-color)',
+                    borderRadius: '16px', padding: '48px', textAlign: 'center', color: 'var(--text-muted)',
+                    boxShadow: 'var(--shadow-sm)'
                 }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎫</div>
-                    <div style={{ fontWeight: 600, color: '#F8FAFC', marginBottom: '4px' }}>No Coupons Found</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>No Coupons Found</div>
                     <div style={{ fontSize: '0.85rem' }}>Create your first promo code to allow checkout discounts.</div>
                 </div>
             ) : (
-                <div className="table-responsive" style={{ background: 'rgba(10, 16, 30, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
-                    <table className="table-styled" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
-                            <tr style={{ background: 'rgba(15, 23, 42, 0.65)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Code</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Discount</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Min. Purchase</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Max Cap</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Usage Limit</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expiry Date</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                                <th style={{ padding: '16px 20px', fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {coupons.map((coupon) => {
-                                const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
-                                const isLimitReached = coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit;
-                                const statusLabel = !coupon.isActive ? 'Inactive' : isExpired ? 'Expired' : isLimitReached ? 'Limit Reached' : 'Active';
-                                const statusColor = statusLabel === 'Active' ? '#10B981' : statusLabel === 'Expired' ? '#EF4444' : '#F59E0B';
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '16px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={thStyle}>Code</th>
+                                    <th style={thStyle}>Discount</th>
+                                    <th style={thStyle}>Min. Purchase</th>
+                                    <th style={thStyle}>Max Cap</th>
+                                    <th style={thStyle}>Usage Limit</th>
+                                    <th style={thStyle}>Expiry Date</th>
+                                    <th style={thStyle}>Status</th>
+                                    <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {coupons.map((coupon) => {
+                                    const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
+                                    const isLimitReached = coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit;
+                                    const statusLabel = !coupon.isActive ? 'Inactive' : isExpired ? 'Expired' : isLimitReached ? 'Limit Reached' : 'Active';
+                                    const statusColor = statusLabel === 'Active' ? 'var(--success)' : statusLabel === 'Expired' ? 'var(--danger)' : 'var(--warning)';
 
-                                return (
-                                    <tr key={coupon._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }}>
-                                        <td style={{ padding: '16px 20px', fontWeight: 700, color: '#F8FAFC', fontFamily: 'monospace', fontSize: '0.95rem' }}>
-                                            {coupon.code}
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#10B981', fontWeight: 600 }}>
-                                            {coupon.discountType === 'PERCENT' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#E2E8F0' }}>
-                                            ₹{coupon.minOrderAmount || 0}
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#E2E8F0' }}>
-                                            {coupon.maxDiscountAmount ? `₹${coupon.maxDiscountAmount}` : 'None'}
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#E2E8F0' }}>
-                                            {coupon.usageCount} / {coupon.usageLimit !== null ? coupon.usageLimit : '∞'}
-                                        </td>
-                                        <td style={{ padding: '16px 20px', color: '#94A3B8' }}>
-                                            {coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never'}
-                                        </td>
-                                        <td style={{ padding: '16px 20px' }}>
-                                            <span style={{
-                                                background: `${statusColor}15`, color: statusColor, border: `1px solid ${statusColor}30`,
-                                                borderRadius: '30px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 700,
-                                                textTransform: 'uppercase', letterSpacing: '0.04em'
-                                            }}>
-                                                {statusLabel}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                                            <button
-                                                onClick={() => handleDeleteCoupon(coupon._id, coupon.code)}
-                                                style={{
-                                                    background: 'transparent', border: 'none', color: '#EF4444',
-                                                    cursor: 'pointer', padding: '6px', opacity: 0.8, transition: 'opacity 0.2s'
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-                                                onMouseLeave={(e) => e.currentTarget.style.opacity = 0.8}
-                                                title="Delete Coupon"
-                                            >
-                                                🗑️
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                    return (
+                                        <tr key={coupon._id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
+                                            <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.95rem' }}>
+                                                {coupon.code}
+                                            </td>
+                                            <td style={{ ...tdStyle, color: 'var(--success)', fontWeight: 600 }}>
+                                                {coupon.discountType === 'PERCENT' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
+                                            </td>
+                                            <td style={{ ...tdStyle, color: 'var(--text-main)' }}>
+                                                ₹{coupon.minOrderAmount || 0}
+                                            </td>
+                                            <td style={{ ...tdStyle, color: 'var(--text-main)' }}>
+                                                {coupon.maxDiscountAmount ? `₹${coupon.maxDiscountAmount}` : 'None'}
+                                            </td>
+                                            <td style={{ ...tdStyle, color: 'var(--text-main)' }}>
+                                                {coupon.usageCount} / {coupon.usageLimit !== null ? coupon.usageLimit : '∞'}
+                                            </td>
+                                            <td style={{ ...tdStyle, color: 'var(--text-muted)' }}>
+                                                {coupon.expiryDate ? new Date(coupon.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never'}
+                                            </td>
+                                            <td style={tdStyle}>
+                                                <span style={{
+                                                    background: 'var(--success-bg)', color: statusColor, border: `1px solid var(--success-border)`,
+                                                    borderRadius: '30px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 700,
+                                                    textTransform: 'uppercase', letterSpacing: '0.04em'
+                                                }}>
+                                                    {statusLabel}
+                                                </span>
+                                            </td>
+                                            <td style={{ ...tdStyle, textAlign: 'right' }}>
+                                                <button
+                                                    onClick={() => handleDeleteCoupon(coupon._id, coupon.code)}
+                                                    style={{
+                                                        background: 'transparent', border: 'none', color: 'var(--danger)',
+                                                        cursor: 'pointer', padding: '6px', opacity: 0.8, transition: 'opacity 0.2s'
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
+                                                    onMouseLeave={(e) => e.currentTarget.style.opacity = 0.8}
+                                                    title="Delete Coupon"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
@@ -230,20 +233,20 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                 <div style={{
                     position: 'fixed', inset: 0, zIndex: 11000,
                     display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    background: 'rgba(5, 7, 12, 0.8)', backdropFilter: 'blur(8px)'
+                    background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)'
                 }}>
                     <div style={{
-                        background: '#0B0F19', border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'var(--card-bg)', border: '1px solid var(--border-color)',
                         borderRadius: '16px', padding: '36px', maxWidth: '480px', width: '90%',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+                        boxShadow: 'var(--shadow-lg)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: '#F8FAFC' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
                                 Create New Promo Code
                             </h3>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                style={{ background: 'transparent', border: 'none', color: '#94A3B8', fontSize: '1.2rem', cursor: 'pointer' }}
+                                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
                             >
                                 ✕
                             </button>
@@ -251,11 +254,10 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
 
                         <form onSubmit={handleCreateCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Promo Code *</label>
+                                <label style={labelStyle}>Promo Code *</label>
                                 <input
                                     type="text"
-                                    className="glass-input"
-                                    style={{ textTransform: 'uppercase', width: '100%', boxSizing: 'border-box' }}
+                                    style={{ ...inputStyle, textTransform: 'uppercase' }}
                                     placeholder="e.g. KHELO20"
                                     required
                                     value={code}
@@ -265,23 +267,21 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Discount Type *</label>
+                                    <label style={labelStyle}>Discount Type *</label>
                                     <select
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box', background: '#090D16' }}
+                                        style={inputStyle}
                                         value={discountType}
                                         onChange={(e) => setDiscountType(e.target.value)}
                                     >
-                                        <option value="PERCENT" style={{ background: '#090D16' }}>Percent (%)</option>
-                                        <option value="FLAT" style={{ background: '#090D16' }}>Flat (₹)</option>
+                                        <option value="PERCENT">Percent (%)</option>
+                                        <option value="FLAT">Flat (₹)</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Discount Value *</label>
+                                    <label style={labelStyle}>Discount Value *</label>
                                     <input
                                         type="number"
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box' }}
+                                        style={inputStyle}
                                         placeholder={discountType === 'PERCENT' ? 'e.g. 20' : 'e.g. 200'}
                                         required
                                         min="1"
@@ -293,11 +293,10 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Min. Purchase Amount</label>
+                                    <label style={labelStyle}>Min. Purchase Amount</label>
                                     <input
                                         type="number"
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box' }}
+                                        style={inputStyle}
                                         placeholder="e.g. 500"
                                         min="0"
                                         value={minOrderAmount}
@@ -305,11 +304,10 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Max Discount Cap</label>
+                                    <label style={labelStyle}>Max Discount Cap</label>
                                     <input
                                         type="number"
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box' }}
+                                        style={inputStyle}
                                         placeholder="None"
                                         min="0"
                                         disabled={discountType === 'FLAT'}
@@ -321,11 +319,10 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Usage Limit</label>
+                                    <label style={labelStyle}>Usage Limit</label>
                                     <input
                                         type="number"
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box' }}
+                                        style={inputStyle}
                                         placeholder="Unlimited"
                                         min="1"
                                         value={usageLimit}
@@ -333,11 +330,10 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     />
                                 </div>
                                 <div>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Expiry Date</label>
+                                    <label style={labelStyle}>Expiry Date</label>
                                     <input
                                         type="date"
-                                        className="glass-input"
-                                        style={{ width: '100%', boxSizing: 'border-box' }}
+                                        style={inputStyle}
                                         value={expiryDate}
                                         onChange={(e) => setExpiryDate(e.target.value)}
                                     />
@@ -350,9 +346,9 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     id="is-active-chk"
                                     checked={isActive}
                                     onChange={(e) => setIsActive(e.target.checked)}
-                                    style={{ width: '18px', height: '18px', accentColor: '#10B981', cursor: 'pointer' }}
+                                    style={{ width: '18px', height: '18px', accentColor: 'var(--success)', cursor: 'pointer' }}
                                 />
-                                <label htmlFor="is-active-chk" style={{ fontSize: '0.85rem', color: '#E2E8F0', cursor: 'pointer', userSelect: 'none' }}>
+                                <label htmlFor="is-active-chk" style={{ fontSize: '0.85rem', color: 'var(--text-main)', cursor: 'pointer', userSelect: 'none' }}>
                                     Set this coupon as Active immediately
                                 </label>
                             </div>
@@ -370,9 +366,9 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     type="button"
                                     onClick={() => setShowCreateModal(false)}
                                     style={{
-                                        flex: 1, background: 'rgba(255,255,255,0.04)',
-                                        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '30px',
-                                        color: '#E2E8F0', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem'
+                                        flex: 1, background: 'var(--card-bg)',
+                                        border: '1px solid var(--border-color)', borderRadius: '30px',
+                                        color: 'var(--text-main)', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem'
                                     }}
                                 >
                                     Cancel
@@ -391,3 +387,41 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
         </div>
     );
 }
+
+/* ─── Shared inline style objects ─── */
+
+const thStyle = {
+    padding: '16px 20px',
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+};
+
+const tdStyle = {
+    padding: '16px 20px'
+};
+
+const labelStyle = {
+    display: 'block',
+    marginBottom: '8px',
+    fontSize: '0.78rem',
+    fontWeight: 600,
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em'
+};
+
+const inputStyle = {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '12px 14px',
+    borderRadius: '10px',
+    border: '1px solid var(--border-color)',
+    background: 'var(--input-bg)',
+    color: 'var(--text-main)',
+    fontSize: '0.9rem',
+    outline: 'none',
+    transition: 'border-color 0.2s'
+};
