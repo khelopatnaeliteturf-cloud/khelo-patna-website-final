@@ -144,6 +144,9 @@ export default function ScoreboardAdminDashboard() {
     const [showQR, setShowQR] = useState(null);
     const [expandedShare, setExpandedShare] = useState(null);
     const [hoveredCard, setHoveredCard] = useState(null);
+    const [activeTheme, setActiveTheme] = useState('glass');
+    const [activeLayout, setActiveLayout] = useState('ticker');
+    const [activeFont, setActiveFont] = useState('oswald');
 
     // ── Filter state (All Matches tab) ───
     const [sportFilter, setSportFilter] = useState('all');
@@ -629,7 +632,7 @@ export default function ScoreboardAdminDashboard() {
     // ── Share Section ───
     const renderShareSection = (sb) => {
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
-        const overlayUrl = `${origin}/scoreboard/${sb._id}?mode=overlay`;
+        const overlayUrl = `${origin}/scoreboard/${sb._id}?mode=overlay&theme=${activeTheme}&layout=${activeLayout}&font=${activeFont}`;
         const tvUrl = `${origin}/scoreboard/${sb._id}?mode=tv`;
         const spectatorUrl = `${origin}/scoreboard/${sb._id}?mode=spectator`;
         const isExpanded = expandedShare === sb._id;
@@ -666,6 +669,74 @@ export default function ScoreboardAdminDashboard() {
                         }}>
                             Broadcast Feed URLs
                         </div>
+
+                        {/* Customization Controllers */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                            gap: '12px',
+                            background: 'rgba(255,255,255,0.01)',
+                            border: '1px solid rgba(255,255,255,0.04)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            marginBottom: '6px'
+                        }}>
+                            {/* Theme Selector */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <label style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Overlay Theme</label>
+                                <select 
+                                    value={activeTheme} 
+                                    onChange={(e) => setActiveTheme(e.target.value)}
+                                    style={{
+                                        background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.08)',
+                                        color: '#CBD5E1', fontSize: '11px', padding: '6px 8px', borderRadius: '6px',
+                                        outline: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif"
+                                    }}
+                                >
+                                    <option value="glass">Glassmorphic (Default)</option>
+                                    <option value="neon">Neon Cyberpunk</option>
+                                    <option value="clean">Clean TV Flat</option>
+                                    <option value="retro">Retro Arcade</option>
+                                </select>
+                            </div>
+
+                            {/* Layout Selector */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <label style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Overlay Layout</label>
+                                <select 
+                                    value={activeLayout} 
+                                    onChange={(e) => setActiveLayout(e.target.value)}
+                                    style={{
+                                        background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.08)',
+                                        color: '#CBD5E1', fontSize: '11px', padding: '6px 8px', borderRadius: '6px',
+                                        outline: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif"
+                                    }}
+                                >
+                                    <option value="ticker">Bottom Ticker</option>
+                                    <option value="bug">Top-Left Bug</option>
+                                </select>
+                            </div>
+
+                            {/* Font Selector */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <label style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Typography</label>
+                                <select 
+                                    value={activeFont} 
+                                    onChange={(e) => setActiveFont(e.target.value)}
+                                    style={{
+                                        background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.08)',
+                                        color: '#CBD5E1', fontSize: '11px', padding: '6px 8px', borderRadius: '6px',
+                                        outline: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif"
+                                    }}
+                                >
+                                    <option value="oswald">Oswald (Sport)</option>
+                                    <option value="orbitron">Orbitron (Gaming)</option>
+                                    <option value="chakra">Chakra (Modern)</option>
+                                    <option value="mono">Fira Code (Digital)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         {links.map(link => {
                             const copyId = `${sb._id}-${link.label}`;
                             return (

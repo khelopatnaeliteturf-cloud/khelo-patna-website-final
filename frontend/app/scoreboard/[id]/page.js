@@ -31,6 +31,112 @@ const COLOR = {
   surfaceBorder: 'rgba(255,255,255,0.06)',
 };
 
+// ─── Theme Style Engine ──────────────────────────────────────────
+export function getThemeStyles(theme, font, sportColor = '#10B981') {
+  let fontFamily = "'Oswald', sans-serif";
+  let labelFontFamily = "'Inter', sans-serif";
+  let timerFontFamily = "'Fira Code', monospace";
+
+  if (font === 'orbitron') {
+    fontFamily = "'Orbitron', sans-serif";
+    labelFontFamily = "'Orbitron', sans-serif";
+  } else if (font === 'chakra') {
+    fontFamily = "'Chakra Petch', sans-serif";
+    labelFontFamily = "'Chakra Petch', sans-serif";
+  } else if (font === 'mono') {
+    fontFamily = "'Fira Code', monospace";
+    labelFontFamily = "'Fira Code', monospace";
+  }
+
+  const t = (theme || 'glass').toLowerCase();
+  if (t === 'neon') {
+    return {
+      bg: 'rgba(7, 10, 19, 0.95)',
+      border: '2px solid #00F2FE',
+      borderRadius: '8px',
+      boxShadow: '0 0 15px rgba(0, 242, 254, 0.35), inset 0 0 8px rgba(0, 242, 254, 0.15)',
+      color: '#00F2FE',
+      backdropFilter: 'none',
+      accentColor: '#FF007F', // hot neon pink
+      accentGlow: 'rgba(255, 0, 127, 0.15)',
+      mutedColor: '#38BDF8', // cyan
+      dimColor: '#00A8B5',
+      fontFamily,
+      labelFontFamily,
+      timerFontFamily,
+      divider: 'rgba(0, 242, 254, 0.25)',
+      badgeBg: 'rgba(0, 242, 254, 0.1)',
+      badgeBorder: '1px solid rgba(0, 242, 254, 0.3)',
+      badgeColor: '#00F2FE'
+    };
+  }
+
+  if (t === 'clean') {
+    return {
+      bg: '#FFFFFF',
+      border: '1px solid #E2E8F0',
+      borderRadius: '8px',
+      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.12)',
+      color: '#0F172A',
+      backdropFilter: 'none',
+      accentColor: '#2563EB', // deep clean blue
+      accentGlow: 'rgba(37, 99, 235, 0.08)',
+      mutedColor: '#475569',
+      dimColor: '#64748B',
+      fontFamily,
+      labelFontFamily,
+      timerFontFamily,
+      divider: '#E2E8F0',
+      badgeBg: '#F1F5F9',
+      badgeBorder: '1px solid #CBD5E1',
+      badgeColor: '#0F172A'
+    };
+  }
+
+  if (t === 'retro') {
+    return {
+      bg: '#000000',
+      border: '4px double #F59E0B',
+      borderRadius: '0px',
+      boxShadow: '0 6px 0 rgba(0, 0, 0, 0.8)',
+      color: '#F59E0B',
+      backdropFilter: 'none',
+      accentColor: '#F59E0B',
+      accentGlow: 'rgba(245, 158, 11, 0.1)',
+      mutedColor: '#D97706',
+      dimColor: '#B45309',
+      fontFamily: "'Fira Code', monospace",
+      labelFontFamily: "'Fira Code', monospace",
+      timerFontFamily: "'Fira Code', monospace",
+      divider: '#F59E0B',
+      badgeBg: 'transparent',
+      badgeBorder: '1px solid #F59E0B',
+      badgeColor: '#F59E0B'
+    };
+  }
+
+  // Default: glassmorphic theme
+  return {
+    bg: 'rgba(11, 15, 25, 0.88)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '14px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+    color: '#FFFFFF',
+    backdropFilter: 'blur(16px)',
+    accentColor: sportColor,
+    accentGlow: `${sportColor}25`,
+    mutedColor: '#9CA3AF',
+    dimColor: '#6B7280',
+    fontFamily,
+    labelFontFamily,
+    timerFontFamily,
+    divider: 'rgba(255, 255, 255, 0.08)',
+    badgeBg: 'rgba(255, 255, 255, 0.04)',
+    badgeBorder: '1px solid rgba(255, 255, 255, 0.06)',
+    badgeColor: '#FFFFFF'
+  };
+}
+
 // ─── Ball Color Map ──────────────────────────────────────────────
 function getBallColor(ball) {
   if (!ball) return { bg: COLOR.dot, text: '#FFF' };
@@ -45,7 +151,7 @@ function getBallColor(ball) {
 }
 
 // ─── Rolling Number Component ────────────────────────────────────
-function RollingNumber({ value, size = 48, color = COLOR.white, weight = 700 }) {
+function RollingNumber({ value, size = 48, color = COLOR.white, weight = 700, fontFamily = "'Oswald', sans-serif" }) {
   const prevRef = useRef(value);
   const [display, setDisplay] = useState({ current: value, prev: value, animating: false });
 
@@ -66,7 +172,7 @@ function RollingNumber({ value, size = 48, color = COLOR.white, weight = 700 }) 
     }}>
       {/* Old number slides up and out */}
       <span style={{
-        fontFamily: FONT.score, fontWeight: weight, fontSize: `${size}px`,
+        fontFamily: fontFamily, fontWeight: weight, fontSize: `${size}px`,
         color, lineHeight: 1, position: 'absolute',
         transform: display.animating ? 'translateY(-110%)' : 'translateY(0)',
         opacity: display.animating ? 0 : 1,
@@ -77,7 +183,7 @@ function RollingNumber({ value, size = 48, color = COLOR.white, weight = 700 }) 
       </span>
       {/* New number slides up from below */}
       <span style={{
-        fontFamily: FONT.score, fontWeight: weight, fontSize: `${size}px`,
+        fontFamily: fontFamily, fontWeight: weight, fontSize: `${size}px`,
         color, lineHeight: 1,
         transform: display.animating ? 'translateY(0)' : 'translateY(110%)',
         opacity: display.animating ? 1 : 0,
@@ -90,7 +196,7 @@ function RollingNumber({ value, size = 48, color = COLOR.white, weight = 700 }) 
       {/* Static fallback when not animating */}
       {!display.animating && (
         <span style={{
-          fontFamily: FONT.score, fontWeight: weight, fontSize: `${size}px`,
+          fontFamily: fontFamily, fontWeight: weight, fontSize: `${size}px`,
           color, lineHeight: 1,
         }}>
           {value}
@@ -144,18 +250,20 @@ function CelebrationOverlay({ celebration }) {
 }
 
 // ─── LIVE Badge ──────────────────────────────────────────────────
-function LiveBadge({ status, size = 'normal' }) {
+function LiveBadge({ status, size = 'normal', themeStyles }) {
   const isLive = status === 'LIVE';
   const isFinished = status === 'FINISHED';
+  const labelFont = themeStyles ? themeStyles.labelFontFamily : FONT.label;
   const sz = size === 'large' ? { font: 16, pad: '8px 20px', dot: 10 } : { font: 11, pad: '4px 12px', dot: 7 };
 
   if (isFinished) {
     return (
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)',
-        borderRadius: '20px', padding: sz.pad, fontFamily: FONT.label,
-        fontWeight: 700, fontSize: `${sz.font}px`, color: COLOR.gold,
+        background: themeStyles ? themeStyles.badgeBg : 'rgba(251,191,36,0.15)',
+        border: themeStyles ? themeStyles.badgeBorder : '1px solid rgba(251,191,36,0.3)',
+        borderRadius: '20px', padding: sz.pad, fontFamily: labelFont,
+        fontWeight: 700, fontSize: `${sz.font}px`, color: themeStyles ? themeStyles.accentColor : COLOR.gold,
         letterSpacing: '1.5px', textTransform: 'uppercase',
       }}>
         FINISHED
@@ -167,9 +275,10 @@ function LiveBadge({ status, size = 'normal' }) {
     return (
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)',
-        borderRadius: '20px', padding: sz.pad, fontFamily: FONT.label,
-        fontWeight: 700, fontSize: `${sz.font}px`, color: COLOR.muted,
+        background: themeStyles ? themeStyles.badgeBg : 'rgba(107,114,128,0.15)',
+        border: themeStyles ? themeStyles.badgeBorder : '1px solid rgba(107,114,128,0.3)',
+        borderRadius: '20px', padding: sz.pad, fontFamily: labelFont,
+        fontWeight: 700, fontSize: `${sz.font}px`, color: themeStyles ? themeStyles.mutedColor : COLOR.muted,
         letterSpacing: '1.5px', textTransform: 'uppercase',
       }}>
         UPCOMING
@@ -180,7 +289,10 @@ function LiveBadge({ status, size = 'normal' }) {
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: '6px',
-      padding: sz.pad, fontFamily: FONT.label, fontWeight: 700,
+      background: themeStyles ? themeStyles.badgeBg : 'transparent',
+      border: themeStyles ? themeStyles.badgeBorder : 'none',
+      borderRadius: '20px',
+      padding: sz.pad, fontFamily: labelFont, fontWeight: 700,
       fontSize: `${sz.font}px`, color: COLOR.red,
       letterSpacing: '1.5px', textTransform: 'uppercase',
     }}>
@@ -196,13 +308,14 @@ function LiveBadge({ status, size = 'normal' }) {
 }
 
 // ─── Ball Circle ─────────────────────────────────────────────────
-function BallCircle({ ball, size = 28 }) {
+function BallCircle({ ball, size = 28, themeStyles }) {
   const { bg, text } = getBallColor(ball);
+  const labelFont = themeStyles ? themeStyles.labelFontFamily : FONT.label;
   return (
     <div style={{
       width: `${size}px`, height: `${size}px`, borderRadius: '50%',
       background: bg, display: 'flex', justifyContent: 'center', alignItems: 'center',
-      fontFamily: FONT.label, fontWeight: 700, fontSize: `${size * 0.4}px`,
+      fontFamily: labelFont, fontWeight: 700, fontSize: `${size * 0.4}px`,
       color: text, flexShrink: 0,
     }}>
       {String(ball).substring(0, 2)}
@@ -211,7 +324,7 @@ function BallCircle({ ball, size = 28 }) {
 }
 
 // ─── Football Smart Timer ────────────────────────────────────────
-function FootballTimer({ timerRunning, timerStartAt, timerSeconds, size = 36, color = COLOR.gold }) {
+function FootballTimer({ timerRunning, timerStartAt, timerSeconds, size = 36, color = COLOR.gold, fontFamily = "'Fira Code', monospace" }) {
   const [displayTime, setDisplayTime] = useState(timerSeconds || 0);
 
   useEffect(() => {
@@ -236,7 +349,7 @@ function FootballTimer({ timerRunning, timerStartAt, timerSeconds, size = 36, co
 
   return (
     <span style={{
-      fontFamily: FONT.timer, fontWeight: 500, fontSize: `${size}px`,
+      fontFamily: fontFamily, fontWeight: 500, fontSize: `${size}px`,
       color, letterSpacing: '2px', fontVariantNumeric: 'tabular-nums',
     }}>
       {mins}:{secs}
@@ -290,7 +403,7 @@ function WinnerOverlay({ winner, teamAName, teamBName }) {
 // CRICKET OVERLAYS
 // ═══════════════════════════════════════════════════════════════════
 
-function CricketOverlay({ sb, animDelay }) {
+function CricketOverlay({ sb, animDelay, theme, layout, font }) {
   const cr = sb.settings?.cricket || {};
   const battingTeam = sb.currentBattingTeam === 'A' ? sb.teamAName : sb.teamBName;
   const battingScore = sb.currentBattingTeam === 'A' ? sb.teamAScore : sb.teamBScore;
@@ -310,6 +423,105 @@ function CricketOverlay({ sb, animDelay }) {
     }
   }
 
+  const style = getThemeStyles(theme, font, '#10B981');
+
+  // ── 1. SCORE BUG LAYOUT ─────────────────────────────────────────
+  if (layout === 'bug') {
+    return (
+      <div style={{
+        position: 'fixed', top: '24px', left: '24px',
+        animation: 'slideDown 600ms cubic-bezier(0.16,1,0.3,1) forwards',
+        willChange: 'transform, opacity',
+        opacity: 0, animationDelay: `${animDelay}ms`,
+        animationFillMode: 'forwards',
+        zIndex: 999
+      }}>
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          background: style.bg, backdropFilter: style.backdropFilter,
+          borderRadius: style.borderRadius, border: style.border,
+          boxShadow: style.boxShadow,
+          overflow: 'hidden', width: '340px',
+          color: style.color,
+          fontFamily: style.fontFamily,
+        }}>
+          {/* Header Row */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '8px 12px', background: 'rgba(255,255,255,0.03)',
+            borderBottom: `1px solid ${style.divider}`
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, fontFamily: style.labelFontFamily, letterSpacing: '1px', color: style.mutedColor }}>
+              {sb.matchName}
+            </span>
+            <LiveBadge status={sb.status} size="small" themeStyles={style} />
+          </div>
+
+          {/* Core Score Row */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '12px 14px', borderBottom: `1px solid ${style.divider}`
+          }}>
+            <span style={{ fontSize: '15px', fontWeight: 800, fontFamily: style.labelFontFamily, textTransform: 'uppercase' }}>
+              {battingTeam}
+            </span>
+            <div style={{
+              display: 'flex', alignItems: 'baseline', gap: '2px',
+              background: style.accentGlow, padding: '4px 12px', borderRadius: '6px',
+              border: style.badgeBorder
+            }}>
+              <RollingNumber value={battingScore} size={22} color={style.accentColor} weight={700} fontFamily={style.fontFamily} />
+              <span style={{ fontSize: '16px', color: style.accentColor, opacity: 0.6, margin: '0 1px' }}>/</span>
+              <RollingNumber value={battingWickets} size={22} color={style.accentColor} weight={700} fontFamily={style.fontFamily} />
+            </div>
+          </div>
+
+          {/* Stats & Current Inning Status */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '10px 14px', fontSize: '11px', color: style.mutedColor,
+            borderBottom: (balls.length > 0 || rrInfo) ? `1px solid ${style.divider}` : 'none'
+          }}>
+            <span style={{ fontFamily: style.timerFontFamily }}>
+              Overs: {battingOvers}
+            </span>
+            {cr.currentBatsman1 && (
+              <span style={{ fontWeight: 600, fontFamily: style.labelFontFamily }}>
+                🏏 {cr.currentBatsman1}
+              </span>
+            )}
+          </div>
+
+          {/* Balls Tracker */}
+          {balls.length > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '5px',
+              padding: '10px 14px',
+              borderBottom: rrInfo ? `1px solid ${style.divider}` : 'none'
+            }}>
+              {balls.map((ball, i) => (
+                <BallCircle key={`${i}-${ball}`} ball={ball} size={22} themeStyles={style} />
+              ))}
+            </div>
+          )}
+
+          {/* Required run rate */}
+          {rrInfo && (
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '10px 14px', background: style.accentGlow,
+              fontSize: '11px', fontWeight: 600, color: style.accentColor
+            }}>
+              <span>TARGET: {cr.target}</span>
+              <span>NEED: {rrInfo.need} (RR {rrInfo.rr})</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 2. BOTTOM TICKER LAYOUT ──────────────────────────────────────
   return (
     <div style={{
       position: 'fixed', bottom: '24px', left: '3%', right: '3%',
@@ -318,23 +530,25 @@ function CricketOverlay({ sb, animDelay }) {
       willChange: 'transform, opacity',
       opacity: 0, animationDelay: `${animDelay}ms`,
       animationFillMode: 'forwards',
+      zIndex: 999
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0',
-        background: COLOR.glass, backdropFilter: 'blur(16px)',
-        borderRadius: '14px', border: `1px solid ${COLOR.glassBorder}`,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset',
+        background: style.bg, backdropFilter: style.backdropFilter,
+        borderRadius: style.borderRadius, border: style.border,
+        boxShadow: style.boxShadow,
         overflow: 'hidden', maxWidth: '1200px', width: '100%',
+        color: style.color, fontFamily: style.fontFamily
       }}>
         {/* LIVE + Match */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '12px',
-          padding: '12px 20px', borderRight: `1px solid ${COLOR.glassBorder}`,
+          padding: '12px 20px', borderRight: `1px solid ${style.divider}`,
           flexShrink: 0,
         }}>
-          <LiveBadge status={sb.status} />
+          <LiveBadge status={sb.status} themeStyles={style} />
           <span style={{
-            fontFamily: FONT.label, fontSize: '12px', color: COLOR.muted,
+            fontFamily: style.labelFontFamily, fontSize: '12px', color: style.mutedColor,
             fontWeight: 500, maxWidth: '120px', overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
@@ -345,31 +559,31 @@ function CricketOverlay({ sb, animDelay }) {
         {/* Batting Team + Score */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: '14px',
-          padding: '10px 24px', borderRight: `1px solid ${COLOR.glassBorder}`,
+          padding: '10px 24px', borderRight: `1px solid ${style.divider}`,
         }}>
           <div style={{
-            fontFamily: FONT.label, fontWeight: 700, fontSize: '15px',
-            color: COLOR.white, textTransform: 'uppercase', letterSpacing: '0.5px',
+            fontFamily: style.labelFontFamily, fontWeight: 700, fontSize: '15px',
+            color: style.color, textTransform: 'uppercase', letterSpacing: '0.5px',
           }}>
             {battingTeam}
           </div>
           <div style={{
             display: 'flex', alignItems: 'baseline', gap: '2px',
-            background: COLOR.accentGlow, padding: '6px 16px',
-            borderRadius: '10px', border: '1px solid rgba(16,185,129,0.2)',
+            background: style.accentGlow, padding: '6px 16px',
+            borderRadius: '10px', border: style.badgeBorder,
           }}>
-            <RollingNumber value={battingScore} size={26} color={COLOR.accent} weight={700} />
+            <RollingNumber value={battingScore} size={26} color={style.accentColor} weight={700} fontFamily={style.fontFamily} />
             <span style={{
-              fontFamily: FONT.score, fontSize: '20px', fontWeight: 500,
-              color: 'rgba(16,185,129,0.6)',
+              fontFamily: style.fontFamily, fontSize: '20px', fontWeight: 500,
+              color: style.accentColor, opacity: 0.6,
             }}>/</span>
             <span style={{
-              fontFamily: FONT.score, fontSize: '20px', fontWeight: 600,
-              color: COLOR.accent,
+              fontFamily: style.fontFamily, fontSize: '20px', fontWeight: 600,
+              color: style.accentColor,
             }}>{battingWickets}</span>
           </div>
           <span style={{
-            fontFamily: FONT.timer, fontSize: '13px', color: COLOR.muted, fontWeight: 400,
+            fontFamily: style.timerFontFamily, fontSize: '13px', color: style.mutedColor, fontWeight: 400,
           }}>
             ({battingOvers} ov)
           </span>
@@ -379,10 +593,10 @@ function CricketOverlay({ sb, animDelay }) {
         {balls.length > 0 && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '10px 18px', borderRight: `1px solid ${COLOR.glassBorder}`,
+            padding: '10px 18px', borderRight: `1px solid ${style.divider}`,
           }}>
             {balls.map((ball, i) => (
-              <BallCircle key={`${i}-${ball}`} ball={ball} size={26} />
+              <BallCircle key={`${i}-${ball}`} ball={ball} size={26} themeStyles={style} />
             ))}
           </div>
         )}
@@ -391,29 +605,29 @@ function CricketOverlay({ sb, animDelay }) {
         {(cr.currentBatsman1 || cr.currentBowler) && (
           <div style={{
             display: 'flex', flexDirection: 'column', gap: '2px',
-            padding: '8px 18px', borderRight: `1px solid ${COLOR.glassBorder}`,
+            padding: '8px 18px', borderRight: `1px solid ${style.divider}`,
             minWidth: '160px',
           }}>
             {cr.currentBatsman1 && (
               <div style={{
-                fontFamily: FONT.label, fontSize: '11px', color: COLOR.white, fontWeight: 500,
+                fontFamily: style.labelFontFamily, fontSize: '11px', color: style.color, fontWeight: 500,
               }}>
-                <span style={{ color: COLOR.muted }}>BAT</span>{' '}
+                <span style={{ color: style.mutedColor }}>BAT</span>{' '}
                 {cr.currentBatsman1}
                 {cr.currentBatsman2 ? ` & ${cr.currentBatsman2}` : ''}
               </div>
             )}
             {cr.currentBowler && (
               <div style={{
-                fontFamily: FONT.label, fontSize: '11px', color: COLOR.white, fontWeight: 500,
+                fontFamily: style.labelFontFamily, fontSize: '11px', color: style.color, fontWeight: 500,
               }}>
-                <span style={{ color: COLOR.muted }}>BWL</span>{' '}
+                <span style={{ color: style.mutedColor }}>BWL</span>{' '}
                 {cr.currentBowler}
               </div>
             )}
             {cr.partnership && (
               <div style={{
-                fontFamily: FONT.label, fontSize: '10px', color: COLOR.dim, fontWeight: 400,
+                fontFamily: style.labelFontFamily, fontSize: '10px', color: style.dimColor, fontWeight: 400,
               }}>
                 P'ship: {cr.partnership.runs}({cr.partnership.balls})
               </div>
@@ -428,18 +642,18 @@ function CricketOverlay({ sb, animDelay }) {
             padding: '8px 18px', gap: '1px',
           }}>
             <span style={{
-              fontFamily: FONT.label, fontSize: '10px', color: COLOR.gold,
+              fontFamily: style.labelFontFamily, fontSize: '10px', color: style.accentColor,
               fontWeight: 600, letterSpacing: '0.5px',
             }}>
               NEED
             </span>
             <span style={{
-              fontFamily: FONT.score, fontSize: '16px', color: COLOR.gold, fontWeight: 700,
+              fontFamily: style.fontFamily, fontSize: '16px', color: style.accentColor, fontWeight: 700,
             }}>
               {rrInfo.need}
             </span>
             <span style={{
-              fontFamily: FONT.label, fontSize: '9px', color: COLOR.dim, fontWeight: 500,
+              fontFamily: style.labelFontFamily, fontSize: '9px', color: style.dimColor, fontWeight: 500,
             }}>
               RR {rrInfo.rr}
             </span>
@@ -695,30 +909,43 @@ function CricketSpectator({ sb }) {
 // FOOTBALL OVERLAYS
 // ═══════════════════════════════════════════════════════════════════
 
-function FootballOverlay({ sb, animDelay }) {
+function FootballOverlay({ sb, animDelay, theme, layout, font }) {
   const fb = sb.settings?.football || {};
   const abbr = (name) => (name || '???').substring(0, 3).toUpperCase();
+  const style = getThemeStyles(theme, font, '#3B82F6');
+
+  const wrapperStyle = layout === 'ticker' ? {
+    position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+    animation: 'slideUp 500ms cubic-bezier(0.16,1,0.3,1) forwards',
+    willChange: 'transform, opacity', opacity: 0,
+    animationDelay: `${animDelay}ms`, animationFillMode: 'forwards',
+    zIndex: 999
+  } : {
+    position: 'fixed', top: '24px', left: '24px',
+    animation: 'slideDown 500ms cubic-bezier(0.16,1,0.3,1) forwards',
+    willChange: 'transform, opacity', opacity: 0,
+    animationDelay: `${animDelay}ms`, animationFillMode: 'forwards',
+    zIndex: 999
+  };
 
   return (
-    <div style={{
-      position: 'fixed', top: '24px', left: '24px',
-      animation: 'slideDown 500ms cubic-bezier(0.16,1,0.3,1) forwards',
-      willChange: 'transform, opacity', opacity: 0,
-      animationDelay: `${animDelay}ms`, animationFillMode: 'forwards',
-    }}>
+    <div style={wrapperStyle}>
       <div style={{
         display: 'flex', alignItems: 'stretch',
-        background: COLOR.glass, backdropFilter: 'blur(16px)',
-        borderRadius: '12px', border: `1px solid ${COLOR.glassBorder}`,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+        background: style.bg, backdropFilter: style.backdropFilter,
+        borderRadius: style.borderRadius, border: style.border,
+        boxShadow: style.boxShadow,
         overflow: 'hidden',
+        color: style.color,
+        fontFamily: style.fontFamily
       }}>
         {/* Half Badge */}
         <div style={{
-          background: fb.half === 'HT' || fb.half === 'FT' ? COLOR.gold : COLOR.accent,
+          background: fb.half === 'HT' || fb.half === 'FT' ? style.accentColor : style.mutedColor,
           padding: '0 14px', display: 'flex', alignItems: 'center',
-          fontFamily: FONT.label, fontWeight: 800, fontSize: '11px',
-          color: COLOR.bg, letterSpacing: '1px',
+          fontFamily: style.labelFontFamily, fontWeight: 800, fontSize: '11px',
+          color: style.bg.includes('rgba(11, 15, 25') || style.bg.includes('rgba(7, 10, 19') || style.bg.includes('#000000') ? '#FFF' : '#0F172A',
+          letterSpacing: '1px',
         }}>
           {fb.half || '1H'}
         </div>
@@ -729,7 +956,7 @@ function FootballOverlay({ sb, animDelay }) {
           padding: '10px 14px',
         }}>
           <span style={{
-            fontFamily: FONT.label, fontWeight: 700, fontSize: '14px', color: COLOR.white,
+            fontFamily: style.labelFontFamily, fontWeight: 700, fontSize: '14px', color: style.color,
           }}>
             {abbr(sb.teamAName)}
           </span>
@@ -751,18 +978,20 @@ function FootballOverlay({ sb, animDelay }) {
         {/* Scores */}
         <div style={{
           display: 'flex', alignItems: 'center',
-          background: 'rgba(255,255,255,0.06)',
+          background: 'rgba(255,255,255,0.04)',
+          borderLeft: `1px solid ${style.divider}`,
+          borderRight: `1px solid ${style.divider}`,
         }}>
           <div style={{
             width: '44px', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
+            borderRight: `1px solid ${style.divider}`,
           }}>
-            <RollingNumber value={sb.teamAScore} size={22} color={COLOR.white} weight={700} />
+            <RollingNumber value={sb.teamAScore} size={22} color={style.accentColor} weight={700} fontFamily={style.fontFamily} />
           </div>
           <div style={{
             width: '44px', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center',
           }}>
-            <RollingNumber value={sb.teamBScore} size={22} color={COLOR.white} weight={700} />
+            <RollingNumber value={sb.teamBScore} size={22} color={style.accentColor} weight={700} fontFamily={style.fontFamily} />
           </div>
         </div>
 
@@ -782,7 +1011,7 @@ function FootballOverlay({ sb, animDelay }) {
             </div>
           )}
           <span style={{
-            fontFamily: FONT.label, fontWeight: 700, fontSize: '14px', color: COLOR.white,
+            fontFamily: style.labelFontFamily, fontWeight: 700, fontSize: '14px', color: style.color,
           }}>
             {abbr(sb.teamBName)}
           </span>
@@ -791,18 +1020,19 @@ function FootballOverlay({ sb, animDelay }) {
         {/* Timer */}
         <div style={{
           display: 'flex', alignItems: 'center',
-          padding: '0 16px', borderLeft: `1px solid ${COLOR.glassBorder}`,
+          padding: '0 16px', borderLeft: `1px solid ${style.divider}`,
         }}>
           <FootballTimer
             timerRunning={fb.timerRunning}
             timerStartAt={fb.timerStartAt}
             timerSeconds={fb.timerSeconds || 0}
             size={16}
-            color={COLOR.gold}
+            color={style.accentColor}
+            fontFamily={style.timerFontFamily}
           />
           {fb.stoppageTime > 0 && (
             <span style={{
-              fontFamily: FONT.timer, fontSize: '11px', color: COLOR.red,
+              fontFamily: style.timerFontFamily, fontSize: '11px', color: COLOR.red,
               marginLeft: '4px', fontWeight: 500,
             }}>+{fb.stoppageTime}</span>
           )}
@@ -811,9 +1041,9 @@ function FootballOverlay({ sb, animDelay }) {
         {/* LIVE indicator */}
         <div style={{
           display: 'flex', alignItems: 'center',
-          padding: '0 12px', borderLeft: `1px solid ${COLOR.glassBorder}`,
+          padding: '0 12px', borderLeft: `1px solid ${style.divider}`,
         }}>
-          <LiveBadge status={sb.status} />
+          <LiveBadge status={sb.status} themeStyles={style} />
         </div>
       </div>
     </div>
@@ -1019,33 +1249,116 @@ function FootballSpectator({ sb }) {
 // BADMINTON OVERLAYS
 // ═══════════════════════════════════════════════════════════════════
 
-function BadmintonOverlay({ sb, animDelay }) {
+function BadmintonOverlay({ sb, animDelay, theme, layout, font }) {
   const bd = sb.settings?.badminton || {};
   const setHistory = (bd.setScores || []).map(s => `${s.a}-${s.b}`).join(', ');
+  const style = getThemeStyles(theme, font, '#F59E0B');
 
+  // ── 1. HORIZONTAL TICKER LAYOUT ─────────────────────────────────
+  if (layout === 'ticker') {
+    return (
+      <div style={{
+        position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+        animation: 'slideUp 500ms cubic-bezier(0.16,1,0.3,1) forwards',
+        willChange: 'transform, opacity', opacity: 0,
+        animationDelay: `${animDelay}ms`, animationFillMode: 'forwards',
+        zIndex: 999
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0',
+          background: style.bg, backdropFilter: style.backdropFilter,
+          borderRadius: style.borderRadius, border: style.border,
+          boxShadow: style.boxShadow,
+          overflow: 'hidden',
+          color: style.color, fontFamily: style.fontFamily
+        }}>
+          {/* LIVE + Set Indicator */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '10px 16px', borderRight: `1px solid ${style.divider}`,
+          }}>
+            <LiveBadge status={sb.status} themeStyles={style} />
+            <span style={{ fontFamily: style.labelFontFamily, fontSize: '12px', fontWeight: 700, color: style.mutedColor }}>
+              SET {bd.currentSetNumber || 1}
+            </span>
+          </div>
+
+          {/* Player A */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px' }}>
+            {bd.serving === 'A' && <span style={{ color: style.accentColor, fontSize: '12px' }}>●</span>}
+            <span style={{ fontFamily: style.labelFontFamily, fontWeight: bd.serving === 'A' ? 700 : 500, fontSize: '14px' }}>
+              {sb.teamAName}
+            </span>
+            <span style={{ fontFamily: style.labelFontFamily, fontSize: '11px', color: style.dimColor }}>({bd.setsWonA || 0})</span>
+          </div>
+
+          {/* Score Counter */}
+          <div style={{
+            display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.04)',
+            borderLeft: `1px solid ${style.divider}`, borderRight: `1px solid ${style.divider}`,
+            padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center'
+          }}>
+            <RollingNumber value={sb.teamAScore} size={22} color={bd.serving === 'A' ? style.accentColor : style.color} weight={700} fontFamily={style.fontFamily} />
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>-</span>
+            <RollingNumber value={sb.teamBScore} size={22} color={bd.serving === 'B' ? style.accentColor : style.color} weight={700} fontFamily={style.fontFamily} />
+          </div>
+
+          {/* Player B */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px' }}>
+            <span style={{ fontFamily: style.labelFontFamily, fontSize: '11px', color: style.dimColor }}>({bd.setsWonB || 0})</span>
+            <span style={{ fontFamily: style.labelFontFamily, fontWeight: bd.serving === 'B' ? 700 : 500, fontSize: '14px' }}>
+              {sb.teamBName}
+            </span>
+            {bd.serving === 'B' && <span style={{ color: style.accentColor, fontSize: '12px' }}>●</span>}
+          </div>
+
+          {/* Set History or Match Point */}
+          {(setHistory || bd.matchPoint) && (
+            <div style={{
+              padding: '10px 16px', borderLeft: `1px solid ${style.divider}`,
+              fontSize: '11px', fontFamily: style.timerFontFamily, color: style.dimColor,
+              display: 'flex', alignItems: 'center'
+            }}>
+              {bd.matchPoint ? (
+                <span style={{ color: style.accentColor, fontWeight: 700, animation: 'matchPointPulse 1s ease-in-out infinite' }}>
+                  MP: {bd.matchPoint}
+                </span>
+              ) : (
+                setHistory
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 2. VERTICAL BUG LAYOUT ──────────────────────────────────────
   return (
     <div style={{
       position: 'fixed', top: '24px', left: '24px',
       animation: 'slideDown 500ms cubic-bezier(0.16,1,0.3,1) forwards',
       willChange: 'transform, opacity', opacity: 0,
       animationDelay: `${animDelay}ms`, animationFillMode: 'forwards',
+      zIndex: 999
     }}>
       <div style={{
-        background: COLOR.glass, backdropFilter: 'blur(16px)',
-        borderRadius: '14px', border: `1px solid ${COLOR.glassBorder}`,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+        background: style.bg, backdropFilter: style.backdropFilter,
+        borderRadius: style.borderRadius, border: style.border,
+        boxShadow: style.boxShadow,
         padding: '14px 20px', minWidth: '260px',
         display: 'flex', flexDirection: 'column', gap: '8px',
+        color: style.color, fontFamily: style.fontFamily
       }}>
         {/* Header */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div style={{
-            fontFamily: FONT.label, fontSize: '10px', fontWeight: 700,
-            color: COLOR.muted, letterSpacing: '1.5px',
+            fontFamily: style.labelFontFamily, fontSize: '10px', fontWeight: 700,
+            color: style.mutedColor, letterSpacing: '1.5px',
           }}>SET {bd.currentSetNumber || 1}</div>
-          <LiveBadge status={sb.status} />
+          <LiveBadge status={sb.status} themeStyles={style} />
         </div>
 
         {/* Player A */}
@@ -1054,6 +1367,7 @@ function BadmintonOverlay({ sb, animDelay }) {
           score={sb.teamAScore}
           setsWon={bd.setsWonA || 0}
           serving={bd.serving === 'A'}
+          themeStyles={style}
         />
 
         {/* Player B */}
@@ -1062,21 +1376,22 @@ function BadmintonOverlay({ sb, animDelay }) {
           score={sb.teamBScore}
           setsWon={bd.setsWonB || 0}
           serving={bd.serving === 'B'}
+          themeStyles={style}
         />
 
         {/* Set History */}
         {setHistory && (
           <div style={{
-            fontFamily: FONT.timer, fontSize: '10px', color: COLOR.dim,
-            borderTop: `1px solid ${COLOR.glassBorder}`, paddingTop: '6px',
+            fontFamily: style.timerFontFamily, fontSize: '10px', color: style.dimColor,
+            borderTop: `1px solid ${style.divider}`, paddingTop: '6px',
           }}>{setHistory}</div>
         )}
 
         {/* Match Point */}
         {bd.matchPoint && (
           <div style={{
-            fontFamily: FONT.label, fontSize: '10px', fontWeight: 700,
-            color: COLOR.gold, textTransform: 'uppercase', letterSpacing: '2px',
+            fontFamily: style.labelFontFamily, fontSize: '10px', fontWeight: 700,
+            color: style.accentColor, textTransform: 'uppercase', letterSpacing: '2px',
             textAlign: 'center', animation: 'matchPointPulse 1s ease-in-out infinite',
           }}>
             MATCH POINT • {bd.matchPoint}
@@ -1087,7 +1402,8 @@ function BadmintonOverlay({ sb, animDelay }) {
   );
 }
 
-function PlayerRow({ name, score, setsWon, serving }) {
+function PlayerRow({ name, score, setsWon, serving, themeStyles }) {
+  const F = themeStyles || { labelFontFamily: FONT.label, fontFamily: FONT.score, accentColor: COLOR.accent, color: COLOR.white, mutedColor: COLOR.muted, dimColor: COLOR.dim };
   return (
     <div style={{
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -1097,16 +1413,16 @@ function PlayerRow({ name, score, setsWon, serving }) {
         {/* Serve indicator */}
         <div style={{
           width: '8px', height: '8px', borderRadius: '50%',
-          background: serving ? COLOR.gold : 'transparent',
-          boxShadow: serving ? `0 0 8px ${COLOR.gold}` : 'none',
+          background: serving ? F.accentColor : 'transparent',
+          boxShadow: serving ? `0 0 8px ${F.accentColor}` : 'none',
           transition: `opacity 300ms ${EASE}`,
           willChange: 'opacity',
           opacity: serving ? 1 : 0.2,
           border: serving ? 'none' : '1px solid rgba(255,255,255,0.15)',
         }} />
         <span style={{
-          fontFamily: FONT.label, fontWeight: serving ? 700 : 500,
-          fontSize: '14px', color: serving ? COLOR.white : COLOR.muted,
+          fontFamily: F.labelFontFamily, fontWeight: serving ? 700 : 500,
+          fontSize: '14px', color: serving ? F.color : F.mutedColor,
         }}>
           {name}
         </span>
@@ -1114,10 +1430,10 @@ function PlayerRow({ name, score, setsWon, serving }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {/* Sets won */}
         <span style={{
-          fontFamily: FONT.label, fontSize: '11px', color: COLOR.dim, fontWeight: 600,
+          fontFamily: F.labelFontFamily, fontSize: '11px', color: F.dimColor, fontWeight: 600,
         }}>({setsWon})</span>
         {/* Current score */}
-        <RollingNumber value={score} size={22} color={serving ? COLOR.accent : COLOR.white} weight={700} />
+        <RollingNumber value={score} size={22} color={serving ? F.accentColor : F.color} weight={700} fontFamily={F.fontFamily} />
       </div>
     </div>
   );
@@ -1336,6 +1652,9 @@ function ScoreboardInner({ params }) {
   const { id: scoreboardId } = use(params);
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode') || 'overlay';
+  const theme = searchParams.get('theme') || 'glass';
+  const layout = searchParams.get('layout') || 'ticker';
+  const font = searchParams.get('font') || 'oswald';
 
   const [scoreboard, setScoreboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1492,9 +1811,9 @@ function ScoreboardInner({ params }) {
       <>
         <GlobalStyles mode="overlay" />
         <CelebrationOverlay celebration={celebration} />
-        {sport === 'cricket' && <CricketOverlay sb={scoreboard} animDelay={animDelay} />}
-        {sport === 'football' && <FootballOverlay sb={scoreboard} animDelay={animDelay} />}
-        {sport === 'badminton' && <BadmintonOverlay sb={scoreboard} animDelay={animDelay} />}
+        {sport === 'cricket' && <CricketOverlay sb={scoreboard} animDelay={animDelay} theme={theme} layout={layout} font={font} />}
+        {sport === 'football' && <FootballOverlay sb={scoreboard} animDelay={animDelay} theme={theme} layout={layout} font={font} />}
+        {sport === 'badminton' && <BadmintonOverlay sb={scoreboard} animDelay={animDelay} theme={theme} layout={layout} font={font} />}
       </>
     );
   }
@@ -1695,7 +2014,7 @@ function ScoreboardInner({ params }) {
 function GlobalStyles({ mode }) {
   return (
     <style jsx global>{`
-      @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&family=Orbitron:wght@400;500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap');
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
