@@ -233,13 +233,15 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                 <div style={{
                     position: 'fixed', inset: 0, zIndex: 11000,
                     display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(8px)'
-                }}>
+                    background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(12px)',
+                    padding: '20px'
+                }} onClick={() => setShowCreateModal(false)}>
                     <div style={{
                         background: 'var(--card-bg)', border: '1px solid var(--border-color)',
-                        borderRadius: '16px', padding: '36px', maxWidth: '480px', width: '90%',
-                        boxShadow: 'var(--shadow-lg)'
-                    }}>
+                        borderRadius: '20px', padding: '36px', maxWidth: '480px', width: '100%',
+                        boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+                        animation: 'slide-up 0.25s ease-out'
+                    }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
                                 Create New Promo Code
@@ -257,7 +259,8 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                 <label style={labelStyle}>Promo Code *</label>
                                 <input
                                     type="text"
-                                    style={{ ...inputStyle, textTransform: 'uppercase' }}
+                                    className="input-premium"
+                                    style={{ textTransform: 'uppercase' }}
                                     placeholder="e.g. KHELO20"
                                     required
                                     value={code}
@@ -269,7 +272,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                 <div>
                                     <label style={labelStyle}>Discount Type *</label>
                                     <select
-                                        style={inputStyle}
+                                        className="input-premium"
                                         value={discountType}
                                         onChange={(e) => setDiscountType(e.target.value)}
                                     >
@@ -281,7 +284,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     <label style={labelStyle}>Discount Value *</label>
                                     <input
                                         type="number"
-                                        style={inputStyle}
+                                        className="input-premium"
                                         placeholder={discountType === 'PERCENT' ? 'e.g. 20' : 'e.g. 200'}
                                         required
                                         min="1"
@@ -296,7 +299,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     <label style={labelStyle}>Min. Purchase Amount</label>
                                     <input
                                         type="number"
-                                        style={inputStyle}
+                                        className="input-premium"
                                         placeholder="e.g. 500"
                                         min="0"
                                         value={minOrderAmount}
@@ -307,7 +310,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     <label style={labelStyle}>Max Discount Cap</label>
                                     <input
                                         type="number"
-                                        style={inputStyle}
+                                        className="input-premium"
                                         placeholder="None"
                                         min="0"
                                         disabled={discountType === 'FLAT'}
@@ -322,7 +325,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     <label style={labelStyle}>Usage Limit</label>
                                     <input
                                         type="number"
-                                        style={inputStyle}
+                                        className="input-premium"
                                         placeholder="Unlimited"
                                         min="1"
                                         value={usageLimit}
@@ -333,7 +336,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                     <label style={labelStyle}>Expiry Date</label>
                                     <input
                                         type="date"
-                                        style={inputStyle}
+                                        className="input-premium"
                                         value={expiryDate}
                                         onChange={(e) => setExpiryDate(e.target.value)}
                                     />
@@ -411,17 +414,4 @@ const labelStyle = {
     color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.04em'
-};
-
-const inputStyle = {
-    width: '100%',
-    boxSizing: 'border-box',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: '1px solid var(--border-color)',
-    background: 'var(--input-bg)',
-    color: 'var(--text-main)',
-    fontSize: '0.9rem',
-    outline: 'none',
-    transition: 'border-color 0.2s'
 };
