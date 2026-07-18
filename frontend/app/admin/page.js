@@ -2795,7 +2795,7 @@ export default function AdminDashboard() {
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 5);
 
-        const studentColors = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6'];
+        const studentColors = ['var(--info)', 'var(--success)', 'var(--warning)', 'var(--purple)'];
         const recentAdmissions = [...allStudents]
             .sort((a, b) => new Date(b.admissionDate || 0) - new Date(a.admissionDate || 0))
             .slice(0, 4);
@@ -3238,7 +3238,7 @@ export default function AdminDashboard() {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
                                             const balance = (b.totalAmount || 0) - (b.paidAmount || 0);
-                                            const avatarColors = ['#6366F1', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899'];
+                                            const avatarColors = ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)', 'var(--danger)', 'var(--purple)', 'var(--primary-hover)'];
                                             const avatarColor = avatarColors[idx % avatarColors.length];
 
                                             return (
@@ -3297,9 +3297,9 @@ export default function AdminDashboard() {
                                                     <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                                                         <span style={{
                                                             fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '12px',
-                                                            background: b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.08)' : b.paymentStatus === 'PENDING' ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)',
-                                                            color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : '#EF4444',
-                                                            border: `1px solid ${b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.15)' : b.paymentStatus === 'PENDING' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                                                            background: b.paymentStatus === 'SUCCESS' ? 'var(--success-light)' : b.paymentStatus === 'PENDING' ? 'var(--warning-light)' : 'var(--danger-light)',
+                                                            color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : b.paymentStatus === 'PENDING' ? 'var(--warning)' : 'var(--danger)',
+                                                            border: `1px solid ${b.paymentStatus === 'SUCCESS' ? 'var(--success-border)' : b.paymentStatus === 'PENDING' ? 'var(--warning-border)' : 'var(--danger-border)'}`,
                                                             whiteSpace: 'nowrap',
                                                             display: 'inline-flex',
                                                             alignItems: 'center',
@@ -5544,67 +5544,83 @@ export default function AdminDashboard() {
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
                 :root {
-                    --bg-color: #F1F5F9;
-                    --card-bg: #FFFFFF;
-                    --border-color: rgba(0,0,0,0.06);
-                    --primary: #6366F1;
-                    --primary-hover: #4F46E5;
-                    --primary-light: rgba(99, 102, 241, 0.08);
-                    --success: #10B981;
-                    --success-light: rgba(16, 185, 129, 0.1);
-                    --warning: #F59E0B;
-                    --warning-light: rgba(245, 158, 11, 0.1);
-                    --danger: #EF4444;
-                    --danger-light: rgba(239, 68, 68, 0.1);
-                    --text-main: #0F172A;
-                    --text-muted: #64748B;
-                    --input-bg: #FFFFFF;
-                    --sidebar-bg: linear-gradient(195deg, #0F172A 0%, #1E293B 100%);
-                    --sidebar-border: rgba(255,255,255,0.06);
-                    --sidebar-text: rgba(255,255,255,0.55);
-                    --sidebar-active-text: #FFFFFF;
-                    --sidebar-active-bg: rgba(99, 102, 241, 0.25);
-                    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
-                    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-                    --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
-                    --gradient-1: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-                    --gradient-2: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-                    --gradient-3: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
-                    --gradient-4: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-                    --gradient-5: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-                    --success-text: #16a34a;
-                    --success-bg: rgba(22, 163, 74, 0.06);
-                    --success-border: rgba(22, 163, 74, 0.18);
-                }
+                     --bg-color: #F1F5F9;
+                     --card-bg: #FFFFFF;
+                     --border-color: rgba(0,0,0,0.06);
+                     --primary: #6366F1;
+                     --primary-hover: #4F46E5;
+                     --primary-light: rgba(99, 102, 241, 0.08);
+                     --success: #10B981;
+                     --success-light: rgba(16, 185, 129, 0.1);
+                     --warning: #F59E0B;
+                     --warning-light: rgba(245, 158, 11, 0.1);
+                     --danger: #EF4444;
+                     --danger-light: rgba(239, 68, 68, 0.1);
+                     --text-main: #0F172A;
+                     --text-muted: #64748B;
+                     --input-bg: #FFFFFF;
+                     --sidebar-bg: linear-gradient(195deg, #0F172A 0%, #1E293B 100%);
+                     --sidebar-border: rgba(255,255,255,0.06);
+                     --sidebar-text: rgba(255,255,255,0.55);
+                     --sidebar-active-text: #FFFFFF;
+                     --sidebar-active-bg: rgba(99, 102, 241, 0.25);
+                     --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+                     --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+                     --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+                     --gradient-1: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+                     --gradient-2: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+                     --gradient-3: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+                     --gradient-4: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+                     --gradient-5: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+                     --success-text: #16a34a;
+                     --success-bg: rgba(22, 163, 74, 0.06);
+                     --success-border: rgba(22, 163, 74, 0.18);
+                     --info: #2563EB;
+                     --info-light: rgba(37, 99, 235, 0.1);
+                     --purple: #7C3AED;
+                     --purple-light: rgba(124, 58, 237, 0.1);
+                     --white: #FFFFFF;
+                     --text-on-primary: #FFFFFF;
+                     --success-dark: #059669;
+                     --danger-dark: #DC2626;
+                 }
 
-                [data-theme='dark'] {
-                    --bg-color: #0B1120;
-                    --card-bg: rgba(30, 41, 59, 0.7);
-                    --border-color: rgba(255,255,255,0.06);
-                    --primary: #818CF8;
-                    --primary-hover: #A5B4FC;
-                    --primary-light: rgba(129, 140, 248, 0.12);
-                    --success: #34D399;
-                    --success-light: rgba(52, 211, 153, 0.12);
-                    --warning: #FBBF24;
-                    --warning-light: rgba(251, 191, 36, 0.12);
-                    --danger: #F87171;
-                    --danger-light: rgba(248, 113, 113, 0.12);
-                    --text-main: #F1F5F9;
-                    --text-muted: #94A3B8;
-                    --input-bg: rgba(30, 41, 59, 0.8);
-                    --sidebar-bg: linear-gradient(195deg, #070D1A 0%, #0F172A 100%);
-                    --sidebar-border: rgba(255,255,255,0.04);
-                    --sidebar-text: rgba(255,255,255,0.45);
-                    --sidebar-active-text: #FFFFFF;
-                    --sidebar-active-bg: rgba(129, 140, 248, 0.2);
-                    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-                    --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
-                    --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
-                    --success-text: #34D399;
-                    --success-bg: rgba(52, 211, 153, 0.12);
-                    --success-border: rgba(52, 211, 153, 0.22);
-                }
+                 [data-theme='dark'] {
+                     --bg-color: #0B1120;
+                     --card-bg: rgba(30, 41, 59, 0.7);
+                     --border-color: rgba(255,255,255,0.06);
+                     --primary: #818CF8;
+                     --primary-hover: #A5B4FC;
+                     --primary-light: rgba(129, 140, 248, 0.12);
+                     --success: #34D399;
+                     --success-light: rgba(52, 211, 153, 0.12);
+                     --warning: #FBBF24;
+                     --warning-light: rgba(251, 191, 36, 0.12);
+                     --danger: #F87171;
+                     --danger-light: rgba(248, 113, 113, 0.12);
+                     --text-main: #F1F5F9;
+                     --text-muted: #94A3B8;
+                     --input-bg: rgba(30, 41, 59, 0.8);
+                     --sidebar-bg: linear-gradient(195deg, #070D1A 0%, #0F172A 100%);
+                     --sidebar-border: rgba(255,255,255,0.04);
+                     --sidebar-text: rgba(255,255,255,0.45);
+                     --sidebar-active-text: #FFFFFF;
+                     --sidebar-active-bg: rgba(129, 140, 248, 0.2);
+                     --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+                     --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+                     --shadow-lg: 0 12px 40px rgba(0,0,0,0.4);
+                     --success-text: #34D399;
+                     --success-bg: rgba(52, 211, 153, 0.12);
+                     --success-border: rgba(52, 211, 153, 0.22);
+                     --info: #60A5FA;
+                     --info-light: rgba(96, 165, 250, 0.12);
+                     --purple: #A78BFA;
+                     --purple-light: rgba(167, 139, 250, 0.12);
+                     --white: #FFFFFF;
+                     --text-on-primary: #030806;
+                     --success-dark: #10B981;
+                     --danger-dark: #EF4444;
+                 }
 
                 * { box-sizing: border-box; }
 
@@ -6389,6 +6405,16 @@ export default function AdminDashboard() {
                     --success-text: #07875F;
                     --success-bg: rgba(16, 185, 129, 0.1);
                     --success-border: rgba(16, 185, 129, 0.22);
+                    --warning-border: rgba(217, 119, 6, 0.25);
+                    --danger-border: rgba(225, 29, 72, 0.22);
+                    --info: #2563EB;
+                    --info-light: rgba(37, 99, 235, 0.1);
+                    --purple: #7C3AED;
+                    --purple-light: rgba(124, 58, 237, 0.1);
+                    --white: #FFFFFF;
+                    --text-on-primary: #FFFFFF;
+                    --success-dark: #059669;
+                    --danger-dark: #DC2626;
                 }
 
                 [data-theme='dark'] {
@@ -6415,6 +6441,16 @@ export default function AdminDashboard() {
                     --success-text: #6EE7B7;
                     --success-bg: rgba(52, 211, 153, 0.12);
                     --success-border: rgba(52, 211, 153, 0.24);
+                    --warning-border: rgba(251, 191, 36, 0.25);
+                    --danger-border: rgba(251, 113, 133, 0.25);
+                    --info: #60A5FA;
+                    --info-light: rgba(96, 165, 250, 0.12);
+                    --purple: #A78BFA;
+                    --purple-light: rgba(167, 139, 250, 0.12);
+                    --white: #FFFFFF;
+                    --text-on-primary: #030806;
+                    --success-dark: #10B981;
+                    --danger-dark: #EF4444;
                 }
 
                 body:has(.admin-erp-container) .floating-orb {

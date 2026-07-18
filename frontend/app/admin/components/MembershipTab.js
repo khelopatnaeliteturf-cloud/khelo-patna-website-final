@@ -152,10 +152,10 @@ export default function MembershipTab({
     }, { total: 0, active: 0, inactive: 0, cricket: 0, football: 0 });
 
     const memberSummaryCards = [
-        { label: 'Total Students', value: memberStats.total, icon: 'groups', color: 'var(--text-main)' },
-        { label: 'Active', value: memberStats.active, icon: 'verified', color: 'var(--success-text)' },
-        { label: 'Cricket', value: memberStats.cricket, icon: 'sports_cricket', color: '#22c55e' },
-        { label: 'Football', value: memberStats.football, icon: 'sports_soccer', color: '#38bdf8' }
+        { label: 'Total Students', value: memberStats.total, icon: 'groups', color: 'var(--text-main)', glow: 'rgba(15, 23, 42, 0.2)' },
+        { label: 'Active', value: memberStats.active, icon: 'verified', color: 'var(--success)', glow: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Cricket', value: memberStats.cricket, icon: 'sports_cricket', color: 'var(--success)', glow: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Football', value: memberStats.football, icon: 'sports_soccer', color: 'var(--info)', glow: 'rgba(59, 130, 246, 0.2)' }
     ];
 
     const memberNavigation = [
@@ -250,7 +250,7 @@ export default function MembershipTab({
                 {subView === 'list' && !selectedMember && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
                         {memberSummaryCards.map(card => (
-                            <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': `${card.color}33` }}>
+                            <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': card.glow || `${card.color}33` }}>
                                 <span className="material-icons-outlined summary-chip__icon" style={{ color: card.color }}>{card.icon}</span>
                                 <div>
                                     <div className="summary-chip__value"><AnimatedNumber value={card.value} /></div>
@@ -289,10 +289,10 @@ export default function MembershipTab({
                                     value={statusFilter} 
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                 >
-                                    <option value="ALL" style={{ background: '#0b130f', color: '#fff' }}>All Members</option>
-                                    <option value="ACTIVE" style={{ background: '#0b130f', color: '#fff' }}>Active Members</option>
-                                    <option value="INACTIVE" style={{ background: '#0b130f', color: '#fff' }}>Inactive Members</option>
-                                    <option value="DROPOUT" style={{ background: '#0b130f', color: '#fff' }}>Dropout Members</option>
+                                    <option value="ALL" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>All Members</option>
+                                    <option value="ACTIVE" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>Active Members</option>
+                                    <option value="INACTIVE" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>Inactive Members</option>
+                                    <option value="DROPOUT" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>Dropout Members</option>
                                 </select>
                             </div>
                             
@@ -305,9 +305,9 @@ export default function MembershipTab({
                                     value={sportFilter} 
                                     onChange={(e) => setSportFilter(e.target.value)}
                                 >
-                                    <option value="" style={{ background: '#0b130f', color: '#fff' }}>All Sports</option>
-                                    <option value="cricket" style={{ background: '#0b130f', color: '#fff' }}>Cricket</option>
-                                    <option value="football" style={{ background: '#0b130f', color: '#fff' }}>Football</option>
+                                    <option value="" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>All Sports</option>
+                                    <option value="cricket" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>Cricket</option>
+                                    <option value="football" style={{ background: 'var(--text-main)', color: 'var(--white)' }}>Football</option>
                                 </select>
                             </div>
 
@@ -349,7 +349,7 @@ export default function MembershipTab({
                                             cursor: 'pointer',
                                             border: bulkMonths.includes(m) ? '1px solid var(--primary)' : '1px solid var(--border-color)',
                                             background: bulkMonths.includes(m) ? 'var(--primary)' : 'transparent',
-                                            color: bulkMonths.includes(m) ? '#fff' : 'var(--text-muted)'
+                                            color: bulkMonths.includes(m) ? 'var(--white)' : 'var(--text-muted)'
                                         }}
                                     >
                                         {m}
@@ -448,7 +448,7 @@ export default function MembershipTab({
                                                     padding: '4px 10px', borderRadius: '50px',
                                                     background: memberSport === 'cricket' ? 'var(--success-bg)' : 'rgba(56,189,248,0.1)',
                                                     border: memberSport === 'cricket' ? '1px solid var(--success-border)' : '1px solid rgba(56,189,248,0.2)',
-                                                    color: memberSport === 'cricket' ? 'var(--success-text)' : '#38BDF8'
+                                                    color: memberSport === 'cricket' ? 'var(--success-text)' : 'var(--info)'
                                                 }}>
                                                     <span className="material-icons-outlined" style={{ fontSize: '12px' }}>
                                                         {memberSport === 'cricket' ? 'sports_cricket' : 'sports_soccer'}
@@ -475,10 +475,10 @@ export default function MembershipTab({
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     <span style={{
                                                         width: '6px', height: '6px', borderRadius: '50%',
-                                                        background: isActiveMember ? 'var(--success-text)' : '#EF4444',
-                                                        boxShadow: isActiveMember ? '0 0 8px var(--success-text)' : '0 0 8px #EF4444'
+                                                        background: isActiveMember ? 'var(--success-text)' : 'var(--danger)',
+                                                        boxShadow: isActiveMember ? '0 0 8px var(--success-text)' : '0 0 8px var(--danger)'
                                                     }} />
-                                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isActiveMember ? 'var(--success-text)' : '#FCA5A5' }}>
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: isActiveMember ? 'var(--success-text)' : 'var(--danger)' }}>
                                                         {memberStatus}
                                                     </span>
                                                 </div>
@@ -575,7 +575,7 @@ export default function MembershipTab({
                                 </div>
                             </div>
                             <div className="d-flex gap-2" style={{ flexShrink: 0 }}>
-                                <button className="btn-secondary-stripe" onClick={() => handleEditClick()} style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                <button className="btn-secondary-stripe" onClick={() => handleEditClick()} style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>edit</span> Edit Profile
                                 </button>
                                 <button className="btn-secondary-stripe" onClick={() => setSelectedMember(null)}>
@@ -662,7 +662,7 @@ export default function MembershipTab({
                                 }}>
                                     <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(6, 182, 212, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: '#06b6d4' }}>school</span>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--info)' }}>school</span>
                                         </span>
                                         Academic & Experience
                                     </h5>
@@ -695,7 +695,7 @@ export default function MembershipTab({
                                 }}>
                                     <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: '#f59e0b' }}>location_on</span>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--warning)' }}>location_on</span>
                                         </span>
                                         Address
                                     </h5>
@@ -716,11 +716,11 @@ export default function MembershipTab({
                                 }}>
                                     <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: selectedMember.medicalConditions ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: selectedMember.medicalConditions ? '#ef4444' : 'var(--success-text)' }}>{selectedMember.medicalConditions ? 'medical_information' : 'health_and_safety'}</span>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: selectedMember.medicalConditions ? 'var(--danger)' : 'var(--success-text)' }}>{selectedMember.medicalConditions ? 'medical_information' : 'health_and_safety'}</span>
                                         </span>
                                         Medical Notes
                                     </h5>
-                                    <div style={{ fontSize: '0.85rem', color: selectedMember.medicalConditions ? '#ef4444' : 'var(--text-muted)', fontWeight: selectedMember.medicalConditions ? 600 : 400 }}>
+                                    <div style={{ fontSize: '0.85rem', color: selectedMember.medicalConditions ? 'var(--danger)' : 'var(--text-muted)', fontWeight: selectedMember.medicalConditions ? 600 : 400 }}>
                                         {selectedMember.medicalConditions || 'No medical conditions reported ✓'}
                                     </div>
                                 </div>
@@ -735,7 +735,7 @@ export default function MembershipTab({
                                 }}>
                                     <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: '#8b5cf6' }}>family_restroom</span>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--purple)' }}>family_restroom</span>
                                         </span>
                                         Family & Contact Registry
                                     </h5>
@@ -756,7 +756,7 @@ export default function MembershipTab({
                                                 background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)',
                                                 transition: 'all 0.2s'
                                             }}>
-                                                <span className="material-icons-outlined" style={{ fontSize: '18px', color: '#8b5cf6', opacity: 0.5 }}>{item.icon}</span>
+                                                <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--purple)', opacity: 0.5 }}>{item.icon}</span>
                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                     <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.label}</div>
                                                     <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value || 'N/A'}</div>
@@ -797,7 +797,7 @@ export default function MembershipTab({
                                                         background: docUrl ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.08)',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}>
-                                                        <span className="material-icons-outlined" style={{ fontSize: '20px', color: docUrl ? 'var(--success-text)' : '#ef4444' }}>
+                                                        <span className="material-icons-outlined" style={{ fontSize: '20px', color: docUrl ? 'var(--success-text)' : 'var(--danger)' }}>
                                                             {docUrl ? 'verified' : 'cancel'}
                                                         </span>
                                                     </div>
@@ -825,7 +825,7 @@ export default function MembershipTab({
                                 }}>
                                     <h5 style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: '#f59e0b' }}>receipt_long</span>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--warning)' }}>receipt_long</span>
                                         </span>
                                         Fee & Invoices Ledger
                                     </h5>
@@ -990,8 +990,8 @@ export default function MembershipTab({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{
                                     width: '42px', height: '42px', borderRadius: '12px',
-                                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%)',
+                                    color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: '0 4px 14px rgba(99,102,241,0.3)'
                                 }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '22px' }}>person_edit</span>
@@ -1012,7 +1012,7 @@ export default function MembershipTab({
                             <div style={{ padding: '24px 28px', overflowY: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 20px' }}>
                                 
                                 {/* Section 1: Personal Details */}
-                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '4px' }}>
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '4px' }}>
                                     Personal Details
                                 </div>
                                 <div>
@@ -1077,7 +1077,7 @@ export default function MembershipTab({
                                 </div>
 
                                 {/* Section 2: Academy/Membership Details */}
-                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
                                     Academy Details
                                 </div>
                                 <div>
@@ -1158,7 +1158,7 @@ export default function MembershipTab({
                                 </div>
 
                                 {/* Section 3: Family & Contact Details */}
-                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
+                                <div style={{ gridColumn: 'span 2', fontSize: '0.75rem', fontWeight: 800, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4px', marginTop: '12px' }}>
                                     Family & Contact Registry
                                 </div>
                                 <div>
@@ -1249,8 +1249,8 @@ export default function MembershipTab({
                                     type="submit"
                                     style={{
                                         padding: '10px 24px',
-                                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                                        color: '#fff', border: 'none', borderRadius: '10px',
+                                        background: 'linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%)',
+                                        color: 'var(--white)', border: 'none', borderRadius: '10px',
                                         cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
                                         boxShadow: '0 4px 12px rgba(99,102,241,0.25)',
                                         display: 'flex', alignItems: 'center', gap: '6px',

@@ -313,7 +313,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Header section with orange branding */}
             <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                <div style={{ background: '#10b981', color: '#ffffff', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ background: 'var(--success)', color: 'var(--white)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                             <span className="material-icons-outlined">admin_panel_settings</span>
@@ -328,7 +328,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                         onClick={loadStaff} 
                         disabled={refreshing}
                         className="btn-primary-stripe"
-                        style={{ background: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)', padding: '6px 14px', borderRadius: '8px', fontSize: '0.74rem', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
+                        style={{ background: 'rgba(255, 255, 255, 0.2)', color: 'var(--white)', border: '1px solid rgba(255, 255, 255, 0.3)', padding: '6px 14px', borderRadius: '8px', fontSize: '0.74rem', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
                     >
                         <span className="material-icons-outlined" style={{ fontSize: '16px' }}>{refreshing ? 'autorenew' : 'refresh'}</span>
                         Refresh Directory
@@ -371,8 +371,8 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                             onClick={() => setShowAddUserModal(true)}
                             className="btn-primary-stripe"
                             style={{ 
-                                background: '#10b981', 
-                                color: '#ffffff', 
+                                background: 'var(--success)', 
+                                color: 'var(--white)', 
                                 border: 'none', 
                                 padding: '6px 14px', 
                                 borderRadius: '8px', 
@@ -393,7 +393,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                 {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                         <div style={{ textAlign: 'center' }}>
-                            <span className="material-icons-outlined animate-spin" style={{ fontSize: '2rem', color: '#10b981', marginBottom: '8px' }}>sync</span>
+                            <span className="material-icons-outlined animate-spin" style={{ fontSize: '2rem', color: 'var(--success)', marginBottom: '8px' }}>sync</span>
                             <div>Fetching staff configurations...</div>
                         </div>
                     </div>
@@ -448,7 +448,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                             height: '32px', 
                                                             borderRadius: '50%', 
                                                             background: 'var(--surface-tint)', 
-                                                            color: '#10b981', 
+                                                            color: 'var(--success)', 
                                                             fontWeight: 700, 
                                                             fontSize: '0.74rem', 
                                                             display: 'flex', 
@@ -465,7 +465,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 <td>
                                                     <span style={{ 
                                                         background: isSuperAdmin ? 'rgba(16, 185, 129, 0.08)' : 'var(--surface-tint)',
-                                                        color: isSuperAdmin ? '#10b981' : 'var(--text-main)',
+                                                        color: isSuperAdmin ? 'var(--success)' : 'var(--text-main)',
                                                         border: isSuperAdmin ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid var(--border-color)',
                                                         padding: '3px 8px',
                                                         borderRadius: '6px',
@@ -477,9 +477,9 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 </td>
                                                 <td>
                                                     {isSuperAdmin ? (
-                                                        <span style={{ color: '#10B981', fontWeight: 600 }}>Full Administrative Access</span>
+                                                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>Full Administrative Access</span>
                                                     ) : permCount > 0 ? (
-                                                        <span style={{ fontWeight: 600, color: '#10b981' }}>{permCount} of {MODULES.length} modules</span>
+                                                        <span style={{ fontWeight: 600, color: 'var(--success)' }}>{permCount} of {MODULES.length} modules</span>
                                                     ) : (
                                                         <span style={{ color: 'var(--text-muted)' }}>Role Defaults Only</span>
                                                     )}
@@ -487,7 +487,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 <td>
                                                     <span style={{ 
                                                         background: user.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                                                        color: user.status === 'ACTIVE' ? '#10B981' : '#EF4444',
+                                                        color: user.status === 'ACTIVE' ? 'var(--success)' : 'var(--danger)',
                                                         border: `1px solid ${user.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
                                                         padding: '3px 10px',
                                                         borderRadius: '20px',
@@ -503,8 +503,8 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                         onClick={() => handleOpenEdit(user)}
                                                         className="btn-primary-stripe"
                                                         style={{ 
-                                                            background: '#10b981', 
-                                                            color: '#ffffff', 
+                                                            background: 'var(--success)', 
+                                                            color: 'var(--white)', 
                                                             borderRadius: '6px', 
                                                             fontSize: '0.74rem', 
                                                             padding: '4px 10px', 
@@ -524,8 +524,8 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                             onClick={() => handleDeleteUser(user)}
                                                             className="btn-secondary-stripe"
                                                             style={{ 
-                                                                background: '#EF4444', 
-                                                                color: '#ffffff', 
+                                                                background: 'var(--danger)', 
+                                                                color: 'var(--white)', 
                                                                 borderRadius: '6px', 
                                                                 fontSize: '0.74rem', 
                                                                 padding: '4px 10px', 
@@ -566,18 +566,18 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                 });
 
                 return (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
-                        <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '850px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
+                        <div style={{ background: 'var(--bg-surface, var(--white))', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '850px', maxHeight: '92vh', overflowY: 'auto', boxShadow: 'var(--shadow-xl)' }}>
                             <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
                                 <div>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#10b981' }}>
+                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: 'var(--success)' }}>
                                         Access Control Manager
                                     </h4>
                                     <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                                         Username: <strong>{selectedUser.username}</strong>
                                     </div>
                                 </div>
-                                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowEditModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowEditModal(false)} style={{ filter: 'var(--invert-icon)', opacity: 0.8 }}></button>
                             </div>
 
                             <form onSubmit={handleSavePermissions} className="d-flex flex-column gap-3">
@@ -606,18 +606,18 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                     value="ACTIVE" 
                                                     checked={modalStatus === 'ACTIVE'} 
                                                     onChange={() => setModalStatus('ACTIVE')}
-                                                    style={{ accentColor: '#10b981' }}
+                                                    style={{ accentColor: 'var(--success)' }}
                                                 />
                                                 Active (Allowed login)
                                             </label>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, color: '#EF4444' }}>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, color: 'var(--danger)' }}>
                                                 <input 
                                                     type="radio" 
                                                     name="status" 
                                                     value="INACTIVE" 
                                                     checked={modalStatus === 'INACTIVE'} 
                                                     onChange={() => setModalStatus('INACTIVE')}
-                                                    style={{ accentColor: '#10b981' }}
+                                                    style={{ accentColor: 'var(--success)' }}
                                                 />
                                                 Deactivated (Block login)
                                             </label>
@@ -630,7 +630,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '12px', flexWrap: 'wrap' }}>
                                         <div className="d-flex align-items-center gap-2">
                                             <label style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Granular Access Permissions</label>
-                                            <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.08)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                                            <span style={{ fontSize: '0.72rem', background: 'var(--bg-success-light)', color: 'var(--success)', border: '1px solid var(--border-success-light)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>
                                                 {checkedCount} / {totalCheckboxes} Checked
                                             </span>
                                         </div>
@@ -648,7 +648,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 />
                                             </div>
                                             <div className="d-flex gap-2">
-                                                <button type="button" onClick={selectAllPermissions} style={{ background: 'transparent', border: 'none', color: '#10b981', fontSize: '0.7rem', fontWeight: 700 }}>Select All</button>
+                                                <button type="button" onClick={selectAllPermissions} style={{ background: 'transparent', border: 'none', color: 'var(--success)', fontSize: '0.7rem', fontWeight: 700 }}>Select All</button>
                                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>|</span>
                                                 <button type="button" onClick={clearAllPermissions} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700 }}>Clear All</button>
                                             </div>
@@ -656,32 +656,32 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     </div>
                                     
                                     {modalRole === 'SUPER_ADMIN' ? (
-                                        <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px dashed rgba(16, 185, 129, 0.25)', borderRadius: '8px', padding: '12px 16px', color: '#10B981', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div style={{ background: 'var(--bg-success-light)', border: '1px dashed var(--border-success-light)', borderRadius: '8px', padding: '12px 16px', color: 'var(--success)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span className="material-icons-outlined" style={{ fontSize: '18px' }}>info</span>
                                             <span>Super Administrators automatically retain full database access. Granular controls do not restrict this role.</span>
                                         </div>
                                     ) : (
                                         <div className="table-responsive" style={{ maxHeight: '380px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '10px' }}>
                                             <table className="table-premium text-center align-middle" style={{ fontSize: '0.78rem', margin: 0 }}>
-                                                <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-surface, #0A1510)', zIndex: 10 }}>
+                                                <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-surface)', zIndex: 10 }}>
                                                     <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                                                         <th style={{ textAlign: 'left', paddingLeft: '16px', width: '38%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>MODULE</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>MODULE</span>
                                                         </th>
                                                         <th style={{ width: '12%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>VIEW</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>VIEW</span>
                                                         </th>
                                                         <th style={{ width: '12%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>ADD</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>ADD</span>
                                                         </th>
                                                         <th style={{ width: '12%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>EDIT</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>EDIT</span>
                                                         </th>
                                                         <th style={{ width: '12%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>DEL</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>DEL</span>
                                                         </th>
                                                         <th style={{ width: '14%', padding: '12px 6px' }}>
-                                                            <span style={{ color: '#ffffff', fontWeight: 700 }}>ALL</span>
+                                                            <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>ALL</span>
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -697,17 +697,17 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
 
                                                         return (
                                                             <React.Fragment key={group.name}>
-                                                                <tr style={{ background: 'rgba(16, 185, 129, 0.08)', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
-                                                                    <td colSpan={6} style={{ textAlign: 'left', paddingLeft: '12px', fontWeight: 800, fontSize: '0.74rem', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '10px 6px' }}>
+                                                                <tr style={{ background: 'var(--bg-success-light)', borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
+                                                                    <td colSpan={6} style={{ textAlign: 'left', paddingLeft: '12px', fontWeight: 800, fontSize: '0.74rem', color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '10px 6px' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                             <input 
                                                                                 type="checkbox" 
                                                                                 checked={groupAll} 
                                                                                 onChange={() => toggleGroupAll(group)} 
-                                                                                style={{ accentColor: '#10b981', cursor: 'pointer' }}
+                                                                                style={{ accentColor: 'var(--success)', cursor: 'pointer' }}
                                                                             />
-                                                                            <span style={{ color: '#10b981', fontWeight: 800 }}>{group.name}</span>
-                                                                            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', fontWeight: 500, textTransform: 'none' }}>
+                                                                            <span style={{ color: 'var(--success)', fontWeight: 800 }}>{group.name}</span>
+                                                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'none' }}>
                                                                                 ({filteredModules.length} modules)
                                                                             </span>
                                                                         </div>
@@ -721,15 +721,15 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                         <tr 
                                                                             key={m.id} 
                                                                             style={{ 
-                                                                                background: hasAny ? 'rgba(16, 185, 129, 0.03)' : 'transparent',
+                                                                                background: hasAny ? 'var(--bg-success-ultra-light)' : 'transparent',
                                                                                 transition: 'background 0.2s',
                                                                                 borderBottom: '1px solid var(--border-color)'
                                                                             }}
                                                                         >
                                                                             <td style={{ textAlign: 'left', paddingLeft: '24px', fontWeight: 600, padding: '12px 6px' }}>
-                                                                                <span style={{ color: '#ffffff', display: 'block', fontWeight: 600 }}>{m.label}</span>
-                                                                                <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.5)', fontWeight: 400, marginTop: '2px' }}>
-                                                                                    code: <code style={{ color: '#00ff88', background: 'rgba(0, 255, 136, 0.1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(0, 255, 136, 0.2)', fontSize: '0.6rem' }}>{m.id}</code>
+                                                                                <span style={{ color: 'var(--text-main)', display: 'block', fontWeight: 600 }}>{m.label}</span>
+                                                                                <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '2px' }}>
+                                                                                    code: <code style={{ color: 'var(--success)', background: 'var(--bg-success-ultra-light)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-success-light)', fontSize: '0.6rem' }}>{m.id}</code>
                                                                                 </div>
                                                                             </td>
                                                                             <td style={{ padding: '12px 6px' }}>
@@ -737,7 +737,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                     type="checkbox" 
                                                                                     checked={hasGranularPermission(m.id, 'view')} 
                                                                                     onChange={() => toggleGranularPermission(m.id, 'view')} 
-                                                                                    style={{ accentColor: '#10b981', cursor: 'pointer', width: '15px', height: '15px' }}
+                                                                                    style={{ accentColor: 'var(--success)', cursor: 'pointer', width: '15px', height: '15px' }}
                                                                                 />
                                                                             </td>
                                                                             <td style={{ padding: '12px 6px' }}>
@@ -745,7 +745,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                     type="checkbox" 
                                                                                     checked={hasGranularPermission(m.id, 'add')} 
                                                                                     onChange={() => toggleGranularPermission(m.id, 'add')} 
-                                                                                    style={{ accentColor: '#10b981', cursor: 'pointer', width: '15px', height: '15px' }}
+                                                                                    style={{ accentColor: 'var(--success)', cursor: 'pointer', width: '15px', height: '15px' }}
                                                                                 />
                                                                             </td>
                                                                             <td style={{ padding: '12px 6px' }}>
@@ -753,7 +753,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                     type="checkbox" 
                                                                                     checked={hasGranularPermission(m.id, 'edit')} 
                                                                                     onChange={() => toggleGranularPermission(m.id, 'edit')} 
-                                                                                    style={{ accentColor: '#10b981', cursor: 'pointer', width: '15px', height: '15px' }}
+                                                                                    style={{ accentColor: 'var(--success)', cursor: 'pointer', width: '15px', height: '15px' }}
                                                                                 />
                                                                             </td>
                                                                             <td style={{ padding: '12px 6px' }}>
@@ -761,7 +761,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                     type="checkbox" 
                                                                                     checked={hasGranularPermission(m.id, 'delete')} 
                                                                                     onChange={() => toggleGranularPermission(m.id, 'delete')} 
-                                                                                    style={{ accentColor: '#10b981', cursor: 'pointer', width: '15px', height: '15px' }}
+                                                                                    style={{ accentColor: 'var(--success)', cursor: 'pointer', width: '15px', height: '15px' }}
                                                                                 />
                                                                             </td>
                                                                             <td style={{ padding: '12px 6px' }}>
@@ -771,7 +771,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                         width: '38px',
                                                                                         height: '20px',
                                                                                         borderRadius: '10px',
-                                                                                        background: allCheckedVal ? '#10b981' : 'rgba(255,255,255,0.15)',
+                                                                                        background: allCheckedVal ? 'var(--success)' : 'var(--border-color)',
                                                                                         border: '1px solid var(--border-color)',
                                                                                         position: 'relative',
                                                                                         cursor: 'pointer',
@@ -784,7 +784,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                                                         width: '14px',
                                                                                         height: '14px',
                                                                                         borderRadius: '50%',
-                                                                                        background: '#ffffff',
+                                                                                        background: 'var(--white)',
                                                                                         position: 'absolute',
                                                                                         top: '2px',
                                                                                         left: allCheckedVal ? '20px' : '2px',
@@ -818,7 +818,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                         type="submit" 
                                         disabled={saving}
                                         className="btn text-white py-2 px-4" 
-                                        style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                        style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                     >
                                         {saving ? 'Saving...' : 'Save Settings'}
                                     </button>
@@ -909,7 +909,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     type="submit" 
                                     disabled={creatingUser}
                                     className="btn text-white py-2 px-4" 
-                                    style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                    style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                 >
                                     {creatingUser ? 'Creating...' : 'Register User'}
                                 </button>

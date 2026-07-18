@@ -36,6 +36,7 @@ export default function BookPage() {
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [couponError, setCouponError] = useState('');
     const [validatingCoupon, setValidatingCoupon] = useState(false);
+    const [showPromoModal, setShowPromoModal] = useState(false);
     
     // Status from redirection
     const [paymentSuccessInfo, setPaymentSuccessInfo] = useState(null);
@@ -237,6 +238,7 @@ export default function BookPage() {
                 finalAmount: data.finalAmount
             });
             setCouponError('');
+            setShowPromoModal(false);
         } catch (err) {
             console.error(err);
             setCouponError(err.message || 'Invalid coupon code.');
@@ -834,57 +836,55 @@ export default function BookPage() {
                                     paddingTop: '20px',
                                     marginBottom: '24px'
                                 }}>
-                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Promo Code</label>
                                     {!appliedCoupon ? (
-                                        <div style={{ display: 'flex', gap: '10px', maxWidth: '380px' }}>
-                                            <input
-                                                type="text"
-                                                className="glass-input"
-                                                style={{ textTransform: 'uppercase', marginBottom: 0 }}
-                                                placeholder="Enter coupon code"
-                                                value={couponCodeInput}
-                                                onChange={(e) => setCouponCodeInput(e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={handleApplyCoupon}
-                                                disabled={validatingCoupon || !couponCodeInput.trim()}
-                                                className="btn-premium"
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <span
+                                                onClick={() => {
+                                                    setCouponError('');
+                                                    setCouponCodeInput('');
+                                                    setShowPromoModal(true);
+                                                }}
                                                 style={{
-                                                    padding: '0 20px', fontSize: '0.8rem', minWidth: '100px',
-                                                    height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                    cursor: 'pointer',
+                                                    color: 'var(--gold)',
+                                                    fontSize: '0.88rem',
+                                                    fontWeight: 600,
+                                                    textDecoration: 'underline',
+                                                    textUnderlineOffset: '3px',
+                                                    transition: 'all 0.2s',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px'
                                                 }}
                                             >
-                                                <span>{validatingCoupon ? 'Checking...' : 'Apply'}</span>
-                                            </button>
+                                                🏷️ Have PromoCode ?
+                                            </span>
                                         </div>
                                     ) : (
-                                        <div style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
-                                            borderRadius: '8px', padding: '10px 16px', maxWidth: '380px'
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ color: '#10B981', fontWeight: 700 }}>✓</span>
-                                                <span style={{ fontSize: '0.85rem', color: '#E5E7EB', fontWeight: 600 }}>
-                                                    Code <strong style={{ color: '#10B981', fontFamily: 'monospace' }}>{appliedCoupon.code}</strong> applied!
-                                                </span>
+                                        <div>
+                                            <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Promo Code</label>
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
+                                                borderRadius: '8px', padding: '10px 16px', maxWidth: '380px'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#10B981', fontWeight: 700 }}>✓</span>
+                                                    <span style={{ fontSize: '0.85rem', color: '#E5E7EB', fontWeight: 600 }}>
+                                                        Code <strong style={{ color: '#10B981', fontFamily: 'monospace' }}>{appliedCoupon.code}</strong> applied!
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveCoupon}
+                                                    style={{
+                                                        background: 'transparent', border: 'none', color: '#EF4444',
+                                                        fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600
+                                                    }}
+                                                >
+                                                    Remove
+                                                </button>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={handleRemoveCoupon}
-                                                style={{
-                                                    background: 'transparent', border: 'none', color: '#EF4444',
-                                                    fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    )}
-                                    {couponError && (
-                                        <div style={{ fontSize: '0.8rem', color: '#EF4444', marginTop: '6px', fontWeight: 500 }}>
-                                            {couponError}
                                         </div>
                                     )}
                                 </div>
@@ -1069,6 +1069,107 @@ export default function BookPage() {
                                 Cancel
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showPromoModal && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 10000,
+                    display: 'flex', justifyContent: 'center', alignItems: 'center',
+                    background: 'rgba(5, 7, 12, 0.85)', backdropFilter: 'blur(10px)',
+                    animation: 'fadeIn 0.2s ease-out'
+                }}>
+                    <div style={{
+                        background: 'rgba(10, 16, 30, 0.75)', backdropFilter: 'blur(20px)',
+                        border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '16px',
+                        padding: '30px', maxWidth: '400px', width: '90%', textAlign: 'center',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(245, 158, 11, 0.1)',
+                        animation: 'scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}>
+                        <div style={{
+                            fontSize: '36px', marginBottom: '12px', filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.3))'
+                        }}>🏷️</div>
+                        
+                        <h3 style={{
+                            fontSize: '1.25rem', fontWeight: 700, margin: '0 0 6px',
+                            color: '#ffffff',
+                            letterSpacing: '0.5px'
+                        }}>
+                            Enter Promo Code
+                        </h3>
+                        <p style={{ color: '#9CA3AF', fontSize: '0.85rem', margin: '0 0 20px', lineHeight: 1.4 }}>
+                            Enter your promo code below to get a discount on your turf booking.
+                        </p>
+
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            await handleApplyCoupon();
+                        }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <input
+                                type="text"
+                                className="glass-input"
+                                style={{ 
+                                    textTransform: 'uppercase', 
+                                    textAlign: 'center',
+                                    fontSize: '1.1rem',
+                                    fontWeight: 700,
+                                    letterSpacing: '2px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    marginBottom: 0
+                                }}
+                                placeholder="PROMO100"
+                                value={couponCodeInput}
+                                onChange={(e) => setCouponCodeInput(e.target.value)}
+                                autoFocus
+                            />
+
+                            {couponError && (
+                                <div style={{ fontSize: '0.8rem', color: '#EF4444', fontWeight: 500, marginTop: '2px' }}>
+                                    {couponError}
+                                </div>
+                            )}
+
+                            {appliedCoupon && (
+                                <div style={{ fontSize: '0.85rem', color: '#10B981', fontWeight: 600 }}>
+                                    ✓ Coupon &quot;{appliedCoupon.code}&quot; applied successfully!
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPromoModal(false);
+                                        setCouponError('');
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(255, 255, 255, 0.04)',
+                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                        color: '#9CA3AF', fontWeight: 500, padding: '12px 20px',
+                                        borderRadius: '30px', cursor: 'pointer', fontSize: '0.88rem',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={validatingCoupon || !couponCodeInput.trim()}
+                                    style={{
+                                        flex: 2,
+                                        background: 'linear-gradient(135deg, var(--gold) 0%, #d97706 100%)',
+                                        border: 'none', color: '#000', fontWeight: 700, padding: '12px 20px',
+                                        borderRadius: '30px', cursor: 'pointer', fontSize: '0.88rem',
+                                        transition: 'all 0.2s',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                >
+                                    {validatingCoupon ? 'Checking...' : 'Apply Code'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

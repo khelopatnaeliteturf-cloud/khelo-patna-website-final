@@ -177,7 +177,7 @@ export default function BatchTab({
                                             <td><strong>{b.members?.length || 0}</strong> enrolled</td>
                                             <td>
                                                 <div className="d-flex gap-2">
-                                                    <button className="btn-secondary-stripe py-1 px-2" onClick={() => handleEditClick(b)} style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                                    <button className="btn-secondary-stripe py-1 px-2" onClick={() => handleEditClick(b)} style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>
                                                         <span className="material-icons-outlined" style={{ fontSize: '15px' }}>edit</span>
                                                     </button>
                                                     <button className="btn-secondary-stripe py-1 px-2" onClick={() => setSelectedBatch(b)}>View Roster</button>
@@ -387,8 +387,8 @@ export default function BatchTab({
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{
                                     width: '42px', height: '42px', borderRadius: '12px',
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'linear-gradient(135deg, var(--success) 0%, var(--primary) 100%)',
+                                    color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     boxShadow: '0 4px 14px rgba(16,185,129,0.3)'
                                 }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '22px' }}>edit</span>
@@ -544,8 +544,8 @@ export default function BatchTab({
                                     type="submit"
                                     style={{
                                         padding: '10px 24px',
-                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                        color: '#fff', border: 'none', borderRadius: '10px',
+                                        background: 'linear-gradient(135deg, var(--success) 0%, var(--primary) 100%)',
+                                        color: 'var(--white)', border: 'none', borderRadius: '10px',
                                         cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
                                         boxShadow: '0 4px 12px rgba(16,185,129,0.25)',
                                         display: 'flex', alignItems: 'center', gap: '6px',

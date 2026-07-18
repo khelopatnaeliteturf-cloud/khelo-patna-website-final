@@ -521,10 +521,10 @@ export default function FinanceTab({
         { key: 'pl', label: 'P&L', icon: 'monitoring' }
     ];
     const financeSummaryCards = [
-        { label: 'Students', value: students.length, icon: 'groups', color: 'var(--text-main)' },
-        { label: 'Active Accounts', value: activeFinanceStudents, icon: 'verified', color: 'var(--success-text)' },
-        { label: 'Open Invoices', value: feeDues.length, icon: 'pending_actions', color: '#f59e0b' },
-        { label: 'Selected Balance', value: formatCurrency(totalSelectedBalance), icon: 'account_balance_wallet', color: totalSelectedBalance > 0 ? 'var(--danger)' : 'var(--success)' }
+        { label: 'Students', value: students.length, icon: 'groups', color: 'var(--text-main)', glow: 'rgba(15, 23, 42, 0.2)' },
+        { label: 'Active Accounts', value: activeFinanceStudents, icon: 'verified', color: 'var(--success)', glow: 'rgba(16, 185, 129, 0.2)' },
+        { label: 'Open Invoices', value: feeDues.length, icon: 'pending_actions', color: 'var(--warning)', glow: 'rgba(245, 158, 11, 0.2)' },
+        { label: 'Selected Balance', value: formatCurrency(totalSelectedBalance), icon: 'account_balance_wallet', color: totalSelectedBalance > 0 ? 'var(--danger)' : 'var(--success)', glow: totalSelectedBalance > 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)' }
     ];
 
     return (
@@ -557,7 +557,7 @@ export default function FinanceTab({
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px' }}>
                     {financeSummaryCards.map(card => (
-                        <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': `${card.color}33` }}>
+                        <div key={card.label} className="summary-chip" style={{ '--chip-accent': card.color, '--chip-glow': card.glow || `${card.color}33` }}>
                             <span className="material-icons-outlined summary-chip__icon" style={{ color: card.color }}>{card.icon}</span>
                             <div>
                                 <div className="summary-chip__value"><AnimatedNumber value={card.value} /></div>
@@ -573,7 +573,7 @@ export default function FinanceTab({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {/* Panel 1: Search Student Header */}
                     <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                        <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ background: 'var(--success)', color: 'var(--white)', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.92rem' }}>
                                 <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                 Search Student
@@ -584,14 +584,14 @@ export default function FinanceTab({
                                     <button 
                                         type="button" 
                                         onClick={() => setSearchToggle('student')}
-                                        style={{ background: searchToggle === 'student' ? '#ffffff' : 'transparent', color: searchToggle === 'student' ? '#10b981' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
+                                        style={{ background: searchToggle === 'student' ? 'var(--white)' : 'transparent', color: searchToggle === 'student' ? 'var(--success)' : 'var(--white)', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
                                     >
                                         By Student
                                     </button>
                                     <button 
                                         type="button" 
                                         onClick={() => setSearchToggle('due_date')}
-                                        style={{ background: searchToggle === 'due_date' ? '#ffffff' : 'transparent', color: searchToggle === 'due_date' ? '#10b981' : '#ffffff', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
+                                        style={{ background: searchToggle === 'due_date' ? 'var(--white)' : 'transparent', color: searchToggle === 'due_date' ? 'var(--success)' : 'var(--white)', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, transition: 'all 0.2s' }}
                                     >
                                         By Due Date
                                     </button>
@@ -616,7 +616,7 @@ export default function FinanceTab({
                                             onChange={(e) => setFeeSearchQuery(e.target.value)}
                                         />
                                     </div>
-                                    <button type="submit" className="btn-primary-stripe" disabled={!feeSearchQuery.trim()} style={{ background: '#10b981', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', fontWeight: 700 }}>
+                                    <button type="submit" className="btn-primary-stripe" disabled={!feeSearchQuery.trim()} style={{ background: 'var(--success)', color: 'var(--white)', display: 'inline-flex', alignItems: 'center', gap: '6px', borderRadius: '10px', fontWeight: 700 }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '16px' }}>search</span>
                                         Search Profile
                                     </button>
@@ -624,7 +624,7 @@ export default function FinanceTab({
                             </div>
                         ) : (
                             <div style={{ padding: '20px', background: 'var(--bg-color)', display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '24px', alignItems: 'center' }}>
-                                <div style={{ position: 'relative', width: '76px', height: '76px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #10b981', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ position: 'relative', width: '76px', height: '76px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--success)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {feeStudentData.photoUrl || feeStudentData.documents?.photoUrl ? (
                                         <img src={feeStudentData.photoUrl || feeStudentData.documents?.photoUrl} alt={feeStudentData.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
@@ -639,7 +639,7 @@ export default function FinanceTab({
                                             style={{ 
                                                 fontSize: '0.98rem', 
                                                 fontWeight: 700, 
-                                                color: '#10b981', 
+                                                color: 'var(--success)', 
                                                 cursor: onViewStudentProfile ? 'pointer' : 'default',
                                                 textDecoration: onViewStudentProfile ? 'underline' : 'none'
                                             }}
@@ -666,7 +666,7 @@ export default function FinanceTab({
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Contact</div>
                                         <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{feeStudentData.phone || '8709113049'}</div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600, marginTop: '5px' }}>Amount Left</div>
-                                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '0.85rem' }}>{formatCurrency(totalSelectedBalance)}</div>
+                                        <div style={{ fontWeight: 800, color: 'var(--success)', fontSize: '0.85rem' }}>{formatCurrency(totalSelectedBalance)}</div>
                                     </div>
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 600 }}>Address</div>
@@ -680,7 +680,7 @@ export default function FinanceTab({
                                         type="button" 
                                         className="btn-primary-stripe py-1 px-3" 
                                         onClick={() => handleSearchDues()} 
-                                        style={{ background: '#10b981', color: '#ffffff', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 700 }}
+                                        style={{ background: 'var(--success)', color: 'var(--white)', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 700 }}
                                     >
                                         Refresh
                                     </button>
@@ -701,7 +701,7 @@ export default function FinanceTab({
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))', gap: '20px' }}>
                             {/* Panel 2: Assign Fee Group / FEE PAYMENT */}
                             <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                                <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
+                                <div style={{ background: 'var(--success)', color: 'var(--white)', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                         Assign Fee Group
@@ -709,14 +709,14 @@ export default function FinanceTab({
                                 </div>
                                 <div style={{ padding: '20px' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#10b981', letterSpacing: '0.04em' }}>FEE PAYMENT</h4>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--success)', letterSpacing: '0.04em' }}>FEE PAYMENT</h4>
                                         <div className="d-flex gap-2">
                                             <button 
                                                 type="button" 
                                                 onClick={() => setShowProceedPaymentModal(true)}
                                                 disabled={feeDues.length === 0}
                                                 className="btn btn-sm" 
-                                                style={{ border: '1px solid #10b981', color: '#ffffff', background: '#10b981', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600, opacity: feeDues.length === 0 ? 0.5 : 1 }}
+                                                style={{ border: '1px solid var(--success)', color: 'var(--white)', background: 'var(--success)', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600, opacity: feeDues.length === 0 ? 0.5 : 1 }}
                                             >
                                                 Proceed To Payment
                                             </button>
@@ -741,7 +741,7 @@ export default function FinanceTab({
                                                     feeHistory.slice((currentPage - 1) * 5, currentPage * 5).map((row, idx) => (
                                                         <tr key={row._id}>
                                                             <td>
-                                                                <button type="button" style={{ background: 'transparent', border: '1px solid #10b981', color: '#10b981', borderRadius: '4px', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>+</button>
+                                                                <button type="button" style={{ background: 'transparent', border: '1px solid var(--success)', color: 'var(--success)', borderRadius: '4px', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>+</button>
                                                             </td>
                                                             <td>{row.receiptNo}</td>
                                                             <td>{row.user}</td>
@@ -749,7 +749,7 @@ export default function FinanceTab({
                                                             <td style={{ color: 'var(--text-muted)' }}>{formatCurrency(row.discount)}</td>
                                                             <td>{new Date(row.paymentDate).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
                                                             <td>
-                                                                <span style={{ color: '#198754', border: '1px solid #198754', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>
+                                                                <span style={{ color: 'var(--success)', border: '1px solid var(--success)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>
                                                                     Edit
                                                                 </span>
                                                             </td>
@@ -764,7 +764,7 @@ export default function FinanceTab({
                                                             <td>₹0</td>
                                                             <td>₹2,300</td>
                                                             <td>13-01-2026</td>
-                                                            <td><span style={{ color: '#198754', border: '1px solid #198754', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, opacity: 0.5 }}>Edit</span></td>
+                                                            <td><span style={{ color: 'var(--success)', border: '1px solid var(--success)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, opacity: 0.5 }}>Edit</span></td>
                                                         </tr>
                                                         <tr>
                                                             <td><button type="button" disabled style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', borderRadius: '4px', width: '20px', height: '20px' }}>+</button></td>
@@ -773,7 +773,7 @@ export default function FinanceTab({
                                                             <td>₹2,000</td>
                                                             <td>₹0</td>
                                                             <td>01-04-2026</td>
-                                                            <td><span style={{ color: '#198754', border: '1px solid #198754', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, opacity: 0.5 }}>Edit</span></td>
+                                                            <td><span style={{ color: 'var(--success)', border: '1px solid var(--success)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, opacity: 0.5 }}>Edit</span></td>
                                                         </tr>
                                                     </>
                                                 )}
@@ -791,7 +791,7 @@ export default function FinanceTab({
                                             >
                                                 &lt;
                                             </button>
-                                            <span style={{ fontWeight: 700, color: '#10b981' }}>{currentPage}</span>
+                                            <span style={{ fontWeight: 700, color: 'var(--success)' }}>{currentPage}</span>
                                             <button 
                                                 type="button" 
                                                 disabled={currentPage * 5 >= feeHistory.length}
@@ -807,7 +807,7 @@ export default function FinanceTab({
 
                             {/* Panel 3: Adjusted Fee Details / FEE DETAILS */}
                             <div className="card-premium" style={{ padding: 0, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                                <div style={{ background: '#10b981', color: '#ffffff', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
+                                <div style={{ background: 'var(--success)', color: 'var(--white)', padding: '12px 20px', fontWeight: 700, fontSize: '0.92rem' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
                                         Adjusted Fee Details
@@ -815,13 +815,13 @@ export default function FinanceTab({
                                 </div>
                                 <div style={{ padding: '20px' }}>
                                     <div className="d-flex justify-content-between align-items-center mb-3">
-                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#10b981', letterSpacing: '0.04em' }}>FEE DETAILS</h4>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--success)', letterSpacing: '0.04em' }}>FEE DETAILS</h4>
                                         <div className="d-flex gap-2">
                                             <button 
                                                 type="button" 
                                                 onClick={() => setShowFeeAdjustmentModal(true)}
                                                 className="btn btn-sm" 
-                                                style={{ border: '1px solid #10b981', color: '#ffffff', background: '#10b981', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}
+                                                style={{ border: '1px solid var(--success)', color: 'var(--white)', background: 'var(--success)', fontSize: '0.74rem', borderRadius: '6px', padding: '6px 12px', fontWeight: 600 }}
                                             >
                                                 Fee Adjustment
                                             </button>
@@ -846,7 +846,7 @@ export default function FinanceTab({
                                                         <tr key={row._id}>
                                                             <td style={{ fontWeight: 700 }}>{row.monthFor.toUpperCase()}</td>
                                                             <td>{row.amountDue}</td>
-                                                            <td style={{ fontWeight: 700, color: bal > 0 ? '#10b981' : 'var(--success-text)' }}>{bal}</td>
+                                                            <td style={{ fontWeight: 700, color: bal > 0 ? 'var(--success)' : 'var(--success-text)' }}>{bal}</td>
                                                             <td>{row.dueDate ? new Date(row.dueDate).toLocaleDateString('en-GB').replace(/\//g, '-') : '-'}</td>
                                                             <td>
                                                                 {bal > 0 ? (
@@ -854,7 +854,7 @@ export default function FinanceTab({
                                                                         <button 
                                                                             type="button" 
                                                                             onClick={() => handleRemoveFeeRecord(row._id)}
-                                                                            style={{ border: 'none', background: 'rgba(220,53,69,0.1)', color: '#dc3545', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 600 }}
+                                                                            style={{ border: 'none', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderRadius: '4px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 600 }}
                                                                         >
                                                                             Remove
                                                                         </button>
@@ -945,8 +945,8 @@ export default function FinanceTab({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <div style={{
                                             width: '42px', height: '42px', borderRadius: '12px',
-                                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: 'linear-gradient(135deg, var(--success) 0%, var(--primary) 100%)',
+                                            color: 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             boxShadow: '0 4px 14px rgba(16,185,129,0.35)', flexShrink: 0
                                         }}>
                                             <span className="material-icons-outlined" style={{ fontSize: '22px' }}>receipt_long</span>
@@ -1064,7 +1064,7 @@ export default function FinanceTab({
                                                             <td style={{ fontWeight: 700 }}>{row.monthFor}</td>
                                                             <td>{formatCurrency(row.amountDue)}</td>
                                                             <td>{formatCurrency(row.amountPaid)}</td>
-                                                            <td style={{ color: '#10b981', fontWeight: 700 }}>{formatCurrency(row.balanceDue)}</td>
+                                                            <td style={{ color: 'var(--success)', fontWeight: 700 }}>{formatCurrency(row.balanceDue)}</td>
                                                             <td>
                                                                 <input 
                                                                     type="number"
@@ -1087,7 +1087,7 @@ export default function FinanceTab({
                                                                     onChange={e => handleRowChange(idx, 'discount', e.target.value)}
                                                                 />
                                                             </td>
-                                                            <td style={{ fontWeight: 700, color: row.afterPayment > 0 ? '#10b981' : 'var(--success-text)' }}>
+                                                            <td style={{ fontWeight: 700, color: row.afterPayment > 0 ? 'var(--success)' : 'var(--success-text)' }}>
                                                                 {formatCurrency(row.afterPayment)}
                                                             </td>
                                                         </tr>
@@ -1105,9 +1105,9 @@ export default function FinanceTab({
                                     }}>
                                         {[
                                             { label: 'Due', value: formatCurrency(totalDue), color: 'var(--text-main)' },
-                                            { label: 'Paying', value: formatCurrency(totalPaying), color: '#10b981' },
+                                            { label: 'Paying', value: formatCurrency(totalPaying), color: 'var(--success)' },
                                             { label: 'Discount', value: formatCurrency(totalDiscount), color: 'var(--text-main)' },
-                                            { label: 'Remaining', value: formatCurrency(remainingBalance), color: remainingBalance > 0 ? '#10b981' : 'var(--success-text)' },
+                                            { label: 'Remaining', value: formatCurrency(remainingBalance), color: remainingBalance > 0 ? 'var(--success)' : 'var(--success-text)' },
                                         ].map(({ label, value, color }) => (
                                             <div key={label}>
                                                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
@@ -1147,8 +1147,8 @@ export default function FinanceTab({
                                             disabled={billingLoading || totalPaying === 0}
                                             style={{
                                                 padding: '10px 24px',
-                                                background: (billingLoading || totalPaying === 0) ? 'rgba(16,185,129,0.4)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                color: '#fff', border: 'none', borderRadius: '10px',
+                                                background: (billingLoading || totalPaying === 0) ? 'rgba(16,185,129,0.4)' : 'linear-gradient(135deg, var(--success) 0%, var(--primary) 100%)',
+                                                color: 'var(--white)', border: 'none', borderRadius: '10px',
                                                 cursor: (billingLoading || totalPaying === 0) ? 'not-allowed' : 'pointer',
                                                 fontSize: '0.82rem', fontWeight: 700,
                                                 boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
@@ -1170,7 +1170,7 @@ export default function FinanceTab({
                         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
                             <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#10b981' }}>Tuition Fee Adjustment</h4>
+                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: 'var(--success)' }}>Tuition Fee Adjustment</h4>
                                     <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowFeeAdjustmentModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
                                 </div>
                                 <form onSubmit={handleAdjustFeeSubmit} className="d-flex flex-column gap-3">
@@ -1197,7 +1197,7 @@ export default function FinanceTab({
                                             type="submit"
                                             disabled={billingLoading}
                                             className="btn text-white py-2 px-3" 
-                                            style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                            style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                         >
                                             {billingLoading ? 'Saving...' : 'Save Rules'}
                                         </button>
@@ -1212,7 +1212,7 @@ export default function FinanceTab({
                         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
                             <div style={{ background: 'var(--bg-surface, #ffffff)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '90%', maxWidth: '400px', boxShadow: '0 20px 60px rgba(0,0,0,0.45)' }}>
                                 <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#10b981' }}>Set Monthly Due Date</h4>
+                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: 'var(--success)' }}>Set Monthly Due Date</h4>
                                     <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowDueDateModal(false)} style={{ filter: 'invert(1)', opacity: 0.8 }}></button>
                                 </div>
                                 <div className="d-flex flex-column gap-3">
@@ -1235,7 +1235,7 @@ export default function FinanceTab({
                                             onClick={handleSetDueDate}
                                             disabled={billingLoading}
                                             className="btn text-white py-2 px-3" 
-                                            style={{ background: '#10b981', border: '1px solid #10b981', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                            style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                         >
                                             {billingLoading ? 'Updating...' : 'Set Due Date'}
                                         </button>

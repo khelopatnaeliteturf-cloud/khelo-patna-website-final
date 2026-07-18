@@ -475,7 +475,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'poster' ? '#fff' : 'var(--text-main)',
+                        color: activeSubTab === 'poster' ? 'var(--white)' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -496,7 +496,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontWeight: '700',
                         border: 'none',
                         background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'log' ? '#fff' : 'var(--text-main)',
+                        color: activeSubTab === 'log' ? 'var(--white)' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -555,52 +555,52 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
 
                         {previewType === 'a4' ? (
                             <div className="w-100 max-w-sm bg-white text-dark rounded-4 p-4 text-center shadow-lg relative flex flex-column justify-content-between overflow-hidden"
-                                 style={{ aspectRatio: '1/1.414', border: '10px solid #059669', color: '#0f172a', position: 'relative' }}>
+                                 style={{ aspectRatio: '1/1.414', border: '10px solid var(--success)', color: 'var(--text-main)', position: 'relative' }}>
                                 {/* Inner amber border */}
-                                <div style={{ position: 'absolute', top: '6px', left: '6px', right: '6px', bottom: '6px', border: '2px solid #fbbf24', pointerEvents: 'none', borderRadius: '10px' }}></div>
+                                <div style={{ position: 'absolute', top: '6px', left: '6px', right: '6px', bottom: '6px', border: '2px solid var(--warning)', pointerEvents: 'none', borderRadius: '10px' }}></div>
                                 
                                 <div className="d-flex flex-column justify-content-between h-100" style={{ zIndex: 10 }}>
                                     {/* Header */}
                                     <div className="d-flex align-items-center gap-3 border-bottom pb-3 text-start" style={{ borderColor: 'rgba(251, 191, 36, 0.3)' }}>
-                                        <div className="logo d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '8px', background: '#059669', overflow: 'hidden' }}>
+                                        <div className="logo d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--success)', overflow: 'hidden' }}>
                                             <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#059669', lineHeight: 1.1 }}>Khelo Patna Elite Turf</div>
-                                            <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: '#b45309', fontWeight: 800, marginTop: '2px' }}>Football & Cricket Sports Arena</div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: 900, color: 'var(--success)', lineHeight: 1.1 }}>Khelo Patna Elite Turf</div>
+                                            <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'var(--warning)', fontWeight: 800, marginTop: '2px' }}>Football & Cricket Sports Arena</div>
                                         </div>
                                     </div>
 
                                     {/* Main Content */}
                                     <div className="flex-grow-1 d-flex flex-column justify-content-center align-items-center py-3">
-                                        <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', margin: '0 0 4px 0', letterSpacing: '-0.5px' }}>
+                                        <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-main)', margin: '0 0 4px 0', letterSpacing: '-0.5px' }}>
                                             SHARE YOUR EXPERIENCE!
                                         </h2>
-                                        <div className="d-flex gap-1 mb-2" style={{ color: '#fbbf24' }}>
+                                        <div className="d-flex gap-1 mb-2" style={{ color: 'var(--warning)' }}>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                             <span className="material-icons-outlined" style={{ fontSize: '16px' }}>star</span>
                                         </div>
-                                        <p style={{ fontSize: '0.68rem', color: '#475569', lineHeight: 1.4, margin: '0 auto 12px auto', maxWidth: '90%', fontWeight: 500 }}>
+                                        <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.4, margin: '0 auto 12px auto', maxWidth: '90%', fontWeight: 500 }}>
                                             Your reviews help us grow. Scan the QR code below to quickly rate and write a Google review for our arena.
                                         </p>
 
-                                        <div className="bg-white border rounded-3 p-3 shadow-sm mb-3" style={{ borderColor: '#059669', borderWidth: '2px' }}>
+                                        <div className="bg-white border rounded-3 p-3 shadow-sm mb-3" style={{ borderColor: 'var(--success)', borderWidth: '2px' }}>
                                             <img
                                                 src={mockQrCodeUrl}
                                                 alt="QR Code"
                                                 style={{ width: '100px', height: '100px', display: 'block', borderRadius: '4px' }}
                                             />
-                                            <div style={{ fontSize: '0.6rem', fontWeight: 900, color: '#059669', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px', marginBottom: 0 }}>
+                                            <div style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px', marginBottom: 0 }}>
                                                 Scan to Rate Us
                                             </div>
                                         </div>
 
                                         {/* Steps */}
-                                        <div className="w-100 bg-light rounded-3 p-2 text-start" style={{ border: '1px solid #e2e8f0' }}>
-                                            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', textAlign: 'center', marginBottom: '8px' }}>
+                                        <div className="w-100 bg-light rounded-3 p-2 text-start" style={{ border: '1px solid var(--border-color)' }}>
+                                            <div style={{ fontSize: '0.62rem', fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', textAlign: 'center', marginBottom: '8px' }}>
                                                 How to review in 4 steps
                                             </div>
                                             {[
@@ -609,8 +609,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                                 "Copy the generated review description.",
                                                 "Paste the review directly on Google Maps!",
                                             ].map((step, idx) => (
-                                                <div key={idx} className="d-flex gap-2 align-items-start mb-1" style={{ fontSize: '0.58rem', color: '#334155', lineHeight: 1.2, fontWeight: 500 }}>
-                                                    <span style={{ background: '#059669', color: 'white', fontWeight: 'bold', width: '12px', height: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.5rem' }}>
+                                                <div key={idx} className="d-flex gap-2 align-items-start mb-1" style={{ fontSize: '0.58rem', color: 'var(--text-muted)', lineHeight: 1.2, fontWeight: 500 }}>
+                                                    <span style={{ background: 'var(--success)', color: 'var(--white)', fontWeight: 'bold', width: '12px', height: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.5rem' }}>
                                                         {idx + 1}
                                                     </span>
                                                     <span>{step}</span>
@@ -620,7 +620,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="border-t pt-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.55rem', color: '#475569', fontWeight: 700 }}>
+                                    <div className="border-t pt-2 d-flex justify-content-between align-items-center" style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 700 }}>
                                         <span>📍 Kumhrar, Sandalpur Road, Patna</span>
                                         <span>📧 service@khelopatna.in</span>
                                         <span>🌐 www.khelopatna.in</span>
@@ -629,16 +629,16 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             </div>
                         ) : (
                             <div className="w-100 max-w-sm bg-white text-dark rounded-4 p-4 text-center shadow-lg"
-                                 style={{ border: '3px solid #059669', color: '#0f172a' }}>
+                                 style={{ border: '3px solid var(--success)', color: 'var(--text-main)' }}>
                                 <div className="d-flex justify-content-center mb-3">
-                                    <div className="logo d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px', borderRadius: '10px', background: '#059669', overflow: 'hidden' }}>
+                                    <div className="logo d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px', borderRadius: '10px', background: 'var(--success)', overflow: 'hidden' }}>
                                         <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }} />
                                     </div>
                                 </div>
-                                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginBottom: '8px' }}>
+                                <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', marginBottom: '8px' }}>
                                     Rate Us on Google!
                                 </h2>
-                                <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.5, marginBottom: '20px', fontWeight: 500 }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '20px', fontWeight: 500 }}>
                                     Scan this QR code to quickly rate and review your experience with Khelo Patna Elite Turf.
                                 </p>
                                 <div className="inline-block bg-light border rounded-3 p-3 mb-4">
@@ -648,7 +648,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                         style={{ width: '160px', height: '160px', display: 'block', margin: '0 auto', borderRadius: '6px' }}
                                     />
                                 </div>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#059669', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--success)', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                     ⭐⭐ KHELO PATNA ELITE TURF ⭐⭐
                                 </div>
                             </div>
@@ -699,7 +699,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="btn-secondary-stripe"
-                                    style={{ flex: 1, minWidth: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#25d366', borderColor: '#25d366', color: '#fff' }}
+                                    style={{ flex: 1, minWidth: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#25d366', borderColor: '#25d366', color: 'var(--white)' }}
                                 >
                                     <span className="material-icons-outlined" style={{ fontSize: '18px' }}>share</span> WhatsApp Invite
                                 </a>
@@ -757,7 +757,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             <div className="card-premium d-flex align-items-center justify-content-between p-3" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div>
                                     <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Device Profile</span>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '8px', color: '#fff' }}>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, marginTop: '8px', color: 'var(--white)' }}>
                                         📱 {stats?.devices?.Mobile || 0} &nbsp;|&nbsp; 💻 {stats?.devices?.Desktop || 0}
                                     </div>
                                 </div>
@@ -771,7 +771,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             <div className="card-premium d-flex align-items-center justify-content-between p-3" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div>
                                     <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Average Rating</span>
-                                    <h3 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '4px 0 0 0', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <h3 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '4px 0 0 0', color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         5★ <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>({stats?.ratings?.['5'] || 0})</span>
                                     </h3>
                                 </div>
@@ -785,9 +785,9 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             <div className="card-premium d-flex align-items-center justify-content-between p-3" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div>
                                     <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unique IPs</span>
-                                    <h3 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '4px 0 0 0', color: '#a78bfa' }}>{stats?.top_ips?.length || 0}</h3>
+                                    <h3 style={{ fontSize: '1.75rem', fontWeight: 900, margin: '4px 0 0 0', color: 'var(--purple)' }}>{stats?.top_ips?.length || 0}</h3>
                                 </div>
-                                <div className="d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(167, 139, 250, 0.1)', color: '#a78bfa' }}>
+                                <div className="d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(167, 139, 250, 0.1)', color: 'var(--purple)' }}>
                                     <span className="material-icons-outlined">fingerprint</span>
                                 </div>
                             </div>
@@ -829,7 +829,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                                     borderRadius: '8px',
                                                     border: '1px solid rgba(255,255,255,0.1)',
                                                     background: 'rgba(0,0,0,0.15)',
-                                                    color: '#fff'
+                                                    color: 'var(--white)'
                                                 }}
                                             />
                                         </div>
@@ -845,7 +845,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                                 borderRadius: '8px',
                                                 border: '1px solid rgba(255,255,255,0.1)',
                                                 background: 'rgba(0,0,0,0.15)',
-                                                color: '#fff'
+                                                color: 'var(--white)'
                                             }}
                                         >
                                             <option value="all">All Ratings</option>
@@ -868,7 +868,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                         {filteredReviews.map((rev) => (
                                             <div key={rev.id} style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.04)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                                 <div className="d-flex justify-content-between align-items-center">
-                                                    <div className="d-flex gap-0.5" style={{ color: '#fbbf24' }}>
+                                                    <div className="d-flex gap-0.5" style={{ color: 'var(--warning)' }}>
                                                         {Array.from({ length: rev.rating || 5 }).map((_, i) => (
                                                             <span key={i} className="material-icons-outlined" style={{ fontSize: '14px' }}>star</span>
                                                         ))}
@@ -921,7 +921,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                                     <span style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         {idx + 1}
                                                     </span>
-                                                    <span className="text-mono truncate text-white" style={{ fontSize: '0.75rem' }}>{item.ip}</span>
+                                                    <span className="text-mono truncate text-white" style={{ fontSize: '0.75rem', color: 'var(--white)' }}>{item.ip}</span>
                                                 </div>
                                                 <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)', padding: '2px 8px', borderRadius: '20px', fontSize: '0.68rem', fontWeight: 'bold' }}>
                                                     {item.count} review{item.count !== 1 ? 's' : ''}
@@ -936,7 +936,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             <div style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '16px', padding: '16px', display: 'flex', gap: '12px' }}>
                                 <span className="material-icons-outlined" style={{ color: 'var(--text-muted)', fontSize: '20px', marginTop: '2px' }}>security</span>
                                 <div style={{ fontSize: '0.78rem', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-                                    <strong style={{ color: '#fff', display: 'block', marginBottom: '4px' }}>IP Pacing & Anti-Spam Safety:</strong>
+                                    <strong style={{ color: 'var(--white)', display: 'block', marginBottom: '4px' }}>IP Pacing & Anti-Spam Safety:</strong>
                                     If you note many drafts from the same IP address (e.g. over 5-10 logs in a short duration), this indicates a single device repeating review generations. Remind customers to pace reviews and post from their own data connections so Google Maps algorithms register the reviews as organic.
                                 </div>
                             </div>
