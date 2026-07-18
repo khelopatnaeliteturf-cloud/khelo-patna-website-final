@@ -107,11 +107,13 @@
                     body: JSON.stringify({
                         data: {
                             order: {
-                                order_id: orderId
+                                order_id: orderId,
+                                order_amount: Number(amount)
                             },
                             payment: {
                                 payment_status: 'SUCCESS',
-                                cf_payment_id: 'MOCK_TX_' + Date.now()
+                                cf_payment_id: 'MOCK_TX_' + Date.now(),
+                                payment_amount: Number(amount)
                             }
                         }
                     })

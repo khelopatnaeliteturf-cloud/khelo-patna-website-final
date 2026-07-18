@@ -293,6 +293,10 @@ export default function BookPage() {
             if (!res.ok) throw new Error(data.error || 'Failed to create booking.');
 
             // Success. Trigger pop checkout
+            if (data.zero_amount || finalChargedAmount === 0) {
+                window.location.href = `/book?order_id=${data.order_id}&payment_status=success`;
+                return;
+            }
             await initiateCashfreeCheckout(data, finalChargedAmount);
 
         } catch (err) {

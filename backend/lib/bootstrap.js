@@ -171,6 +171,15 @@ async function ensureDefaultTenant() {
             );
         `);
         console.log('  Bootstrap: coupons table checked/created');
+ 
+        // ── Bookings Table Columns Migration ─────────────────────────────
+        console.log('  Bootstrap: ensuring bookings table has coupon columns...');
+        await client.query(`
+            ALTER TABLE bookings 
+            ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50) DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00;
+        `);
+        console.log('  Bootstrap: bookings table coupon columns checked/added');
 
         return { tenantId, branchId };
     } finally {

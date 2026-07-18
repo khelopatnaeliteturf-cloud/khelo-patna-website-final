@@ -128,8 +128,9 @@ async function sendFeeNotifications(feeRecord) {
 router.post('/payment/create-order', async (req, res) => {
     const { amount, customerName, customerEmail, customerPhone, bookingData, subdomain } = req.body;
 
-    if (!amount || !customerName || !customerPhone || !bookingData) {
-        return res.status(400).json({ error: 'Missing required order details.' });
+    const chargeAmount = Number(amount);
+    if (isNaN(chargeAmount) || chargeAmount < 0 || amount === undefined || amount === null || !customerName || !customerPhone || !bookingData) {
+        return res.status(400).json({ error: 'Missing or invalid order details.' });
     }
 
     const orderId = `KP-${Date.now()}`;
@@ -156,6 +157,52 @@ router.post('/payment/create-order', async (req, res) => {
         });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the selected slots are no longer available. Please pick different slots.' });
+        }
+
+        if (chargeAmount === 0) {
+            // Create a SUCCESS Booking record directly (bypass Cashfree)
+            const newBooking = new Booking({
+                tenantId,
+                branchId,
+                customerName,
+                customerEmail: customerEmail || 'no-email@khelopatna.in',
+                customerPhone,
+                date: bookingData.booking_date,
+                timeSlots: bookingData.time_slots,
+                totalAmount: Number(bookingData.totalAmount),
+                paidAmount: 0,
+                paymentStatus: 'SUCCESS',
+                paymentMethod: 'cashfree',
+                orderId: orderId,
+                sport: bookingData.sport,
+                participantsCount: Number(bookingData.participantsCount || 1),
+                couponCode: bookingData.couponCode || null,
+                discountAmount: Number(bookingData.discountAmount || 0)
+            });
+
+            await newBooking.save();
+
+            // Increment coupon usage count if used
+            if (newBooking.couponCode) {
+                try {
+                    const couponObj = await Coupon.findOne({ code: newBooking.couponCode.toUpperCase() });
+                    if (couponObj) {
+                        couponObj.usageCount = (couponObj.usageCount || 0) + 1;
+                        await couponObj.save();
+                    }
+                } catch (couponErr) {
+                    console.error('Error updating coupon usage count:', couponErr);
+                }
+            }
+
+            await sendBookingNotifications(newBooking);
+
+            return res.json({
+                success: true,
+                order_id: orderId,
+                zero_amount: true,
+                redirect_url: `${FRONTEND_URL}/book?order_id=${orderId}&payment_status=success`
+            });
         }
 
         // Create a PENDING Booking record
@@ -218,12 +265,33 @@ router.post('/payment/verify', async (req, res) => {
     }
 
     try {
+        // If already successful, return early without calling Cashfree verification
+        if (order_id.startsWith('KP-')) {
+            const booking = await Booking.findOne({ orderId: order_id });
+            if (booking && booking.paymentStatus === 'SUCCESS') {
+                return res.json({
+                    success: true,
+                    payment_status: 'SUCCESS',
+                    payment_details: booking.paymentDetails || { amount: booking.paidAmount, payment_method: booking.paymentMethod }
+                });
+            }
+        } else if (order_id.startsWith('KPFEE-')) {
+            const feeRecord = await Fee.findOne({ orderId: order_id });
+            if (feeRecord && feeRecord.status === 'PAID') {
+                return res.json({
+                    success: true,
+                    payment_status: 'SUCCESS',
+                    payment_details: feeRecord.paymentDetails || { amount: feeRecord.amountDue, payment_method: 'CASHFREE' }
+                });
+            }
+        }
+
         // Look up the record first so mock verification (dev only) can echo the
         // expected amount, keeping the amount-mismatch check consistent.
         let expectedAmount = null;
         if (order_id.startsWith('KP-')) {
-            const b = await Booking.findOne({ orderId: order_id }).select('totalAmount');
-            if (b) expectedAmount = b.totalAmount;
+            const b = await Booking.findOne({ orderId: order_id }).select('paidAmount');
+            if (b) expectedAmount = b.paidAmount;
         } else if (order_id.startsWith('KPFEE-')) {
             const f = await Fee.findOne({ orderId: order_id }).select('amountDue');
             if (f) expectedAmount = f.amountDue;
