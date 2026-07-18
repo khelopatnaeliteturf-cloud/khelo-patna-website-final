@@ -1,36 +1,32 @@
 import { NextResponse } from 'next/server';
 
+/**
+ * Server-side gate for the admin area.
+ *
+ * The real JWT lives in an httpOnly cookie on the backend origin, which this
+ * middleware cannot read in split-domain deployments. Instead, the login page
+ * sets a lightweight `kp_session` marker cookie on the frontend domain after
+ * a successful login. This middleware redirects unauthenticated visitors to
+ * /login before the admin shell ever renders (no more client-side flash).
+ *
+ * This is a UX gate, not a security boundary — every API request is still
+ * authenticated and authorized by the backend.
+ */
 export function middleware(request) {
     const { pathname } = request.nextUrl;
 
-    // Allow access to /maintenance page itself
-    if (pathname === '/maintenance') {
-        return NextResponse.next();
+    if (pathname.startsWith('/admin')) {
+        const sessionMarker = request.cookies.get('kp_session');
+        if (!sessionMarker) {
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('next', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
     }
 
-    // Allow static files, images, icons, and next internals
-    if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/static') ||
-        pathname.includes('.') ||
-        pathname.startsWith('/api')
-    ) {
-        return NextResponse.next();
-    }
-
-    // Rewrite all other requests to the maintenance page internally
-    return NextResponse.rewrite(new URL('/maintenance', request.url));
+    return NextResponse.next();
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
-    ],
+    matcher: ['/admin/:path*', '/admin']
 };
