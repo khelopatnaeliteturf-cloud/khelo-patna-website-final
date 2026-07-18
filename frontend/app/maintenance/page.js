@@ -114,37 +114,34 @@ export default function MaintenancePage() {
                         <circle cx="300" cy="230" r="1.5" fill="#10B981" />
                         <circle cx="310" cy="230" r="1.5" fill="#10B981" />
                     </svg>
-                    
-                    {/* Glowing status tag overlay */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '0',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: 'rgba(16, 185, 129, 0.08)',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        borderRadius: '30px',
-                        padding: '6px 16px',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        color: '#10B981',
-                        letterSpacing: '0.12em',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 0 16px rgba(16, 185, 129, 0.1)',
-                        textTransform: 'uppercase'
-                    }}>
-                        <span style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: '#10B981',
-                            display: 'inline-block',
-                            animation: 'statusPulse 1.8s infinite ease-in-out'
-                        }} />
-                        System Recalibration
-                    </div>
+                </div>
+                
+                {/* Glowing status tag */}
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    borderRadius: '30px',
+                    padding: '6px 16px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    color: '#10B981',
+                    letterSpacing: '0.12em',
+                    boxShadow: '0 0 16px rgba(16, 185, 129, 0.1)',
+                    textTransform: 'uppercase',
+                    marginBottom: '20px'
+                }}>
+                    <span style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: '#10B981',
+                        display: 'inline-block',
+                        animation: 'statusPulse 1.8s infinite ease-in-out'
+                    }} />
+                    System Recalibration
                 </div>
 
                 {/* Heading */}
@@ -215,7 +212,7 @@ export default function MaintenancePage() {
                         }}>
                             📞 Call 970 970 1400
                         </a>
-                        <a href="mailto:support@khelopatna.in" style={{
+                        <a href="mailto:service@khelopatna.in" style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
