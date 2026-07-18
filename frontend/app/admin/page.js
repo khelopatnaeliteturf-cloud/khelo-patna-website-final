@@ -19,6 +19,7 @@ import AnimatedNumber from './components/AnimatedNumber';
 import SettingsTab from './components/SettingsTab';
 import AdmissionStudio from './components/AdmissionStudio';
 import ReviewsTab from './components/ReviewsTab';
+import CouponsTab from './components/CouponsTab';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
 const BACKEND_URL = getBackendUrl();
@@ -534,6 +535,9 @@ export default function AdminDashboard() {
         }
         if (tabId === 'membership-billing' || tabId === 'finance') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'FINANCE_MANAGER', 'RECEPTIONIST'].includes(role);
+        }
+        if (tabId === 'coupons') {
+            return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'FINANCE_MANAGER'].includes(role);
         }
         if (tabId === 'inventory-management') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'GROUND_MANAGER'].includes(role);
@@ -7327,7 +7331,8 @@ export default function AdminDashboard() {
                     {(() => {
                         const items = [
                             { id: 'membership-billing', label: 'Billing', icon: 'receipt_long' },
-                            { id: 'finance', label: 'Accounts', icon: 'account_balance_wallet' }
+                            { id: 'finance', label: 'Accounts', icon: 'account_balance_wallet' },
+                            { id: 'coupons', label: 'Coupons', icon: 'local_offer' }
                         ].filter(item => hasTabAccess(item.id));
                         if (items.length === 0) return null;
                         return (
@@ -7703,6 +7708,14 @@ export default function AdminDashboard() {
                         <GoogleReviewsTab 
                             backendUrl={BACKEND_URL}
                             getHeaders={getHeaders}
+                        />
+                    )}
+                    {activeTab === 'coupons' && (
+                        <CouponsTab 
+                            backendUrl={BACKEND_URL}
+                            getHeaders={getHeaders}
+                            notifySuccess={setSuccessMessage}
+                            notifyError={setErrorMessage}
                         />
                     )}
                 </main>

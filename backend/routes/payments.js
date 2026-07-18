@@ -8,6 +8,7 @@ const ChatSession = require('../models/ChatSession');
 const Tenant = require('../models/Tenant');
 const Branch = require('../models/Branch');
 const AuditLog = require('../models/AuditLog');
+const Coupon = require('../models/Coupon');
 const { createOrder, verifyPayment } = require('../services/cashfree');
 const { sendWhatsAppMessage } = require('../services/whatsapp');
 const { sendBookingInvoiceEmail, sendFeeInvoiceEmail } = require('../services/mailercloud');
@@ -172,7 +173,9 @@ router.post('/payment/create-order', async (req, res) => {
             paymentMethod: 'cashfree',
             orderId: orderId,
             sport: bookingData.sport,
-            participantsCount: Number(bookingData.participantsCount || 1)
+            participantsCount: Number(bookingData.participantsCount || 1),
+            couponCode: bookingData.couponCode || null,
+            discountAmount: Number(bookingData.discountAmount || 0)
         });
 
         await newBooking.save();
@@ -233,8 +236,8 @@ router.post('/payment/verify', async (req, res) => {
                 const booking = await Booking.findOne({ orderId: order_id });
                 if (booking && booking.paymentStatus === 'PENDING') {
                     // Prevent price manipulation by comparing the gateway amount to the database amount
-                    if (Math.abs(Number(verifyResult.payment_details.amount) - booking.totalAmount) > 0.01) {
-                        console.error(`Price manipulation detected! Booking ID: ${booking._id}. Expected: ${booking.totalAmount}, Paid: ${verifyResult.payment_details.amount}`);
+                    if (Math.abs(Number(verifyResult.payment_details.amount) - booking.paidAmount) > 0.01) {
+                        console.error(`Price manipulation detected! Booking ID: ${booking._id}. Expected: ${booking.paidAmount}, Paid: ${verifyResult.payment_details.amount}`);
                         booking.paymentStatus = 'FAILED';
                         booking.paymentDetails = { ...verifyResult.payment_details, error: 'Price mismatch' };
                         await booking.save();
@@ -244,6 +247,20 @@ router.post('/payment/verify', async (req, res) => {
                     booking.transactionId = verifyResult.payment_details.transaction_id;
                     booking.paymentDetails = verifyResult.payment_details;
                     await booking.save();
+                    
+                    // Increment coupon usage count if used
+                    if (booking.couponCode) {
+                        try {
+                            const couponObj = await Coupon.findOne({ code: booking.couponCode.toUpperCase() });
+                            if (couponObj) {
+                                couponObj.usageCount = (couponObj.usageCount || 0) + 1;
+                                await couponObj.save();
+                            }
+                        } catch (couponErr) {
+                            console.error('Error updating coupon usage count:', couponErr);
+                        }
+                    }
+
                     await sendBookingNotifications(booking);
                 }
             } else if (order_id.startsWith('KPFEE-')) {
@@ -334,8 +351,8 @@ router.post('/payment/webhook', async (req, res) => {
                 if (booking && booking.paymentStatus === 'PENDING') {
                     // Validate the paid amount against what is owed (prevents
                     // confirming a booking with an underpaid/tampered order)
-                    if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - booking.totalAmount) > 0.01) {
-                        console.error(`Webhook amount mismatch! Order: ${orderId}. Expected: ${booking.totalAmount}, Paid: ${paidAmount}`);
+                    if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - booking.paidAmount) > 0.01) {
+                        console.error(`Webhook amount mismatch! Order: ${orderId}. Expected: ${booking.paidAmount}, Paid: ${paidAmount}`);
                         booking.paymentStatus = 'FAILED';
                         booking.paymentDetails = { ...booking.paymentDetails, error: 'Webhook amount mismatch', webhookPaidAmount: paidAmount };
                         await booking.save();
@@ -344,6 +361,20 @@ router.post('/payment/webhook', async (req, res) => {
                     booking.paymentStatus = 'SUCCESS';
                     booking.transactionId = transactionId;
                     await booking.save();
+
+                    // Increment coupon usage count if used
+                    if (booking.couponCode) {
+                        try {
+                            const couponObj = await Coupon.findOne({ code: booking.couponCode.toUpperCase() });
+                            if (couponObj) {
+                                couponObj.usageCount = (couponObj.usageCount || 0) + 1;
+                                await couponObj.save();
+                            }
+                        } catch (couponErr) {
+                            console.error('Error updating coupon usage count:', couponErr);
+                        }
+                    }
+
                     await sendBookingNotifications(booking);
 
                     const cleanPhone = booking.customerPhone;
@@ -924,6 +955,147 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
     } catch (err) {
         console.error('Cancel-refund booking error:', err);
         res.status(500).json({ error: err.message || 'Server error cancelling booking.' });
+    }
+});
+
+// ── Coupons Routes ────────────────────────────────────────────────
+
+// POST /api/payment/validate-coupon
+router.post('/payment/validate-coupon', async (req, res) => {
+    const { code, amount } = req.body;
+
+    if (!code || !amount) {
+        return res.status(400).json({ error: 'Coupon code and order amount are required.' });
+    }
+
+    try {
+        const coupon = await Coupon.findOne({ code: code.toUpperCase().trim() });
+
+        if (!coupon) {
+            return res.status(404).json({ error: 'Invalid coupon code.' });
+        }
+
+        if (!coupon.isActive) {
+            return res.status(400).json({ error: 'This coupon is no longer active.' });
+        }
+
+        if (coupon.expiryDate && new Date(coupon.expiryDate) < new Date()) {
+            return res.status(400).json({ error: 'This coupon has expired.' });
+        }
+
+        if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) {
+            return res.status(400).json({ error: 'This coupon has reached its usage limit.' });
+        }
+
+        const minAmount = Number(coupon.minOrderAmount || 0);
+        if (Number(amount) < minAmount) {
+            return res.status(400).json({ error: `Minimum order amount of ₹${minAmount} is required to apply this coupon.` });
+        }
+
+        let discount = 0;
+        if (coupon.discountType === 'PERCENT') {
+            discount = (Number(amount) * Number(coupon.discountValue)) / 100;
+            if (coupon.maxDiscountAmount !== null) {
+                discount = Math.min(discount, Number(coupon.maxDiscountAmount));
+            }
+        } else if (coupon.discountType === 'FLAT') {
+            discount = Number(coupon.discountValue);
+        }
+
+        discount = Math.min(discount, Number(amount));
+        const finalAmount = Math.max(0, Number(amount) - discount);
+
+        res.json({
+            success: true,
+            code: coupon.code,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+            discountAmount: discount,
+            finalAmount
+        });
+
+    } catch (err) {
+        console.error('Validate coupon error:', err);
+        res.status(500).json({ error: 'Server error validating coupon.' });
+    }
+});
+
+// GET /api/admin/coupons
+router.get('/admin/coupons', authenticateToken, authorizeRoles('ADMIN', 'SUPER_ADMIN'), async (req, res) => {
+    try {
+        const coupons = await Coupon.find({}).sort('-createdAt');
+        res.json(coupons);
+    } catch (err) {
+        console.error('List coupons error:', err);
+        res.status(500).json({ error: 'Server error listing coupons.' });
+    }
+});
+
+// POST /api/admin/coupons
+router.post('/admin/coupons', authenticateToken, authorizeRoles('ADMIN', 'SUPER_ADMIN'), async (req, res) => {
+    const { code, discountType, discountValue, minOrderAmount, maxDiscountAmount, expiryDate, isActive, usageLimit } = req.body;
+
+    if (!code || !discountType || discountValue === undefined) {
+        return res.status(400).json({ error: 'Code, discount type, and value are required.' });
+    }
+
+    try {
+        const existing = await Coupon.findOne({ code: code.toUpperCase().trim() });
+        if (existing) {
+            return res.status(400).json({ error: 'A coupon with this code already exists.' });
+        }
+
+        const coupon = new Coupon({
+            code: code.toUpperCase().trim(),
+            discountType,
+            discountValue: Number(discountValue),
+            minOrderAmount: Number(minOrderAmount || 0),
+            maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : null,
+            expiryDate: expiryDate || null,
+            isActive: isActive !== false,
+            usageLimit: usageLimit ? Number(usageLimit) : null,
+            usageCount: 0
+        });
+
+        await coupon.save();
+
+        await new AuditLog({
+            tenantId: req.user.tenantId,
+            userId: req.user.username,
+            module: 'Payments',
+            action: 'CREATE_COUPON',
+            newData: coupon
+        }).save();
+
+        res.json({ success: true, coupon });
+    } catch (err) {
+        console.error('Create coupon error:', err);
+        res.status(500).json({ error: err.message || 'Server error creating coupon.' });
+    }
+});
+
+// DELETE /api/admin/coupons/:id
+router.delete('/admin/coupons/:id', authenticateToken, authorizeRoles('ADMIN', 'SUPER_ADMIN'), async (req, res) => {
+    try {
+        const coupon = await Coupon.findById(req.params.id);
+        if (!coupon) {
+            return res.status(404).json({ error: 'Coupon not found.' });
+        }
+
+        await Coupon.findByIdAndDelete(req.params.id);
+
+        await new AuditLog({
+            tenantId: req.user.tenantId,
+            userId: req.user.username,
+            module: 'Payments',
+            action: 'DELETE_COUPON',
+            newData: { id: req.params.id, code: coupon.code }
+        }).save();
+
+        res.json({ success: true, message: 'Coupon deleted successfully.' });
+    } catch (err) {
+        console.error('Delete coupon error:', err);
+        res.status(500).json({ error: 'Server error deleting coupon.' });
     }
 });
 

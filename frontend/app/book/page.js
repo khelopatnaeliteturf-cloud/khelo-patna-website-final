@@ -32,6 +32,10 @@ export default function BookPage() {
     const [mockOrderDetails, setMockOrderDetails] = useState(null);
     const [mockPaymentProcessing, setMockPaymentProcessing] = useState(false);
     const [mockMessage, setMockMessage] = useState('');
+    const [couponCodeInput, setCouponCodeInput] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponError, setCouponError] = useState('');
+    const [validatingCoupon, setValidatingCoupon] = useState(false);
     
     // Status from redirection
     const [paymentSuccessInfo, setPaymentSuccessInfo] = useState(null);
@@ -196,6 +200,58 @@ export default function BookPage() {
         }
     };
 
+    // Reset applied coupon on options changes
+    useEffect(() => {
+        setAppliedCoupon(null);
+        setCouponCodeInput('');
+        setCouponError('');
+    }, [selectedSlots, participantsCount, sport, date]);
+
+    const handleApplyCoupon = async (e) => {
+        if (e) e.preventDefault();
+        if (!couponCodeInput.trim()) {
+            setCouponError('Please enter a coupon code.');
+            return;
+        }
+
+        setValidatingCoupon(true);
+        setCouponError('');
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/payment/validate-coupon`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: couponCodeInput,
+                    amount: calculateTotal()
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to validate coupon.');
+            }
+
+            setAppliedCoupon({
+                code: data.code,
+                discountAmount: data.discountAmount,
+                finalAmount: data.finalAmount
+            });
+            setCouponError('');
+        } catch (err) {
+            console.error(err);
+            setCouponError(err.message || 'Invalid coupon code.');
+            setAppliedCoupon(null);
+        } finally {
+            setValidatingCoupon(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCodeInput('');
+        setCouponError('');
+    };
+
     const handleBookingSubmit = async (e) => {
         e.preventDefault();
         
@@ -208,13 +264,14 @@ export default function BookPage() {
         setErrorMessage('');
 
         const totalAmount = calculateTotal();
+        const finalChargedAmount = appliedCoupon ? appliedCoupon.finalAmount : totalAmount;
 
         try {
             const res = await fetch(`${BACKEND_URL}/api/payment/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    amount: totalAmount,
+                    amount: finalChargedAmount,
                     customerName: bookingDetails.name,
                     customerEmail: bookingDetails.email || 'no-email@khelopatna.in',
                     customerPhone: bookingDetails.phone,
@@ -223,7 +280,9 @@ export default function BookPage() {
                         time_slots: selectedSlots,
                         totalAmount: totalAmount,
                         sport: sport,
-                        participantsCount: sport === 'nets' ? participantsCount : 1
+                        participantsCount: sport === 'nets' ? participantsCount : 1,
+                        couponCode: appliedCoupon ? appliedCoupon.code : null,
+                        discountAmount: appliedCoupon ? appliedCoupon.discountAmount : 0
                     }
                 })
             });
@@ -232,7 +291,7 @@ export default function BookPage() {
             if (!res.ok) throw new Error(data.error || 'Failed to create booking.');
 
             // Success. Trigger pop checkout
-            await initiateCashfreeCheckout(data, totalAmount);
+            await initiateCashfreeCheckout(data, finalChargedAmount);
 
         } catch (err) {
             console.error(err);
@@ -769,6 +828,67 @@ export default function BookPage() {
                                     )}
                                 </div>
  
+                                {/* Coupon Section */}
+                                <div style={{
+                                    borderTop: '1px dashed var(--border-subtle)',
+                                    paddingTop: '20px',
+                                    marginBottom: '24px'
+                                }}>
+                                    <label className="form-label-styled" style={{ display: 'block', marginBottom: '8px' }}>Promo Code</label>
+                                    {!appliedCoupon ? (
+                                        <div style={{ display: 'flex', gap: '10px', maxWidth: '380px' }}>
+                                            <input
+                                                type="text"
+                                                className="glass-input"
+                                                style={{ textTransform: 'uppercase', marginBottom: 0 }}
+                                                placeholder="Enter coupon code"
+                                                value={couponCodeInput}
+                                                onChange={(e) => setCouponCodeInput(e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleApplyCoupon}
+                                                disabled={validatingCoupon || !couponCodeInput.trim()}
+                                                className="btn-premium"
+                                                style={{
+                                                    padding: '0 20px', fontSize: '0.8rem', minWidth: '100px',
+                                                    height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >
+                                                <span>{validatingCoupon ? 'Checking...' : 'Apply'}</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
+                                            borderRadius: '8px', padding: '10px 16px', maxWidth: '380px'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: '#10B981', fontWeight: 700 }}>✓</span>
+                                                <span style={{ fontSize: '0.85rem', color: '#E5E7EB', fontWeight: 600 }}>
+                                                    Code <strong style={{ color: '#10B981', fontFamily: 'monospace' }}>{appliedCoupon.code}</strong> applied!
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveCoupon}
+                                                style={{
+                                                    background: 'transparent', border: 'none', color: '#EF4444',
+                                                    fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    )}
+                                    {couponError && (
+                                        <div style={{ fontSize: '0.8rem', color: '#EF4444', marginTop: '6px', fontWeight: 500 }}>
+                                            {couponError}
+                                        </div>
+                                    )}
+                                </div>
+ 
                                 {/* Divider + Total + Submit */}
                                 <div style={{
                                     borderTop: '1px solid var(--border-subtle)',
@@ -795,7 +915,21 @@ export default function BookPage() {
                                                 </>
                                             )}
                                         </div>
-                                        <div className="total-price-display">₹{calculateTotal()}</div>
+                                        {appliedCoupon ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                    Subtotal: <span style={{ textDecoration: 'line-through', marginLeft: '4px' }}>₹{calculateTotal()}</span>
+                                                </div>
+                                                <div style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 600 }}>
+                                                    Discount: -₹{appliedCoupon.discountAmount}
+                                                </div>
+                                                <div className="total-price-display" style={{ color: '#10B981' }}>
+                                                    ₹{appliedCoupon.finalAmount}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="total-price-display">₹{calculateTotal()}</div>
+                                        )}
                                     </div>
 
                                     <button
