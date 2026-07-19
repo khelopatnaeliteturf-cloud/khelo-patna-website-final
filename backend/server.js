@@ -28,6 +28,7 @@ app.use(helmet({
             frameSrc: ["'self'", "https://*.cashfree.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+            formAction: ["'self'", "https://*.cashfree.com"],
             imgSrc: ["'self'", "data:", "https://*.cashfree.com"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []
