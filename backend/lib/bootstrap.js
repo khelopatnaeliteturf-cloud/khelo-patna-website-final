@@ -149,6 +149,7 @@ async function ensureDefaultTenant() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            ALTER TABLE scoreboards ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: scoreboards table checked/created');
 
@@ -169,6 +170,7 @@ async function ensureDefaultTenant() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: coupons table checked/created');
  

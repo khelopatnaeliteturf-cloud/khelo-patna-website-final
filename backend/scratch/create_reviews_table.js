@@ -21,6 +21,7 @@ async function run() {
             os TEXT,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
+        ALTER TABLE maps_reviews_used ENABLE ROW LEVEL SECURITY;
     `);
     console.log('✅ Table created successfully.');
     await pg.end();
