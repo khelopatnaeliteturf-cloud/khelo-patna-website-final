@@ -98,7 +98,7 @@ ${discountAmount > 0 ? `*   Discount: -₹${discountAmount} (Code: ${booking.cou
 *   Order ID: ${booking.orderId}
 
 📍 *Location Map*:
-https://maps.google.com/?q=Khelo+Patna+Elite+Turf+Patna
+https://maps.app.goo.gl/iF1kcgi6seEnsRfaA
 
 Thank you for choosing KheloPatna! 🏆`;
     
