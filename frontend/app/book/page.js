@@ -43,6 +43,7 @@ export default function BookPage() {
     const [verifyingPayment, setVerifyingPayment] = useState(false);
     const [advancePercentage, setAdvancePercentage] = useState(100);
     const [payAdvanceOnly, setPayAdvanceOnly] = useState(false);
+    const [paymentFailedInfo, setPaymentFailedInfo] = useState(null);
 
     // Trigger slot fetch on sport/date change and handle URL query params on initial mount
     useEffect(() => {
@@ -99,12 +100,16 @@ export default function BookPage() {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const orderId = params.get('order_id');
-        const status = params.get('payment_status');
         
-        if (orderId && status === 'success') {
+        if (orderId) {
             verifyBookingPayment(orderId);
         }
     }, []);
+
+    const getSlotText = (val) => {
+        const match = slots.find(s => s.value === val);
+        return match ? match.text : val;
+    };
 
     const verifyBookingPayment = async (orderId) => {
         setVerifyingPayment(true);
@@ -122,7 +127,11 @@ export default function BookPage() {
                     method: data.payment_details?.payment_method
                 });
             } else {
-                setErrorMessage('Payment verification failed or payment is pending.');
+                setPaymentFailedInfo({
+                    orderId: orderId,
+                    paymentLink: data.payment_link,
+                    bookingDetails: data.booking_details
+                });
             }
         } catch (err) {
             console.error(err);
@@ -194,7 +203,7 @@ export default function BookPage() {
             setLoading(true);
             cashfree.checkout({
                 paymentSessionId: data.payment_session_id,
-                redirectTarget: '_modal'
+                redirectTarget: '_self'
             }).then(() => {
                 setLoading(false);
             }).catch((err) => {
@@ -605,8 +614,81 @@ export default function BookPage() {
                     </div>
                 )}
 
+                {/* ─── Payment Failed ─── */}
+                {paymentFailedInfo && !verifyingPayment && (
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        justifyContent: 'center', minHeight: '65vh'
+                    }}>
+                        <div className="glass-card animate-fade-in" style={{
+                            maxWidth: '520px', width: '100%', padding: '48px 40px',
+                            textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.25)'
+                        }}>
+                            {/* Red cross ring */}
+                            <div className="success-check-ring" style={{ border: '2px solid var(--danger)', boxShadow: '0 0 20px rgba(239,68,68,0.2)' }}>
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <path d="M14 14L34 34M34 14L14 34" stroke="var(--danger)" strokeWidth="3.5"
+                                          strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+
+                            <h2 className="gradient-text" style={{ fontSize: '1.6rem', marginBottom: '8px', background: 'linear-gradient(90deg, #FF4B4B 0%, #FF8585 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                Payment Failed
+                            </h2>
+                            <p style={{
+                                color: 'var(--text-secondary)', fontFamily: 'Inter', fontSize: '0.9rem',
+                                lineHeight: 1.6, marginBottom: '28px'
+                            }}>
+                                Don't worry! Your slots are still reserved for a short period. You can complete your payment and secure your booking using the button below.
+                            </p>
+
+                            {/* Details panel */}
+                            <div className="glass-panel" style={{ padding: '20px', textAlign: 'left', marginBottom: '28px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
+                                    <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Order ID</span>
+                                    <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600 }}>{paymentFailedInfo.orderId}</span>
+                                </div>
+                                {paymentFailedInfo.bookingDetails && (
+                                    <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Sport</span>
+                                            <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600, textTransform: 'uppercase' }}>{paymentFailedInfo.bookingDetails.sport}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Date</span>
+                                            <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600 }}>{paymentFailedInfo.bookingDetails.date}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Slots</span>
+                                            <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600 }}>{(paymentFailedInfo.bookingDetails.timeSlots || []).map(getSlotText).join(', ')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Amount Due</span>
+                                            <span style={{ color: 'var(--danger)', fontFamily: 'Unbounded', fontSize: '0.9rem', fontWeight: 700 }}>₹{paymentFailedInfo.bookingDetails.paidAmount}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {paymentFailedInfo.paymentLink && (
+                                    <a href={paymentFailedInfo.paymentLink} className="btn-premium" style={{ textDecoration: 'none', width: '100%', justifyContent: 'center' }}>
+                                        <span>💳 Retry Payment Now</span>
+                                    </a>
+                                )}
+                                <button onClick={() => {
+                                    setPaymentFailedInfo(null);
+                                    window.history.replaceState({}, document.title, window.location.pathname);
+                                }} className="btn-premium" style={{ textDecoration: 'none', width: '100%', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <span>Go Back & Change Slots</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ─── Normal Booking View ─── */}
-                {!paymentSuccessInfo && !verifyingPayment && (
+                {!paymentSuccessInfo && !paymentFailedInfo && !verifyingPayment && (
                     <div>
                         {/* Page Header */}
                         <div style={{ marginBottom: '40px' }} className="animate-fade-in">

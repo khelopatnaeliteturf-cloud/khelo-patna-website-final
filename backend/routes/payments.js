@@ -125,6 +125,81 @@ async function sendFeeNotifications(feeRecord) {
     }
 }
 
+// Helper to send booking failure notification
+async function sendFailedBookingNotification(booking) {
+    const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
+    const payLink = booking.paymentLink || `${FRONTEND_URL}/book?order_id=${booking.orderId}`;
+    
+    const waText = `⚠️ *Payment Failed* ⚠️
+
+Dear ${booking.customerName}, your payment for the turf booking failed.
+
+*Slot Details*:
+*   Sport: ${booking.sport.toUpperCase()}
+*   Date: ${booking.date}
+*   Timing: ${formattedTiming}
+
+Don't worry! The slots are still yours for a short period. You can complete your payment and secure your booking using the link below:
+
+🔗 *Payment Link*: ${payLink}
+
+Thank you! 🏆`;
+
+    await sendWhatsAppMessage(booking.customerPhone, waText);
+}
+
+// Helper to send booking dropped notification
+async function sendDroppedBookingNotification(booking) {
+    const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
+    const payLink = booking.paymentLink || `${FRONTEND_URL}/book?order_id=${booking.orderId}`;
+
+    const waText = `👋 *Booking Pending!* 👋
+
+Dear ${booking.customerName}, we noticed you started booking a slot but didn't complete the payment.
+
+*Selected Slots*:
+*   Sport: ${booking.sport.toUpperCase()}
+*   Date: ${booking.date}
+*   Timing: ${formattedTiming}
+
+The slots are still yours! You can secure them right now by completing the payment using the link below:
+
+🔗 *Complete Payment*: ${payLink}
+
+Thank you! 🏆`;
+
+    await sendWhatsAppMessage(booking.customerPhone, waText);
+}
+
+// Background job to check for dropped bookings (every 5 minutes)
+setInterval(async () => {
+    try {
+        const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+        
+        // Find bookings created more than 15 minutes ago that are still PENDING
+        const droppedBookings = await Booking.find({
+            paymentStatus: 'PENDING',
+            createdAt: { $lt: fifteenMinsAgo }
+        });
+        
+        for (const booking of droppedBookings) {
+            booking.paymentStatus = 'DROPPED';
+            await booking.save();
+            
+            console.log(`[Drop Job] Marked booking ${booking.orderId} as DROPPED.`);
+            
+            // Send dropped WhatsApp message
+            try {
+                await sendDroppedBookingNotification(booking);
+            } catch (err) {
+                console.error(`[Drop Job] Error sending notification for ${booking.orderId}:`, err);
+            }
+        }
+    } catch (err) {
+        console.error('[Drop Job] Error checking dropped bookings:', err);
+    }
+}, 5 * 60 * 1000); // 5 minutes
+
 // POST /api/payment/create-order
 router.post('/payment/create-order', async (req, res) => {
     const { amount, customerName, customerEmail, customerPhone, bookingData, subdomain } = req.body;
@@ -245,6 +320,10 @@ router.post('/payment/create-order', async (req, res) => {
             ? `${backendOrigin}/mock-payment.html?order_id=${orderId}&amount=${amount}`
             : `${backendOrigin}/checkout.html?session_id=${cfOrder.payment_session_id}&env=${process.env.CASHFREE_ENV || 'sandbox'}`;
 
+        // Save payment link on booking
+        newBooking.paymentLink = redirectUrl;
+        await newBooking.save();
+
         res.json({
             success: true,
             order_id: orderId,
@@ -304,7 +383,22 @@ router.post('/payment/verify', async (req, res) => {
         if (verifyResult.success && verifyResult.payment_status === 'SUCCESS') {
             if (order_id.startsWith('KP-')) {
                 const booking = await Booking.findOne({ orderId: order_id });
-                if (booking && booking.paymentStatus === 'PENDING') {
+                if (booking && (booking.paymentStatus === 'PENDING' || booking.paymentStatus === 'DROPPED' || booking.paymentStatus === 'FAILED')) {
+                    // Check slot conflicts before confirming
+                    const conflict = await hasSlotConflict({
+                        tenantId: booking.tenantId,
+                        date: booking.date,
+                        sport: booking.sport,
+                        timeSlots: booking.timeSlots,
+                        excludeOrderId: booking.orderId
+                    });
+                    if (conflict) {
+                        booking.paymentStatus = 'FAILED';
+                        booking.paymentDetails = { ...verifyResult.payment_details, error: 'Slot conflict after drop/fail' };
+                        await booking.save();
+                        return res.status(400).json({ error: 'Slots have already been booked by another user.' });
+                    }
+
                     // Prevent price manipulation by comparing the gateway amount to the database amount
                     if (Math.abs(Number(verifyResult.payment_details.amount) - booking.paidAmount) > 0.01) {
                         console.error(`Price manipulation detected! Booking ID: ${booking._id}. Expected: ${booking.paidAmount}, Paid: ${verifyResult.payment_details.amount}`);
@@ -357,9 +451,28 @@ router.post('/payment/verify', async (req, res) => {
             });
         }
 
+        // If verification failed or status is not success
+        const booking = await Booking.findOne({ orderId: order_id });
+        if (booking && booking.paymentStatus === 'PENDING') {
+            booking.paymentStatus = 'FAILED';
+            await booking.save();
+            try {
+                await sendFailedBookingNotification(booking);
+            } catch (err) {
+                console.error('Error sending failed booking notification:', err);
+            }
+        }
+
         res.json({
             success: false,
-            payment_status: verifyResult.payment_status || 'PENDING'
+            payment_status: verifyResult.payment_status || 'FAILED',
+            payment_link: booking ? booking.paymentLink : null,
+            booking_details: booking ? {
+                sport: booking.sport,
+                date: booking.date,
+                timeSlots: booking.timeSlots,
+                paidAmount: booking.paidAmount
+            } : null
         });
 
     } catch (err) {
@@ -462,6 +575,19 @@ router.post('/payment/webhook', async (req, res) => {
                     feeRecord.amountPaid = feeRecord.amountDue;
                     await feeRecord.save();
                     await sendFeeNotifications(feeRecord);
+                }
+            }
+        } else if (paymentStatus === 'FAILED' || paymentStatus === 'USER_DROPPED') {
+            if (orderId.startsWith('KP-')) {
+                const booking = await Booking.findOne({ orderId: orderId });
+                if (booking && booking.paymentStatus === 'PENDING') {
+                    booking.paymentStatus = 'FAILED';
+                    await booking.save();
+                    try {
+                        await sendFailedBookingNotification(booking);
+                    } catch (err) {
+                        console.error('Error sending failed booking notification via webhook:', err);
+                    }
                 }
             }
         }
