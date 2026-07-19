@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Error({ error, reset }) {
     useEffect(() => {
@@ -96,7 +97,7 @@ export default function Error({ error, reset }) {
                         Try Again
                     </button>
 
-                    <a
+                    <Link
                         href="/"
                         style={{
                             display: 'inline-flex',
@@ -117,7 +118,7 @@ export default function Error({ error, reset }) {
                         }}
                     >
                         Go Home
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
