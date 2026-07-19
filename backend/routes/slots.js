@@ -194,7 +194,10 @@ router.get('/available-slots', async (req, res) => {
                 blackout_hours: {
                     start: settings.blackoutHours.start,
                     end: settings.blackoutHours.end
-                }
+                },
+                advance_percentage: settings.advancePercentage !== undefined && settings.advancePercentage !== null 
+                    ? settings.advancePercentage 
+                    : 100
             },
             slots: filteredSlotsResponse
         });
@@ -217,9 +220,14 @@ router.get('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
                 cricketBaseRate: 1200,
                 footballBaseRate: 1500,
                 netsBaseRate: 800,
-                blackoutHours: { start: 15, end: 18 }
+                blackoutHours: { start: 15, end: 18 },
+                advancePercentage: 100
             });
             await settings.save();
+        }
+        // Ensure default fallback if exists but advancePercentage is not set
+        if (settings.advancePercentage === undefined || settings.advancePercentage === null) {
+            settings.advancePercentage = 100;
         }
         res.json(settings);
     } catch (err) {
@@ -229,7 +237,7 @@ router.get('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
 });
 
 router.put('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN'), async (req, res) => {
-    const { cricketBaseRate, footballBaseRate, netsBaseRate, weeklyRates, blackoutStart, blackoutEnd } = req.body;
+    const { cricketBaseRate, footballBaseRate, netsBaseRate, weeklyRates, blackoutStart, blackoutEnd, advancePercentage } = req.body;
     const tenantId = req.user.tenantId;
     try {
         let settings = await TurfSettings.findOne({ tenantId });
@@ -240,7 +248,8 @@ router.put('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
                 cricketBaseRate: 1200,
                 footballBaseRate: 1500,
                 netsBaseRate: 800,
-                blackoutHours: { start: 15, end: 18 }
+                blackoutHours: { start: 15, end: 18 },
+                advancePercentage: 100
             });
         }
         if (!settings.blackoutHours) {
@@ -252,6 +261,12 @@ router.put('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
         if (weeklyRates !== undefined) settings.weeklyRates = weeklyRates;
         if (blackoutStart !== undefined) settings.blackoutHours.start = blackoutStart;
         if (blackoutEnd !== undefined) settings.blackoutHours.end = blackoutEnd;
+        if (advancePercentage !== undefined) {
+            const pct = Number(advancePercentage);
+            if (!isNaN(pct) && pct >= 0 && pct <= 100) {
+                settings.advancePercentage = pct;
+            }
+        }
         await settings.save();
         res.json({ success: true, settings });
     } catch (err) {

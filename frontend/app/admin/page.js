@@ -1228,7 +1228,8 @@ export default function AdminDashboard() {
                     netsBaseRate: turfSettings.netsBaseRate || 800,
                     weeklyRates: turfSettings.weeklyRates,
                     blackoutStart: turfSettings.blackoutHours.start,
-                    blackoutEnd: turfSettings.blackoutHours.end
+                    blackoutEnd: turfSettings.blackoutHours.end,
+                    advancePercentage: turfSettings.advancePercentage !== undefined ? turfSettings.advancePercentage : 100
                 })
             });
             if (res.ok) {
@@ -3514,6 +3515,26 @@ export default function AdminDashboard() {
                                                     />
                                                 </div>
                                                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>Base rate charged per hour slot</span>
+                                            </div>
+
+                                            <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border-color)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                                    <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>payments</span>
+                                                    <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)' }}>Advance Payment %</span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                                    <input 
+                                                        type="number" 
+                                                        className="input-premium w-100" 
+                                                        style={{ fontSize: '0.84rem', borderRadius: '8px', padding: '10px 24px 10px 10px' }} 
+                                                        value={turfSettings.advancePercentage !== undefined ? turfSettings.advancePercentage : 100} 
+                                                        min="0"
+                                                        max="100"
+                                                        onChange={(e) => setTurfSettings({ ...turfSettings, advancePercentage: Math.min(100, Math.max(0, Number(e.target.value))) })}
+                                                    />
+                                                    <span style={{ position: 'absolute', right: '12px', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-muted)' }}>%</span>
+                                                </div>
+                                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>Percentage of total to pay online (0-100)</span>
                                             </div>
                                         </div>
 

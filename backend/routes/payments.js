@@ -972,7 +972,27 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
                 }
             } catch (refundErr) {
                 console.error('Cashfree refund failed:', refundErr);
-                return res.status(502).json({ error: `Cashfree refund failed: ${refundErr.message}` });
+                
+                // If it is a transaction/amount mismatch or mock error, allow booking cancellation but flag the refund details.
+                const isMismatchError = refundErr.message.includes('greater than') || 
+                                        refundErr.message.includes('transaction amount') ||
+                                        refundErr.message.includes('not paid') ||
+                                        refundErr.message.includes('no transaction') ||
+                                        refundErr.message.includes('mismatch') ||
+                                        refundErr.message.includes('authentication') ||
+                                        refundErr.message.includes('Failed to initiate');
+                                        
+                if (isMismatchError) {
+                    refundDetails = {
+                        status: 'FAILED_GATEWAY',
+                        amount: booking.paidAmount,
+                        error: refundErr.message,
+                        note: 'Gateway refund failed (mismatch/already refunded). Cancellation completed.',
+                        failedAt: new Date()
+                    };
+                } else {
+                    return res.status(502).json({ error: `Cashfree refund failed: ${refundErr.message}` });
+                }
             }
         }
 
@@ -1016,9 +1036,11 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
 
         res.json({ 
             success: true, 
-            message: refundDetails 
-                ? 'Booking cancelled and refund initiated successfully.' 
-                : 'Booking cancelled successfully (no refund).', 
+            message: refundDetails && refundDetails.status === 'FAILED_GATEWAY'
+                ? `Booking cancelled successfully, but gateway refund failed: ${refundDetails.error}. Please handle the refund manually if needed.`
+                : (refundDetails 
+                    ? 'Booking cancelled and refund initiated successfully.' 
+                    : 'Booking cancelled successfully (no refund).'), 
             booking 
         });
     } catch (err) {

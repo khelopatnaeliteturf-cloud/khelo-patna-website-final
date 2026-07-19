@@ -183,6 +183,14 @@ async function ensureDefaultTenant() {
         `);
         console.log('  Bootstrap: bookings table coupon columns checked/added');
 
+        // ── Turf Settings Table Columns Migration ────────────────────────
+        console.log('  Bootstrap: ensuring turf_settings table has advance_percentage column...');
+        await client.query(`
+            ALTER TABLE turf_settings 
+            ADD COLUMN IF NOT EXISTS advance_percentage INT DEFAULT 100;
+        `);
+        console.log('  Bootstrap: turf_settings table advance_percentage column checked/added');
+
         return { tenantId, branchId };
     } finally {
         client.release();
