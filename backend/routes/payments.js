@@ -139,8 +139,9 @@ router.post('/payment/create-order', async (req, res) => {
         // Resolve tenant
         let tenantId = null;
         let branchId = null;
-        if (subdomain) {
-            const tenant = await Tenant.findOne({ subdomain });
+        const sub = subdomain || 'khelopatna';
+        if (sub) {
+            const tenant = await Tenant.findOne({ subdomain: sub });
             if (tenant) {
                 tenantId = tenant._id;
                 const br = await Branch.findOne({ tenantId });
