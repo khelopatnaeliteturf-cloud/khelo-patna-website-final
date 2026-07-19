@@ -1366,3 +1366,40 @@ button:focus:not(:focus-visible) {
     color: var(--text-secondary);
     margin-bottom: 6px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ADDITIONAL MOBILE FRIENDLINESS OVERRIDES
+   ═══════════════════════════════════════════════════════════ */
+section[data-animate] {
+    padding-top: 110px !important;
+    padding-bottom: 110px !important;
+}
+@media (max-width: 768px) {
+    section[data-animate] {
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+    }
+    section[data-animate] h2 {
+        font-size: 1.8rem !important;
+    }
+    .section-header {
+        margin-bottom: 30px !important;
+    }
+}
+@media (max-width: 480px) {
+    section[data-animate] h2 {
+        font-size: 1.5rem !important;
+    }
+    .logo-text {
+        font-size: 1rem !important;
+    }
+    .logo-subtext {
+        font-size: 0.45rem !important;
+        letter-spacing: 2px !important;
+    }
+    .logo-badge {
+        font-size: 0.38rem !important;
+        padding: 1px 3px !important;
+    }
+}
+

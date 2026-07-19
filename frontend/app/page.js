@@ -328,17 +328,17 @@ export default function HomePage() {
                     <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img src="/logo.png" alt="Logo" style={{ height: '42px', width: 'auto' }} />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                            <span style={{
+                            <span className="logo-text" style={{
                                 fontFamily: 'Montserrat', fontWeight: 900, fontSize: '1.2rem',
                                 color: '#fff', letterSpacing: '1px', lineHeight: '1'
                             }}>
                                 KHELO<span style={{ color: 'var(--neon)', textShadow: '0 0 15px rgba(0, 255, 136, 0.3)' }}>PATNA</span>
                             </span>
-                            <span style={{
+                            <span className="logo-subtext" style={{
                                 fontSize: '0.52rem', fontFamily: 'Space Grotesk', textTransform: 'uppercase',
                                 color: 'var(--gold)', letterSpacing: '3.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px'
                             }}>
-                                Elite Turf <span style={{ background: 'linear-gradient(135deg, var(--gold) 0%, #ffe066 100%)', color: '#000', padding: '1px 5px', borderRadius: '3px', fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.5px' }}>1ST YEAR</span>
+                                Elite Turf <span className="logo-badge" style={{ background: 'linear-gradient(135deg, var(--gold) 0%, #ffe066 100%)', color: '#000', padding: '1px 5px', borderRadius: '3px', fontSize: '0.45rem', fontWeight: 800, letterSpacing: '0.5px' }}>1ST YEAR</span>
                             </span>
                         </div>
                     </Link>
@@ -1363,14 +1363,6 @@ export default function HomePage() {
                             <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.72rem' }}>|</span>
                             <Link href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.72rem', fontFamily: 'Space Grotesk' }}>
                                 Terms & Conditions
-                            </Link>
-                            <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: '0.72rem' }}>|</span>
-                            <Link href="/login" style={{
-                                color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.72rem',
-                                fontFamily: 'Space Grotesk', fontWeight: 500, padding: '6px 14px',
-                                border: '1px solid rgba(255,255,255,0.04)', borderRadius: 'var(--radius-pill)'
-                            }}>
-                                Staff Login Portal
                             </Link>
                         </div>
                     </div>

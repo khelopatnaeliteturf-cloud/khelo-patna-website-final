@@ -479,9 +479,17 @@ export default function BookPage() {
                 @media (max-width: 640px) {
                     .controls-grid { grid-template-columns: 1fr; }
                     .sport-pill { padding: 10px 20px; font-size: 0.74rem; }
-                    .slot-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+                    .slot-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
                     .total-price-display { font-size: 1.6rem; }
                     .book-page-wrap { padding: 100px 16px 60px; }
+                    .book-navbar { padding: 10px 16px !important; }
+                    .book-navbar img { height: 34px !important; }
+                    .logo-text { font-size: 0.95rem !important; }
+                    .logo-subtext { font-size: 0.44rem !important; letter-spacing: 2px !important; }
+                    .book-nav-links .btn-premium { display: none !important; }
+                }
+                @media (max-width: 380px) {
+                    .slot-grid { grid-template-columns: 1fr; }
                 }
             `}</style>
 
@@ -491,7 +499,7 @@ export default function BookPage() {
             <div className="floating-orb floating-orb--3"></div>
 
             {/* ═══ Floating Glass Navbar ═══ */}
-            <nav style={{
+            <nav className="book-navbar" style={{
                 position: 'fixed',
                 top: '12px',
                 left: '50%',
@@ -513,7 +521,7 @@ export default function BookPage() {
                 <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img src="/logo.png" alt="Khelo Patna Logo" style={{ height: '44px', width: 'auto' }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                        <span style={{
+                        <span className="logo-text" style={{
                             fontFamily: 'Unbounded', fontWeight: 900, fontSize: '1.2rem',
                             color: '#fff', letterSpacing: '1px', lineHeight: '1'
                         }}>
@@ -522,7 +530,7 @@ export default function BookPage() {
                                 textShadow: '0 0 15px rgba(57, 255, 20, 0.3)'
                             }}>PATNA</span>
                         </span>
-                        <span style={{
+                        <span className="logo-subtext" style={{
                             fontSize: '0.52rem', fontFamily: 'Space Grotesk', textTransform: 'uppercase',
                             color: 'var(--gold)', letterSpacing: '3.5px', fontWeight: 600
                         }}>
@@ -532,7 +540,7 @@ export default function BookPage() {
                 </Link>
 
                 {/* Nav Links */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div className="book-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Link href="/" className="nav-link-custom" style={{
                         color: 'rgba(255,255,255,0.6)', fontFamily: 'Space Grotesk',
                         fontSize: '0.76rem', fontWeight: 600, textTransform: 'uppercase',
