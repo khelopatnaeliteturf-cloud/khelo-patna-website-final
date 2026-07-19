@@ -90,8 +90,6 @@ export default function RootLayout({ children }) {
             textDecoration: 'none',
             transition: 'top 0.3s ease'
           }}
-          onFocus={(e) => e.target.style.top = '0'}
-          onBlur={(e) => e.target.style.top = '-100px'}
         >
           Skip to main content
         </a>
