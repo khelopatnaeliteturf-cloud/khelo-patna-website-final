@@ -121,10 +121,14 @@ export default function BookPage() {
             });
             const data = await res.json();
             if (data.success && data.payment_status === 'SUCCESS') {
+                let displayMethod = data.payment_details?.payment_method || 'CASHFREE';
+                if (displayMethod && typeof displayMethod === 'object') {
+                    displayMethod = Object.keys(displayMethod)[0] || 'CASHFREE';
+                }
                 setPaymentSuccessInfo({
                     orderId: orderId,
                     amount: data.payment_details?.amount,
-                    method: data.payment_details?.payment_method
+                    method: String(displayMethod).toUpperCase()
                 });
             } else {
                 setPaymentFailedInfo({
