@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 
+// Toggle site-wide maintenance mode: true = enabled (redirects to /maintenance), false = normal operation
+const MAINTENANCE_MODE = false;
+
 export function middleware(request) {
     const { pathname } = request.nextUrl;
+
+    // If maintenance mode is disabled, let all requests proceed normally
+    if (!MAINTENANCE_MODE) {
+        return NextResponse.next();
+    }
 
     // Allow access to /maintenance page itself to prevent infinite loop
     if (pathname === '/maintenance') {

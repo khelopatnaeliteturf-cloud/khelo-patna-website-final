@@ -41,6 +41,8 @@ export default function BookPage() {
     // Status from redirection
     const [paymentSuccessInfo, setPaymentSuccessInfo] = useState(null);
     const [verifyingPayment, setVerifyingPayment] = useState(false);
+    const [advancePercentage, setAdvancePercentage] = useState(100);
+    const [payAdvanceOnly, setPayAdvanceOnly] = useState(false);
 
     // Trigger slot fetch on sport/date change and handle URL query params on initial mount
     useEffect(() => {
@@ -73,9 +75,15 @@ export default function BookPage() {
                 if (!res.ok) throw new Error('Failed to fetch slots.');
                 const data = await res.json();
                 setSlots(data.slots || []);
+                if (data.day_info && data.day_info.advance_percentage !== undefined) {
+                    setAdvancePercentage(data.day_info.advance_percentage);
+                } else {
+                    setAdvancePercentage(100);
+                }
                 if (!shouldApplyParams || initialSelected.length === 0) {
                     setSelectedSlots([]); // Reset selection on date/sport change
                 }
+                setPayAdvanceOnly(false); // Reset check box on date/sport change
             } catch (err) {
                 console.error(err);
                 setErrorMessage('Could not load available slots. Please check if backend is running.');
@@ -267,13 +275,14 @@ export default function BookPage() {
 
         const totalAmount = calculateTotal();
         const finalChargedAmount = appliedCoupon ? appliedCoupon.finalAmount : totalAmount;
+        const chargeAmount = payAdvanceOnly ? Math.round(finalChargedAmount * (advancePercentage / 100)) : finalChargedAmount;
 
         try {
             const res = await fetch(`${BACKEND_URL}/api/payment/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    amount: finalChargedAmount,
+                    amount: chargeAmount,
                     customerName: bookingDetails.name,
                     customerEmail: bookingDetails.email || 'no-email@khelopatna.in',
                     customerPhone: bookingDetails.phone,
@@ -293,7 +302,11 @@ export default function BookPage() {
             if (!res.ok) throw new Error(data.error || 'Failed to create booking.');
 
             // Success. Trigger pop checkout
-            await initiateCashfreeCheckout(data, finalChargedAmount);
+            if (data.zero_amount || chargeAmount === 0) {
+                window.location.href = `/book?order_id=${data.order_id}&payment_status=success`;
+                return;
+            }
+            await initiateCashfreeCheckout(data, chargeAmount);
 
         } catch (err) {
             console.error(err);
@@ -899,6 +912,37 @@ export default function BookPage() {
                                     flexWrap: 'wrap',
                                     gap: '20px'
                                 }}>
+                                        {advancePercentage < 100 && (
+                                        <div style={{
+                                            marginBottom: '20px',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid var(--border-subtle)',
+                                            borderRadius: '8px',
+                                            padding: '12px 16px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            cursor: 'pointer',
+                                            width: '100%'
+                                        }} onClick={() => setPayAdvanceOnly(!payAdvanceOnly)}>
+                                            <input 
+                                                type="checkbox"
+                                                checked={payAdvanceOnly}
+                                                onChange={(e) => setPayAdvanceOnly(e.target.checked)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                style={{ 
+                                                    cursor: 'pointer',
+                                                    accentColor: 'var(--neon)',
+                                                    width: '16px',
+                                                    height: '16px'
+                                                }}
+                                            />
+                                            <div style={{ fontSize: '0.84rem', color: '#fff', userSelect: 'none' }}>
+                                                Pay Advance Only (<strong style={{ color: 'var(--neon)' }}>₹{Math.round((appliedCoupon ? appliedCoupon.finalAmount : calculateTotal()) * (advancePercentage / 100))}</strong> now, rest ₹{Math.max(0, (appliedCoupon ? appliedCoupon.finalAmount : calculateTotal()) - Math.round((appliedCoupon ? appliedCoupon.finalAmount : calculateTotal()) * (advancePercentage / 100)))} at venue)
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div>
                                         <div style={{
                                             fontFamily: 'Space Grotesk', fontSize: '0.72rem', fontWeight: 700,
@@ -923,12 +967,34 @@ export default function BookPage() {
                                                 <div style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 600 }}>
                                                     Discount: -₹{appliedCoupon.discountAmount}
                                                 </div>
-                                                <div className="total-price-display" style={{ color: '#10B981' }}>
-                                                    ₹{appliedCoupon.finalAmount}
-                                                </div>
+                                                {payAdvanceOnly ? (
+                                                    <>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                            Full Amount: ₹{appliedCoupon.finalAmount}
+                                                        </div>
+                                                        <div className="total-price-display" style={{ color: 'var(--neon)' }}>
+                                                            ₹{Math.round(appliedCoupon.finalAmount * (advancePercentage / 100))} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-muted)' }}> (Advance)</span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="total-price-display" style={{ color: '#10B981' }}>
+                                                        ₹{appliedCoupon.finalAmount}
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
-                                            <div className="total-price-display">₹{calculateTotal()}</div>
+                                            payAdvanceOnly ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                        Full Amount: ₹{calculateTotal()}
+                                                    </div>
+                                                    <div className="total-price-display" style={{ color: 'var(--neon)' }}>
+                                                        ₹{Math.round(calculateTotal() * (advancePercentage / 100))} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-muted)' }}> (Advance)</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="total-price-display">₹{calculateTotal()}</div>
+                                            )
                                         )}
                                     </div>
 

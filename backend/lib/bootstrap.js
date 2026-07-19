@@ -149,6 +149,7 @@ async function ensureDefaultTenant() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            ALTER TABLE scoreboards ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: scoreboards table checked/created');
 
@@ -169,8 +170,26 @@ async function ensureDefaultTenant() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: coupons table checked/created');
+ 
+        // ── Bookings Table Columns Migration ─────────────────────────────
+        console.log('  Bootstrap: ensuring bookings table has coupon columns...');
+        await client.query(`
+            ALTER TABLE bookings 
+            ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50) DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00;
+        `);
+        console.log('  Bootstrap: bookings table coupon columns checked/added');
+
+        // ── Turf Settings Table Columns Migration ────────────────────────
+        console.log('  Bootstrap: ensuring turf_settings table has advance_percentage column...');
+        await client.query(`
+            ALTER TABLE turf_settings 
+            ADD COLUMN IF NOT EXISTS advance_percentage INT DEFAULT 100;
+        `);
+        console.log('  Bootstrap: turf_settings table advance_percentage column checked/added');
 
         return { tenantId, branchId };
     } finally {

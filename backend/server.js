@@ -3,16 +3,17 @@ if (!globalThis.crypto) {
     globalThis.crypto = require('crypto').webcrypto;
 }
 
+// Load environment variables first
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('./lib/mongoose-pg-bridge');
-const dotenv = require('dotenv');
 const path = require('path');
 const { bootstrapDatabase } = require('./lib/bootstrap');
 
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;

@@ -79,8 +79,9 @@ async function sendBookingNotifications(booking) {
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     const totalAmount = Number(booking.totalAmount || 0);
+    const discountAmount = Number(booking.discountAmount || 0);
     const advancePaid = Number(booking.paidAmount || 0);
-    const balanceDue = Math.max(0, totalAmount - advancePaid);
+    const balanceDue = Math.max(0, totalAmount - discountAmount - advancePaid);
     const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
 
     const waText = `⚽ *Booking Confirmation* ⚽
@@ -92,12 +93,12 @@ Dear ${booking.customerName}, your turf booking is confirmed!
 *   Date: ${booking.date}
 *   Timing: ${formattedTiming}
 *   Total Amount: ₹${totalAmount}
-*   Advance Paid: ₹${advancePaid}
+${discountAmount > 0 ? `*   Discount: -₹${discountAmount} (Code: ${booking.couponCode})\n` : ''}*   Advance Paid: ₹${advancePaid}
 *   Balance Due: ₹${balanceDue}
 *   Order ID: ${booking.orderId}
 
 📍 *Location Map*:
-https://maps.app.goo.gl/yP95pL1J4jG8g31v8
+https://maps.google.com/?q=Khelo+Patna+Elite+Turf+Patna
 
 Thank you for choosing KheloPatna! 🏆`;
     
@@ -128,8 +129,9 @@ async function sendFeeNotifications(feeRecord) {
 router.post('/payment/create-order', async (req, res) => {
     const { amount, customerName, customerEmail, customerPhone, bookingData, subdomain } = req.body;
 
-    if (!amount || !customerName || !customerPhone || !bookingData) {
-        return res.status(400).json({ error: 'Missing required order details.' });
+    const chargeAmount = Number(amount);
+    if (isNaN(chargeAmount) || chargeAmount < 0 || amount === undefined || amount === null || !customerName || !customerPhone || !bookingData) {
+        return res.status(400).json({ error: 'Missing or invalid order details.' });
     }
 
     const orderId = `KP-${Date.now()}`;
@@ -138,8 +140,9 @@ router.post('/payment/create-order', async (req, res) => {
         // Resolve tenant
         let tenantId = null;
         let branchId = null;
-        if (subdomain) {
-            const tenant = await Tenant.findOne({ subdomain });
+        const sub = subdomain || 'khelopatna';
+        if (sub) {
+            const tenant = await Tenant.findOne({ subdomain: sub });
             if (tenant) {
                 tenantId = tenant._id;
                 const br = await Branch.findOne({ tenantId });
@@ -156,6 +159,52 @@ router.post('/payment/create-order', async (req, res) => {
         });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the selected slots are no longer available. Please pick different slots.' });
+        }
+
+        if (chargeAmount === 0) {
+            // Create a SUCCESS Booking record directly (bypass Cashfree)
+            const newBooking = new Booking({
+                tenantId,
+                branchId,
+                customerName,
+                customerEmail: customerEmail || 'no-email@khelopatna.in',
+                customerPhone,
+                date: bookingData.booking_date,
+                timeSlots: bookingData.time_slots,
+                totalAmount: Number(bookingData.totalAmount),
+                paidAmount: 0,
+                paymentStatus: 'SUCCESS',
+                paymentMethod: 'cashfree',
+                orderId: orderId,
+                sport: bookingData.sport,
+                participantsCount: Number(bookingData.participantsCount || 1),
+                couponCode: bookingData.couponCode || null,
+                discountAmount: Number(bookingData.discountAmount || 0)
+            });
+
+            await newBooking.save();
+
+            // Increment coupon usage count if used
+            if (newBooking.couponCode) {
+                try {
+                    const couponObj = await Coupon.findOne({ code: newBooking.couponCode.toUpperCase() });
+                    if (couponObj) {
+                        couponObj.usageCount = (couponObj.usageCount || 0) + 1;
+                        await couponObj.save();
+                    }
+                } catch (couponErr) {
+                    console.error('Error updating coupon usage count:', couponErr);
+                }
+            }
+
+            await sendBookingNotifications(newBooking);
+
+            return res.json({
+                success: true,
+                order_id: orderId,
+                zero_amount: true,
+                redirect_url: `${FRONTEND_URL}/book?order_id=${orderId}&payment_status=success`
+            });
         }
 
         // Create a PENDING Booking record
@@ -218,12 +267,33 @@ router.post('/payment/verify', async (req, res) => {
     }
 
     try {
+        // If already successful, return early without calling Cashfree verification
+        if (order_id.startsWith('KP-')) {
+            const booking = await Booking.findOne({ orderId: order_id });
+            if (booking && booking.paymentStatus === 'SUCCESS') {
+                return res.json({
+                    success: true,
+                    payment_status: 'SUCCESS',
+                    payment_details: booking.paymentDetails || { amount: booking.paidAmount, payment_method: booking.paymentMethod }
+                });
+            }
+        } else if (order_id.startsWith('KPFEE-')) {
+            const feeRecord = await Fee.findOne({ orderId: order_id });
+            if (feeRecord && feeRecord.status === 'PAID') {
+                return res.json({
+                    success: true,
+                    payment_status: 'SUCCESS',
+                    payment_details: feeRecord.paymentDetails || { amount: feeRecord.amountDue, payment_method: 'CASHFREE' }
+                });
+            }
+        }
+
         // Look up the record first so mock verification (dev only) can echo the
         // expected amount, keeping the amount-mismatch check consistent.
         let expectedAmount = null;
         if (order_id.startsWith('KP-')) {
-            const b = await Booking.findOne({ orderId: order_id }).select('totalAmount');
-            if (b) expectedAmount = b.totalAmount;
+            const b = await Booking.findOne({ orderId: order_id }).select('paidAmount');
+            if (b) expectedAmount = b.paidAmount;
         } else if (order_id.startsWith('KPFEE-')) {
             const f = await Fee.findOne({ orderId: order_id }).select('amountDue');
             if (f) expectedAmount = f.amountDue;
@@ -903,7 +973,27 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
                 }
             } catch (refundErr) {
                 console.error('Cashfree refund failed:', refundErr);
-                return res.status(502).json({ error: `Cashfree refund failed: ${refundErr.message}` });
+                
+                // If it is a transaction/amount mismatch or mock error, allow booking cancellation but flag the refund details.
+                const isMismatchError = refundErr.message.includes('greater than') || 
+                                        refundErr.message.includes('transaction amount') ||
+                                        refundErr.message.includes('not paid') ||
+                                        refundErr.message.includes('no transaction') ||
+                                        refundErr.message.includes('mismatch') ||
+                                        refundErr.message.includes('authentication') ||
+                                        refundErr.message.includes('Failed to initiate');
+                                        
+                if (isMismatchError) {
+                    refundDetails = {
+                        status: 'FAILED_GATEWAY',
+                        amount: booking.paidAmount,
+                        error: refundErr.message,
+                        note: 'Gateway refund failed (mismatch/already refunded). Cancellation completed.',
+                        failedAt: new Date()
+                    };
+                } else {
+                    return res.status(502).json({ error: `Cashfree refund failed: ${refundErr.message}` });
+                }
             }
         }
 
@@ -947,9 +1037,11 @@ router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRol
 
         res.json({ 
             success: true, 
-            message: refundDetails 
-                ? 'Booking cancelled and refund initiated successfully.' 
-                : 'Booking cancelled successfully (no refund).', 
+            message: refundDetails && refundDetails.status === 'FAILED_GATEWAY'
+                ? `Booking cancelled successfully, but gateway refund failed: ${refundDetails.error}. Please handle the refund manually if needed.`
+                : (refundDetails 
+                    ? 'Booking cancelled and refund initiated successfully.' 
+                    : 'Booking cancelled successfully (no refund).'), 
             booking 
         });
     } catch (err) {

@@ -1228,7 +1228,8 @@ export default function AdminDashboard() {
                     netsBaseRate: turfSettings.netsBaseRate || 800,
                     weeklyRates: turfSettings.weeklyRates,
                     blackoutStart: turfSettings.blackoutHours.start,
-                    blackoutEnd: turfSettings.blackoutHours.end
+                    blackoutEnd: turfSettings.blackoutHours.end,
+                    advancePercentage: turfSettings.advancePercentage !== undefined ? turfSettings.advancePercentage : 100
                 })
             });
             if (res.ok) {
@@ -3237,7 +3238,7 @@ export default function AdminDashboard() {
                                         bookingsLog.map((b, idx) => {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
-                                            const balance = (b.totalAmount || 0) - (b.paidAmount || 0);
+                                            const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
                                             const avatarColors = ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)', 'var(--danger)', 'var(--purple)', 'var(--primary-hover)'];
                                             const avatarColor = avatarColors[idx % avatarColors.length];
 
@@ -3297,16 +3298,28 @@ export default function AdminDashboard() {
                                                     <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                                                         <span style={{
                                                             fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '12px',
-                                                            background: b.paymentStatus === 'SUCCESS' ? 'var(--success-light)' : b.paymentStatus === 'PENDING' ? 'var(--warning-light)' : 'var(--danger-light)',
-                                                            color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : b.paymentStatus === 'PENDING' ? 'var(--warning)' : 'var(--danger)',
-                                                            border: `1px solid ${b.paymentStatus === 'SUCCESS' ? 'var(--success-border)' : b.paymentStatus === 'PENDING' ? 'var(--warning-border)' : 'var(--danger-border)'}`,
+                                                            background: b.paymentStatus === 'SUCCESS' ? 'var(--success-light)' 
+                                                                : b.paymentStatus === 'PENDING' ? 'var(--warning-light)' 
+                                                                : b.paymentStatus === 'CANCELLED' ? 'rgba(156, 163, 175, 0.08)'
+                                                                : 'var(--danger-light)',
+                                                            color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' 
+                                                                : b.paymentStatus === 'PENDING' ? 'var(--warning)' 
+                                                                : b.paymentStatus === 'CANCELLED' ? '#9CA3AF'
+                                                                : 'var(--danger)',
+                                                            border: `1px solid ${b.paymentStatus === 'SUCCESS' ? 'var(--success-border)' 
+                                                                : b.paymentStatus === 'PENDING' ? 'var(--warning-border)' 
+                                                                : b.paymentStatus === 'CANCELLED' ? 'rgba(156, 163, 175, 0.2)'
+                                                                : 'var(--danger-border)'}`,
                                                             whiteSpace: 'nowrap',
                                                             display: 'inline-flex',
                                                             alignItems: 'center',
                                                             gap: '4px'
                                                         }}>
                                                             <span style={{ fontSize: '8px' }}>●</span>
-                                                            {b.paymentStatus === 'SUCCESS' ? 'Paid' : b.paymentStatus === 'PENDING' ? 'Pending' : 'Failed'}
+                                                            {b.paymentStatus === 'SUCCESS' ? 'Paid' 
+                                                                : b.paymentStatus === 'PENDING' ? 'Pending' 
+                                                                : b.paymentStatus === 'CANCELLED' ? 'Cancelled' 
+                                                                : 'Failed'}
                                                         </span>
                                                     </td>
                                                     {/* Action */}
@@ -3514,6 +3527,26 @@ export default function AdminDashboard() {
                                                     />
                                                 </div>
                                                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>Base rate charged per hour slot</span>
+                                            </div>
+
+                                            <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border-color)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                                    <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>payments</span>
+                                                    <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-main)' }}>Advance Payment %</span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                                                    <input 
+                                                        type="number" 
+                                                        className="input-premium w-100" 
+                                                        style={{ fontSize: '0.84rem', borderRadius: '8px', padding: '10px 24px 10px 10px' }} 
+                                                        value={turfSettings.advancePercentage !== undefined ? turfSettings.advancePercentage : 100} 
+                                                        min="0"
+                                                        max="100"
+                                                        onChange={(e) => setTurfSettings({ ...turfSettings, advancePercentage: Math.min(100, Math.max(0, Number(e.target.value))) })}
+                                                    />
+                                                    <span style={{ position: 'absolute', right: '12px', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-muted)' }}>%</span>
+                                                </div>
+                                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>Percentage of total to pay online (0-100)</span>
                                             </div>
                                         </div>
 
@@ -4328,7 +4361,7 @@ export default function AdminDashboard() {
         if (!selectedBooking) return null;
         const b = selectedBooking;
         const custId = generateCustomerId(b.customerName, b.customerPhone);
-        const balance = (b.totalAmount || 0) - (b.paidAmount || 0);
+        const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
         const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
         return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }} onClick={() => setSelectedBookingState(null)}>
@@ -4422,7 +4455,7 @@ export default function AdminDashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                             {[
                                 { icon: 'payment', label: 'Payment Method', value: (b.paymentMethod || '—').toUpperCase(), color: '#6366F1' },
-                                { icon: 'verified', label: 'Payment Status', value: b.paymentStatus || '—', color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : '#EF4444' },
+                                { icon: 'verified', label: 'Payment Status', value: b.paymentStatus || '—', color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' },
                                 { icon: 'tag', label: 'Cashfree Order ID', value: b.orderId || '—', color: '#3B82F6' },
                                 { icon: 'receipt', label: 'Transaction ID', value: b.transactionId || 'Not available', color: '#8B5CF6' },
                             ].map((f, i) => (
@@ -4445,7 +4478,7 @@ export default function AdminDashboard() {
                                         return (
                                             <div key={key} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '4px' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>{key}:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{String(val)}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{String(val)}</span>
                                             </div>
                                         );
                                     })}
@@ -4456,7 +4489,7 @@ export default function AdminDashboard() {
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.74rem' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>Refund ID:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{b.paymentDetails.refund.refundId}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{b.paymentDetails.refund.refundId}</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>Status:</span>
@@ -4468,7 +4501,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>On Date:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{new Date(b.paymentDetails.refund.refundedAt).toLocaleDateString()}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{new Date(b.paymentDetails.refund.refundedAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4750,7 +4783,10 @@ export default function AdminDashboard() {
                                                     if (b.paymentStatus === 'SUCCESS') {
                                                         statusColor = 'var(--success)';
                                                         statusBg = 'rgba(16,185,129,0.1)';
-                                                    } else if (b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED') {
+                                                    } else if (b.paymentStatus === 'CANCELLED') {
+                                                        statusColor = '#9CA3AF';
+                                                        statusBg = 'rgba(156, 163, 175, 0.1)';
+                                                    } else if (b.paymentStatus === 'FAILED') {
                                                         statusColor = 'var(--danger)';
                                                         statusBg = 'rgba(239,68,68,0.1)';
                                                     } else if (b.paymentStatus === 'PENDING') {
@@ -5230,8 +5266,8 @@ export default function AdminDashboard() {
                                                 <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatINR(b.totalAmount)}</td>
                                                 <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--success)' }}>{formatINR(b.paidAmount)}</td>
                                                 <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : '#EF4444' }}>
-                                                        {b.paymentStatus}
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' }}>
+                                                        {b.paymentStatus === 'CANCELLED' ? 'CANCELLED' : b.paymentStatus}
                                                     </span>
                                                 </td>
                                             </tr>

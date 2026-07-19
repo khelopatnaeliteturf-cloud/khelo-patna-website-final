@@ -45,7 +45,8 @@ async function useSupabaseAuthState(dbPool) {
         CREATE TABLE IF NOT EXISTS whatsapp_session (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
-        )
+        );
+        ALTER TABLE whatsapp_session ENABLE ROW LEVEL SECURITY;
     `);
 
     const readData = async (key) => {
