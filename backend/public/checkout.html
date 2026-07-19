@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Payment Checkout - Khelo Patna</title>
+    <!-- DNS Prefetch and Preconnect to Speed Up Connection -->
+    <link rel="dns-prefetch" href="https://sdk.cashfree.com">
+    <link rel="preconnect" href="https://sdk.cashfree.com" crossorigin>
+    <link rel="dns-prefetch" href="https://api.cashfree.com">
+    <link rel="preconnect" href="https://api.cashfree.com" crossorigin>
+    <link rel="dns-prefetch" href="https://sandbox.cashfree.com">
+    <link rel="preconnect" href="https://sandbox.cashfree.com" crossorigin>
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Cashfree SDK -->
-    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <style>
         :root {
             --bg-void: #060810;
@@ -147,6 +153,8 @@
         <a href="/" class="btn-retry" id="retry-btn" style="display: none;">Return to Home</a>
     </div>
 
+    <!-- Cashfree SDK (Non-blocking load at the bottom of body) -->
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
