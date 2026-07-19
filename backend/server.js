@@ -18,9 +18,21 @@ const { bootstrapDatabase } = require('./lib/bootstrap');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Enable security headers
+// Enable security headers with custom Content Security Policy to allow Cashfree Checkout SDK
 app.use(helmet({
-    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://sdk.cashfree.com"],
+            connectSrc: ["'self'", "https://api.cashfree.com", "https://sandbox.cashfree.com"],
+            frameSrc: ["'self'", "https://sdk.cashfree.com", "https://api.cashfree.com", "https://sandbox.cashfree.com", "https://payments.cashfree.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+            imgSrc: ["'self'", "data:", "https://*.cashfree.com"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: []
+        }
+    }
 }));
 
 // CORS Configuration (credentials require a strict origin allow-list)
