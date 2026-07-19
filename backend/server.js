@@ -219,7 +219,7 @@ app.listen(PORT, async () => {
     const intervalMs = 12 * 60 * 1000;
     setInterval(async () => {
         try {
-            const host = process.env.BACKEND_SELF_URL || 'https://khelo-patna-website.onrender.com';
+            const host = process.env.BACKEND_SELF_URL || 'https://api.khelopatna.in';
             console.log(`[Self-Pinger] Sending keep-alive ping to ${host}/health...`);
             const axios = require('axios');
             await axios.get(`${host}/health`);

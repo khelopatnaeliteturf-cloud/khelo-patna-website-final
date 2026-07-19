@@ -968,7 +968,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
                 returnUrl
             });
 
-            const backendUrl = process.env.BACKEND_SELF_URL || 'https://khelo-patna-website.onrender.com';
+            const backendUrl = process.env.BACKEND_SELF_URL || 'https://api.khelopatna.in';
             const paymentLink = cfOrder.mock
                 ? `${backendUrl.replace(/\/+$/, '')}/mock-payment.html?order_id=${orderId}&amount=${paidAmount}`
                 : `${backendUrl.replace(/\/+$/, '')}/checkout.html?session_id=${cfOrder.payment_session_id}&env=${process.env.CASHFREE_ENV || 'sandbox'}`;
