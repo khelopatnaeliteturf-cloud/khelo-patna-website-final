@@ -32,7 +32,10 @@ app.use(helmet({
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []
         }
-    }
+    },
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false
 }));
 
 // CORS Configuration (credentials require a strict origin allow-list)
