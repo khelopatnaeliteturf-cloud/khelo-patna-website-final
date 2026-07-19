@@ -3238,7 +3238,7 @@ export default function AdminDashboard() {
                                         bookingsLog.map((b, idx) => {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
-                                            const balance = (b.totalAmount || 0) - (b.paidAmount || 0);
+                                            const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
                                             const avatarColors = ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)', 'var(--danger)', 'var(--purple)', 'var(--primary-hover)'];
                                             const avatarColor = avatarColors[idx % avatarColors.length];
 
@@ -4349,7 +4349,7 @@ export default function AdminDashboard() {
         if (!selectedBooking) return null;
         const b = selectedBooking;
         const custId = generateCustomerId(b.customerName, b.customerPhone);
-        const balance = (b.totalAmount || 0) - (b.paidAmount || 0);
+        const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
         const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
         return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }} onClick={() => setSelectedBookingState(null)}>

@@ -79,8 +79,9 @@ async function sendBookingNotifications(booking) {
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     
     const totalAmount = Number(booking.totalAmount || 0);
+    const discountAmount = Number(booking.discountAmount || 0);
     const advancePaid = Number(booking.paidAmount || 0);
-    const balanceDue = Math.max(0, totalAmount - advancePaid);
+    const balanceDue = Math.max(0, totalAmount - discountAmount - advancePaid);
     const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
 
     const waText = `⚽ *Booking Confirmation* ⚽
@@ -92,7 +93,7 @@ Dear ${booking.customerName}, your turf booking is confirmed!
 *   Date: ${booking.date}
 *   Timing: ${formattedTiming}
 *   Total Amount: ₹${totalAmount}
-*   Advance Paid: ₹${advancePaid}
+${discountAmount > 0 ? `*   Discount: -₹${discountAmount} (Code: ${booking.couponCode})\n` : ''}*   Advance Paid: ₹${advancePaid}
 *   Balance Due: ₹${balanceDue}
 *   Order ID: ${booking.orderId}
 
