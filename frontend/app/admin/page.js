@@ -154,7 +154,7 @@ export default function AdminDashboard() {
     const [bookingsLog, setBookingsLog] = useState([]);
     const [bookingsFilter, setBookingsFilter] = useState({
         sport: '',
-        paymentStatus: '' // Default to empty to retrieve all bookings (SUCCESS, PENDING, FAILED) dynamically
+        paymentStatus: 'SUCCESS' // Default to SUCCESS to show only paid/success bookings initially
     });
     const [selectedBooking, setSelectedBookingState] = useState(null);
     const [isRescheduling, setIsRescheduling] = useState(false);
@@ -3125,6 +3125,7 @@ export default function AdminDashboard() {
                                 <option value="">All Statuses</option>
                                 <option value="SUCCESS">Paid</option>
                                 <option value="PENDING">Pending</option>
+                                <option value="DROPPED">Dropped</option>
                                 <option value="FAILED">Failed</option>
                                 <option value="CANCELLED">Cancelled</option>
                             </select>
