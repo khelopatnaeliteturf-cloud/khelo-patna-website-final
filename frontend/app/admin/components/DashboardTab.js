@@ -3,6 +3,42 @@ import AnimatedNumber from './AnimatedNumber';
 
 export default function DashboardTab(props) {
     const { revenueAnalytics, bookingsLog, formatINR, stats, allStudents, username, setActiveTab, setActiveSidebarKey, setShowOfflineBookingModal, pendingFeesAmount, formatSlotTo12Hr } = props;
+    
+    const [newBookings, setNewBookings] = React.useState([]);
+    const [showNotification, setShowNotification] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!bookingsLog || bookingsLog.length === 0) return;
+
+        const lastSeenStr = localStorage.getItem('admin_last_seen_bookings_time');
+        let lastSeenTime = null;
+        if (lastSeenStr) {
+            lastSeenTime = new Date(lastSeenStr);
+        } else {
+            const oneDayAgo = new Date();
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            lastSeenTime = oneDayAgo;
+        }
+
+        const filtered = bookingsLog.filter(b => {
+            if (!b.createdAt) return false;
+            const created = new Date(b.createdAt);
+            const isNew = created > lastSeenTime;
+            const isValid = b.paymentStatus === 'SUCCESS' || b.paymentStatus === 'COMPLETED' || b.paymentStatus === 'PENDING';
+            return isNew && isValid;
+        });
+
+        if (filtered.length > 0) {
+            setNewBookings(filtered);
+            setShowNotification(true);
+        }
+    }, [bookingsLog]);
+
+    const handleDismissNotifications = () => {
+        localStorage.setItem('admin_last_seen_bookings_time', new Date().toISOString());
+        setShowNotification(false);
+    };
+
         const formatTimeAgo = (dateStr) => {
             if (!dateStr) return 'Recently';
             try {
@@ -111,6 +147,58 @@ export default function DashboardTab(props) {
                         ))}
                     </div>
                 </div>
+
+                {/* New Bookings Alert Banner */}
+                {showNotification && newBookings.length > 0 && (
+                    <div className="card-premium animate-fade-in" style={{
+                        background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.06) 0%, rgba(0, 200, 255, 0.02) 100%)',
+                        border: '1px solid rgba(0, 255, 136, 0.18)',
+                        boxShadow: '0 8px 32px rgba(0, 255, 136, 0.04)',
+                        padding: '20px 24px',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '16px',
+                        position: 'relative',
+                        zIndex: 10
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1, minWidth: '280px' }}>
+                            <span className="material-icons-outlined" style={{
+                                color: 'var(--neon)',
+                                fontSize: '24px',
+                                background: 'rgba(0, 255, 136, 0.1)',
+                                padding: '10px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>notifications_active</span>
+                            <div>
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.01em', color: '#fff' }}>
+                                    {newBookings.length} New Turf Booking{newBookings.length > 1 ? 's' : ''} Received
+                                </h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {newBookings.slice(0, 3).map((b, i) => (
+                                        <div key={i} style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                                            <strong style={{ color: '#fff' }}>{b.customerName || 'Walk-in'}</strong> booked <span style={{ textTransform: 'capitalize' }}>{b.sport}</span> Turf for <strong>{b.date}</strong> ({(b.timeSlots || []).map(formatSlotTo12Hr).join(', ') || 'TBD'})
+                                        </div>
+                                    ))}
+                                    {newBookings.length > 3 && (
+                                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, paddingLeft: '2px' }}>
+                                            + {newBookings.length - 3} more new bookings
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <button onClick={handleDismissNotifications} className="btn-premium py-2 px-3" style={{ fontSize: '0.72rem' }}>
+                            <span>Mark as Read</span>
+                        </button>
+                    </div>
+                )}
 
                 {/* 5 Metric Cards with Gradient Icon Backgrounds */}
                 <div className="dashboard-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
