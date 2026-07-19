@@ -420,19 +420,25 @@ router.post('/payment/verify', async (req, res) => {
         if (order_id.startsWith('KP-')) {
             const booking = await Booking.findOne({ orderId: order_id });
             if (booking && booking.paymentStatus === 'SUCCESS') {
+                const hasValidDetails = booking.paymentDetails && !booking.paymentDetails.error && booking.paymentDetails.amount;
                 return res.json({
                     success: true,
                     payment_status: 'SUCCESS',
-                    payment_details: booking.paymentDetails || { amount: booking.paidAmount, payment_method: booking.paymentMethod }
+                    payment_details: hasValidDetails 
+                        ? booking.paymentDetails 
+                        : { amount: booking.paidAmount, payment_method: booking.paymentMethod || 'offline' }
                 });
             }
         } else if (order_id.startsWith('KPFEE-')) {
             const feeRecord = await Fee.findOne({ orderId: order_id });
             if (feeRecord && feeRecord.status === 'PAID') {
+                const hasValidDetails = feeRecord.paymentDetails && !feeRecord.paymentDetails.error && feeRecord.paymentDetails.amount;
                 return res.json({
                     success: true,
                     payment_status: 'SUCCESS',
-                    payment_details: feeRecord.paymentDetails || { amount: feeRecord.amountDue, payment_method: 'CASHFREE' }
+                    payment_details: hasValidDetails
+                        ? feeRecord.paymentDetails 
+                        : { amount: feeRecord.amountDue, payment_method: 'CASHFREE' }
                 });
             }
         }
@@ -631,6 +637,12 @@ router.post('/payment/webhook', async (req, res) => {
                     }
                     booking.paymentStatus = 'SUCCESS';
                     booking.transactionId = transactionId;
+                    booking.paymentDetails = {
+                        amount: paidAmount,
+                        payment_method: (data && data.payment && data.payment.payment_method) || 'CASHFREE',
+                        transaction_id: transactionId,
+                        webhook: true
+                    };
                     await booking.save();
 
                     // Increment coupon usage count if used
