@@ -177,13 +177,13 @@ export default function DashboardTab(props) {
                                 flexShrink: 0
                             }}>notifications_active</span>
                             <div>
-                                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.01em', color: '#fff' }}>
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.01em', color: 'var(--text-main)' }}>
                                     {newBookings.length} New Turf Booking{newBookings.length > 1 ? 's' : ''} Received
                                 </h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     {newBookings.slice(0, 3).map((b, i) => (
-                                        <div key={i} style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                                            <strong style={{ color: '#fff' }}>{b.customerName || 'Walk-in'}</strong> booked <span style={{ textTransform: 'capitalize' }}>{b.sport}</span> Turf for <strong>{b.date}</strong> ({(b.timeSlots || []).map(formatSlotTo12Hr).join(', ') || 'TBD'})
+                                        <div key={i} style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
+                                            <strong style={{ color: 'var(--primary)' }}>{b.customerName || 'Walk-in'}</strong> booked <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{b.sport}</span> Turf for <strong>{b.date}</strong> ({(b.timeSlots || []).map(formatSlotTo12Hr).join(', ') || 'TBD'})
                                         </div>
                                     ))}
                                     {newBookings.length > 3 && (
