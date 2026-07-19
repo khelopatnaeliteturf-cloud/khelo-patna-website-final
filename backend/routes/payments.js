@@ -29,19 +29,27 @@ const getSportFilter = (sport) => (
  * Considers confirmed (SUCCESS) bookings and recent PENDING ones (payment in
  * flight) to reduce double-booking races between concurrent checkouts.
  */
-async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null }) {
+async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null, onlySuccess = false }) {
     const pendingCutoff = new Date(Date.now() - 15 * 60 * 1000); // 15-minute payment window
     const query = {
         tenantId,
         date,
-        sport: getSportFilter(sport),
-        $or: [
+        sport: getSportFilter(sport)
+    };
+    if (onlySuccess) {
+        query.paymentStatus = 'SUCCESS';
+    } else {
+        query.$or = [
             { paymentStatus: 'SUCCESS' },
             { paymentStatus: 'PENDING', createdAt: { $gte: pendingCutoff } }
-        ]
-    };
+        ];
+    }
     if (excludeBookingId) {
-        query._id = { $ne: excludeBookingId };
+        if (typeof excludeBookingId === 'string' && excludeBookingId.startsWith('KP-')) {
+            query.orderId = { $ne: excludeBookingId };
+        } else {
+            query._id = { $ne: excludeBookingId };
+        }
     }
 
     const existing = await Booking.find(query).select('timeSlots');
@@ -171,6 +179,42 @@ Thank you! 🏆`;
     await sendWhatsAppMessage(booking.customerPhone, waText);
 }
 
+// Helper to cancel conflicting pending bookings when one succeeds
+async function cancelConflictingPendingBookings(successfulBooking) {
+    try {
+        const query = {
+            tenantId: successfulBooking.tenantId,
+            date: successfulBooking.date,
+            sport: getSportFilter(successfulBooking.sport),
+            paymentStatus: 'PENDING',
+            orderId: { $ne: successfulBooking.orderId }
+        };
+
+        const pendingBookings = await Booking.find(query);
+        for (const booking of pendingBookings) {
+            // Check overlap
+            const hasOverlap = booking.timeSlots.some(slot => {
+                if (slot === '23-24' || slot === '23-00') {
+                    return successfulBooking.timeSlots.includes('23-24') || successfulBooking.timeSlots.includes('23-00');
+                }
+                return successfulBooking.timeSlots.includes(slot);
+            });
+
+            if (hasOverlap) {
+                booking.paymentStatus = 'CANCELLED';
+                booking.paymentDetails = { 
+                    ...booking.paymentDetails, 
+                    cancelledReason: 'Slot successfully booked by another user' 
+                };
+                await booking.save();
+                console.log(`[Cancel Pending] Cancelled conflicting pending booking ${booking.orderId} due to successful booking ${successfulBooking.orderId}`);
+            }
+        }
+    } catch (err) {
+        console.error('Error cancelling conflicting pending bookings:', err);
+    }
+}
+
 // Background job to check for dropped bookings (every 5 minutes)
 setInterval(async () => {
     try {
@@ -183,16 +227,38 @@ setInterval(async () => {
         });
         
         for (const booking of droppedBookings) {
-            booking.paymentStatus = 'DROPPED';
-            await booking.save();
+            // Check if the slots are still free (not booked by a SUCCESS booking)
+            const conflict = await hasSlotConflict({
+                tenantId: booking.tenantId,
+                date: booking.date,
+                sport: booking.sport,
+                timeSlots: booking.timeSlots,
+                excludeBookingId: booking.orderId,
+                onlySuccess: true // Check against success only
+            });
             
-            console.log(`[Drop Job] Marked booking ${booking.orderId} as DROPPED.`);
-            
-            // Send dropped WhatsApp message
-            try {
-                await sendDroppedBookingNotification(booking);
-            } catch (err) {
-                console.error(`[Drop Job] Error sending notification for ${booking.orderId}:`, err);
+            if (conflict) {
+                // Slots taken. Cancel silently without WhatsApp!
+                booking.paymentStatus = 'CANCELLED';
+                booking.paymentDetails = { 
+                    ...booking.paymentDetails, 
+                    cancelledReason: 'Slot taken by another user' 
+                };
+                await booking.save();
+                console.log(`[Drop Job] Silently cancelled booking ${booking.orderId} because slot is taken.`);
+            } else {
+                // Slots still available! Mark as DROPPED and send WhatsApp!
+                booking.paymentStatus = 'DROPPED';
+                await booking.save();
+                
+                console.log(`[Drop Job] Marked booking ${booking.orderId} as DROPPED.`);
+                
+                // Send dropped WhatsApp message
+                try {
+                    await sendDroppedBookingNotification(booking);
+                } catch (err) {
+                    console.error(`[Drop Job] Error sending notification for ${booking.orderId}:`, err);
+                }
             }
         }
     } catch (err) {
@@ -230,7 +296,8 @@ router.post('/payment/create-order', async (req, res) => {
             tenantId,
             date: bookingData.booking_date,
             sport: bookingData.sport,
-            timeSlots: bookingData.time_slots
+            timeSlots: bookingData.time_slots,
+            onlySuccess: true // Let new user book even if another order is pending
         });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the selected slots are no longer available. Please pick different slots.' });
@@ -258,6 +325,9 @@ router.post('/payment/create-order', async (req, res) => {
             });
 
             await newBooking.save();
+
+            // Cancel other conflicting pending bookings
+            await cancelConflictingPendingBookings(newBooking);
 
             // Increment coupon usage count if used
             if (newBooking.couponCode) {
@@ -390,7 +460,8 @@ router.post('/payment/verify', async (req, res) => {
                         date: booking.date,
                         sport: booking.sport,
                         timeSlots: booking.timeSlots,
-                        excludeOrderId: booking.orderId
+                        excludeBookingId: booking.orderId,
+                        onlySuccess: true // Check against success only
                     });
                     if (conflict) {
                         booking.paymentStatus = 'FAILED';
@@ -425,6 +496,7 @@ router.post('/payment/verify', async (req, res) => {
                         }
                     }
 
+                    await cancelConflictingPendingBookings(booking);
                     await sendBookingNotifications(booking);
                 }
             } else if (order_id.startsWith('KPFEE-')) {
@@ -531,7 +603,23 @@ router.post('/payment/webhook', async (req, res) => {
         if (paymentStatus === 'SUCCESS') {
             if (orderId.startsWith('KP-')) {
                 const booking = await Booking.findOne({ orderId: orderId });
-                if (booking && booking.paymentStatus === 'PENDING') {
+                if (booking && (booking.paymentStatus === 'PENDING' || booking.paymentStatus === 'DROPPED' || booking.paymentStatus === 'FAILED')) {
+                    // Check slot conflicts before confirming
+                    const conflict = await hasSlotConflict({
+                        tenantId: booking.tenantId,
+                        date: booking.date,
+                        sport: booking.sport,
+                        timeSlots: booking.timeSlots,
+                        excludeBookingId: booking.orderId,
+                        onlySuccess: true
+                    });
+                    if (conflict) {
+                        booking.paymentStatus = 'FAILED';
+                        booking.paymentDetails = { ...booking.paymentDetails, error: 'Slot conflict after drop/fail' };
+                        await booking.save();
+                        return res.json({ processed: true, note: 'Slot already booked by another user. Admin action required.' });
+                    }
+
                     // Validate the paid amount against what is owed (prevents
                     // confirming a booking with an underpaid/tampered order)
                     if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - booking.paidAmount) > 0.01) {
@@ -558,6 +646,7 @@ router.post('/payment/webhook', async (req, res) => {
                         }
                     }
 
+                    await cancelConflictingPendingBookings(booking);
                     await sendBookingNotifications(booking);
 
                     const cleanPhone = booking.customerPhone;
@@ -857,7 +946,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
 
         // Check slot availability (conflict check on the shared physical ground,
         // including in-flight PENDING payments to avoid double-booking races)
-        const conflict = await hasSlotConflict({ tenantId, date, sport, timeSlots });
+        const conflict = await hasSlotConflict({ tenantId, date, sport, timeSlots, onlySuccess: true });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the selected slots are already booked.' });
         }
@@ -954,6 +1043,9 @@ Thank you! 🏆`;
 
             await newBooking.save();
 
+            // Cancel other conflicting pending bookings
+            await cancelConflictingPendingBookings(newBooking);
+
             // Trigger standard confirmation alerts
             try {
                 await sendBookingNotifications(newBooking);
@@ -1024,7 +1116,8 @@ router.put('/admin/bookings/:id/reschedule', authenticateToken, authorizeRoles('
             date,
             sport: booking.sport,
             timeSlots,
-            excludeBookingId: booking._id
+            excludeBookingId: booking._id,
+            onlySuccess: true // Check against success only
         });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the requested slots are already booked.' });
