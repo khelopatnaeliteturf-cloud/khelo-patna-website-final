@@ -4478,7 +4478,7 @@ export default function AdminDashboard() {
                                         return (
                                             <div key={key} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '4px' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>{key}:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{String(val)}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{String(val)}</span>
                                             </div>
                                         );
                                     })}
@@ -4489,7 +4489,7 @@ export default function AdminDashboard() {
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.74rem' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>Refund ID:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{b.paymentDetails.refund.refundId}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{b.paymentDetails.refund.refundId}</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>Status:</span>
@@ -4501,7 +4501,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <span style={{ color: 'var(--text-muted)' }}>On Date:</span>
-                                                <span style={{ fontWeight: 600, color: '#fff' }}>{new Date(b.paymentDetails.refund.refundedAt).toLocaleDateString()}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{new Date(b.paymentDetails.refund.refundedAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
