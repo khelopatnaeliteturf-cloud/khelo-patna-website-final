@@ -3300,14 +3300,17 @@ export default function AdminDashboard() {
                                                             fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '12px',
                                                             background: b.paymentStatus === 'SUCCESS' ? 'var(--success-light)' 
                                                                 : b.paymentStatus === 'PENDING' ? 'var(--warning-light)' 
+                                                                : b.paymentStatus === 'DROPPED' ? 'rgba(217, 119, 6, 0.08)' 
                                                                 : b.paymentStatus === 'CANCELLED' ? 'rgba(156, 163, 175, 0.08)'
                                                                 : 'var(--danger-light)',
                                                             color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' 
                                                                 : b.paymentStatus === 'PENDING' ? 'var(--warning)' 
+                                                                : b.paymentStatus === 'DROPPED' ? '#D97706' 
                                                                 : b.paymentStatus === 'CANCELLED' ? '#9CA3AF'
                                                                 : 'var(--danger)',
                                                             border: `1px solid ${b.paymentStatus === 'SUCCESS' ? 'var(--success-border)' 
                                                                 : b.paymentStatus === 'PENDING' ? 'var(--warning-border)' 
+                                                                : b.paymentStatus === 'DROPPED' ? 'rgba(217, 119, 6, 0.2)'
                                                                 : b.paymentStatus === 'CANCELLED' ? 'rgba(156, 163, 175, 0.2)'
                                                                 : 'var(--danger-border)'}`,
                                                             whiteSpace: 'nowrap',
@@ -3318,6 +3321,7 @@ export default function AdminDashboard() {
                                                             <span style={{ fontSize: '8px' }}>●</span>
                                                             {b.paymentStatus === 'SUCCESS' ? 'Paid' 
                                                                 : b.paymentStatus === 'PENDING' ? 'Pending' 
+                                                                : b.paymentStatus === 'DROPPED' ? 'Dropped' 
                                                                 : b.paymentStatus === 'CANCELLED' ? 'Cancelled' 
                                                                 : 'Failed'}
                                                         </span>
@@ -4455,7 +4459,7 @@ export default function AdminDashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                             {[
                                 { icon: 'payment', label: 'Payment Method', value: (b.paymentMethod || '—').toUpperCase(), color: '#6366F1' },
-                                { icon: 'verified', label: 'Payment Status', value: b.paymentStatus || '—', color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' },
+                                { icon: 'verified', label: 'Payment Status', value: b.paymentStatus || '—', color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'DROPPED' ? '#D97706' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' },
                                 { icon: 'tag', label: 'Cashfree Order ID', value: b.orderId || '—', color: '#3B82F6' },
                                 { icon: 'receipt', label: 'Transaction ID', value: b.transactionId || 'Not available', color: '#8B5CF6' },
                             ].map((f, i) => (
@@ -4786,6 +4790,9 @@ export default function AdminDashboard() {
                                                     } else if (b.paymentStatus === 'CANCELLED') {
                                                         statusColor = '#9CA3AF';
                                                         statusBg = 'rgba(156, 163, 175, 0.1)';
+                                                    } else if (b.paymentStatus === 'DROPPED') {
+                                                        statusColor = '#D97706';
+                                                        statusBg = 'rgba(217,119,6,0.1)';
                                                     } else if (b.paymentStatus === 'FAILED') {
                                                         statusColor = 'var(--danger)';
                                                         statusBg = 'rgba(239,68,68,0.1)';
@@ -5266,7 +5273,7 @@ export default function AdminDashboard() {
                                                 <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatINR(b.totalAmount)}</td>
                                                 <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--success)' }}>{formatINR(b.paidAmount)}</td>
                                                 <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' }}>
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'DROPPED' ? '#D97706' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' }}>
                                                         {b.paymentStatus === 'CANCELLED' ? 'CANCELLED' : b.paymentStatus}
                                                     </span>
                                                 </td>
