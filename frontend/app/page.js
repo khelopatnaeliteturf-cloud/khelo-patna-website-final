@@ -2,9 +2,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { getBackendUrl } from './lib/backendUrl';
-import ConfettiCanvas from './components/ConfettiCanvas';
-import TiltCard from './components/TiltCard';
+
+// Dynamic imports for heavy components to reduce initial bundle size
+const ConfettiCanvas = dynamic(() => import('./components/ConfettiCanvas'), {
+    ssr: false,
+    loading: () => null
+});
+
+const TiltCard = dynamic(() => import('./components/TiltCard'), {
+    ssr: false,
+    loading: () => <div style={{ borderRadius: 'var(--radius-xl)' }} />
+});
 
 const BACKEND_URL = getBackendUrl();
 

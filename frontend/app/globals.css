@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&family=Unbounded:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/*
+ * Note: Main fonts (Poppins, Montserrat, Space Grotesk) are now loaded via next/font
+ * in layout.js for better performance. The @import below is kept as fallback for
+ * Unbounded font only.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&display=swap');
 
 /* ─── CSS Houdini: Animated Custom Properties ─── */
 @property --border-angle {
@@ -1310,4 +1315,54 @@ select.glass-input option {
     input[type="checkbox"], select {
         min-height: 44px;
     }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITY IMPROVEMENTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Skip link - visible only on focus */
+.skip-link:focus {
+    top: 0 !important;
+    outline: 2px solid #00FF88;
+    outline-offset: 2px;
+}
+
+/* Focus indicators for interactive elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+    outline: 2px solid var(--neon);
+    outline-offset: 2px;
+}
+
+/* Remove default outline only when custom one is applied */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Visually hidden class for screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Ensure form labels are always visible or properly hidden */
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
 }

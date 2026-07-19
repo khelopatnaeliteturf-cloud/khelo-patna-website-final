@@ -1,19 +1,64 @@
 import "./globals.css";
+import { poppins, montserrat, spaceGrotesk } from "./fonts";
 
 export const metadata = {
   title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
   description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling. Play Elite, Play Patna.",
-  keywords: "turf booking, indoor cricket, indoor football, Patna sports, KheloPatna, sports academy",
+  keywords: "turf booking, indoor cricket, indoor football, Patna sports, KheloPatna, sports academy, football turf Patna, cricket nets Patna, sports academy Bihar",
+  authors: [{ name: "KheloPatna" }],
+  creator: "KheloPatna",
+  publisher: "KheloPatna Elite Turf",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/logo.png",
-  }
+  },
+  metadataBase: new URL("https://khelopatna.in"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
+    description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling.",
+    url: "https://khelopatna.in",
+    siteName: "KheloPatna Elite Turf",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "KheloPatna Elite Turf - Premium Sports Arena in Patna",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
+    description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling.",
+    images: ["/og-image.jpg"],
+    creator: "@khelopatna",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "TVvk28Oxj6AyVBvjn9lAOCrPWX_jYtg5VkM9RbmFCXc",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning={true} className={`${poppins.variable} ${montserrat.variable} ${spaceGrotesk.variable}`}>
       <head>
         <link
           rel="stylesheet"
@@ -25,12 +70,38 @@ export default function RootLayout({ children }) {
         />
         <meta name="theme-color" content="#040609" />
       </head>
-      <body>
+      <body className={poppins.className}>
+        {/* Skip to main content link for accessibility */}
+        <a
+          href="#main-content"
+          className="skip-link"
+          style={{
+            position: 'absolute',
+            top: '-100px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '12px 24px',
+            background: '#00FF88',
+            color: '#030806',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            borderRadius: '0 0 8px 8px',
+            zIndex: 10000,
+            textDecoration: 'none',
+            transition: 'top 0.3s ease'
+          }}
+          onFocus={(e) => e.target.style.top = '0'}
+          onBlur={(e) => e.target.style.top = '-100px'}
+        >
+          Skip to main content
+        </a>
         {/* Ambient floating orbs — visible on all pages */}
         <div className="floating-orb floating-orb--1" aria-hidden="true"></div>
         <div className="floating-orb floating-orb--2" aria-hidden="true"></div>
         <div className="floating-orb floating-orb--3" aria-hidden="true"></div>
-        {children}
+        <main id="main-content">
+          {children}
+        </main>
       </body>
     </html>
   );
