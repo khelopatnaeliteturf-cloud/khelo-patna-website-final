@@ -179,7 +179,8 @@ async function ensureDefaultTenant() {
         await client.query(`
             ALTER TABLE bookings 
             ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50) DEFAULT NULL,
-            ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00;
+            ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00,
+            ADD COLUMN IF NOT EXISTS payment_link TEXT DEFAULT NULL;
         `);
         console.log('  Bootstrap: bookings table coupon columns checked/added');
 
