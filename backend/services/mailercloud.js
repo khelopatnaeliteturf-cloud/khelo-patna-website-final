@@ -158,10 +158,18 @@ const formatSlotTo12Hr = (slot) => {
 };
 
 /**
- * Dispatches a $2000-grade luxury HTML booking confirmation pass to the customer.
+ * Dispatches a high-contrast Light Gradient Turf email pass with sport animations to the customer.
  */
 async function sendBookingInvoiceEmail(booking) {
-    const subject = `🏏⚽ Booking Confirmed: ${booking.sport ? booking.sport.toUpperCase() : 'TURF'} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
+    const isCricket = (booking.sport || '').toLowerCase().includes('cricket');
+    const sportEmoji = isCricket ? '🏏' : '⚽';
+    const sportName = (booking.sport || 'TURF').toUpperCase();
+    const subject = `${sportEmoji} Booking Confirmed: ${sportName} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
+
+    // Sport specific animation GIFs (100% supported across Gmail, Apple Mail, Outlook)
+    const sportGifUrl = isCricket
+        ? 'https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif' // Animated Cricket action GIF
+        : 'https://media.giphy.com/media/26tP41fh76vmLO3Oo/giphy.gif'; // Animated Football action GIF
 
     const totalAmt = Number(booking.totalAmount || 0);
     const discountAmt = Number(booking.discount || booking.discountAmount || 0);
@@ -169,7 +177,6 @@ async function sendBookingInvoiceEmail(booking) {
     const paidAmt = Number(booking.paidAmount || 0);
     const balanceDue = Math.max(0, totalAmt - paidAmt);
     const formattedTime = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ') || '—';
-    const sportEmoji = booking.sport?.toLowerCase() === 'cricket' ? '🏏' : '⚽';
     
     let formattedDate = booking.date || '—';
     try {
@@ -187,36 +194,43 @@ async function sendBookingInvoiceEmail(booking) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; background-color: #040609; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e5e7eb;">
-  <div style="max-width: 600px; margin: 20px auto; background-color: #0b0f19; border: 1px solid #1f2937; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,255,136,0.15);">
+<body style="margin: 0; padding: 20px 10px; background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111827;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border: 2px solid #10B981; border-radius: 24px; overflow: hidden; box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2);">
     
-    <!-- Header Banner -->
-    <div style="background: linear-gradient(135deg, #00FF88 0%, #059669 50%, #047857 100%); padding: 32px 24px; text-align: center; color: #040609;">
-      <div style="display: inline-block; background: rgba(4, 6, 9, 0.15); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">
-        OFFICIAL TURF RESERVATION
+    <!-- Top Turf Green Gradient Header -->
+    <div style="background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%); padding: 32px 20px; text-align: center; color: #FFFFFF;">
+      
+      <!-- Sport Animated GIF Badge -->
+      <div style="margin-bottom: 12px;">
+        <img src="${sportGifUrl}" alt="${sportName}" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); object-fit: cover;">
       </div>
-      <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #040609;">
+
+      <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">
+        ${sportEmoji} ${sportName} ARENA RESERVED
+      </div>
+
+      <h1 style="margin: 4px 0 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #FFFFFF;">
         Khelo Patna Elite Turf
       </h1>
-      <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; opacity: 0.9; letter-spacing: 1px; text-transform: uppercase;">
+      <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 800; opacity: 0.95; letter-spacing: 1px; text-transform: uppercase; color: #D1FAE5;">
         PLAY ELITE. PLAY PATNA.
       </p>
     </div>
 
-    <!-- Booking Body -->
-    <div style="padding: 28px 24px;">
+    <!-- Booking Content Container -->
+    <div style="padding: 24px 20px; background: #FFFFFF;">
       
-      <!-- Greeting Header & Status -->
-      <div style="border-bottom: 1px dashed #1f2937; padding-bottom: 18px; margin-bottom: 20px;">
+      <!-- Customer Info & Status Badge -->
+      <div style="border-bottom: 2px dashed #E5E7EB; padding-bottom: 16px; margin-bottom: 20px;">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td>
-              <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">RESERVED FOR</div>
-              <div style="font-size: 19px; font-weight: 800; color: #ffffff; margin-top: 2px;">${booking.customerName}</div>
-              <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">📞 ${booking.customerPhone} ${booking.customerEmail ? `| ✉️ ${booking.customerEmail}` : ''}</div>
+            <td style="vertical-align: top;">
+              <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">RESERVED FOR</div>
+              <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 2px;">${booking.customerName}</div>
+              <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">📞 ${booking.customerPhone} ${booking.customerEmail ? `| ✉️ ${booking.customerEmail}` : ''}</div>
             </td>
-            <td style="text-align: right; vertical-align: top;">
-              <span style="display: inline-block; background: rgba(0, 255, 136, 0.15); border: 1px solid #00FF88; color: #00FF88; padding: 6px 14px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
+            <td style="text-align: right; vertical-align: top; width: 40%;">
+              <span style="display: inline-block; background: #D1FAE5; border: 1.5px solid #10B981; color: #047857; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 900; text-transform: uppercase;">
                 ✓ ${booking.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : booking.paymentStatus}
               </span>
             </td>
@@ -225,39 +239,39 @@ async function sendBookingInvoiceEmail(booking) {
       </div>
 
       <!-- Main Slot Details Card -->
-      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-        <div style="font-size: 11px; font-weight: 800; color: #00FF88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;">
+      <div style="background: #F0FDF4; border: 1.5px solid #A7F3D0; border-radius: 18px; padding: 18px; margin-bottom: 20px;">
+        <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
           📌 TURF RESERVATION DETAILS
         </div>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Sport</td>
-            <td style="padding: 10px 0; color: #ffffff; font-weight: 800; border-bottom: 1px solid #1f2937; text-align: right; text-transform: uppercase;">
-              ${sportEmoji} ${(booking.sport || '').toUpperCase()} ARENA
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Sport Arena</td>
+            <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right; text-transform: uppercase;">
+              ${sportEmoji} ${sportName} ARENA
             </td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Date</td>
-            <td style="padding: 10px 0; color: #ffffff; font-weight: 700; border-bottom: 1px solid #1f2937; text-align: right;">
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Date</td>
+            <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right;">
               📅 ${formattedDate}
             </td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Time</td>
-            <td style="padding: 10px 0; color: #00FF88; font-weight: 800; border-bottom: 1px solid #1f2937; text-align: right; font-family: monospace; font-size: 14px;">
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Time</td>
+            <td style="padding: 9px 0; color: #047857; font-weight: 900; border-bottom: 1px solid #D1FAE5; text-align: right; font-family: monospace; font-size: 14px;">
               ⏰ ${formattedTime}
             </td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Booking Ref / ID</td>
-            <td style="padding: 10px 0; color: #9ca3af; font-family: monospace; font-weight: 700; border-bottom: 1px solid #1f2937; text-align: right; font-size: 12px;">
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Booking Ref / ID</td>
+            <td style="padding: 9px 0; color: #374151; font-family: monospace; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right; font-size: 12px;">
               ${booking.orderId}
             </td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af;">Payment Method</td>
-            <td style="padding: 10px 0; color: #ffffff; font-weight: 700; text-align: right; text-transform: uppercase;">
+            <td style="padding: 9px 0; color: #4B5563; font-weight: 600;">Payment Method</td>
+            <td style="padding: 9px 0; color: #111827; font-weight: 800; text-align: right; text-transform: uppercase;">
               💳 ${(booking.paymentMethod || 'OFFLINE').toUpperCase()}
             </td>
           </tr>
@@ -265,35 +279,35 @@ async function sendBookingInvoiceEmail(booking) {
       </div>
 
       <!-- Financial Receipt Breakdown Card -->
-      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-        <div style="font-size: 11px; font-weight: 800; color: #00FF88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;">
+      <div style="background: #F9FAFB; border: 1.5px solid #E5E7EB; border-radius: 18px; padding: 18px; margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
           💳 FINANCIAL BREAKDOWN
         </div>
 
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           ${discountAmt > 0 ? `
           <tr>
-            <td style="padding: 8px 0; color: #9ca3af;">Total Slot Rate</td>
-            <td style="padding: 8px 0; color: #ffffff; font-weight: 700; text-align: right;">₹${grossAmt}</td>
+            <td style="padding: 7px 0; color: #4B5563;">Total Slot Rate</td>
+            <td style="padding: 7px 0; color: #111827; font-weight: 700; text-align: right;">₹${grossAmt}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #00FF88;">Discount Applied ${booking.couponCode ? `(${booking.couponCode})` : ''}</td>
-            <td style="padding: 8px 0; color: #00FF88; font-weight: 700; text-align: right;">- ₹${discountAmt}</td>
+            <td style="padding: 7px 0; color: #059669; font-weight: 700;">Discount Applied ${booking.couponCode ? `(${booking.couponCode})` : ''}</td>
+            <td style="padding: 7px 0; color: #059669; font-weight: 800; text-align: right;">- ₹${discountAmt}</td>
           </tr>
           ` : ''}
           <tr>
-            <td style="padding: 8px 0; color: #ffffff; font-weight: 700;">Net Payable Amount</td>
-            <td style="padding: 8px 0; color: #ffffff; font-weight: 800; text-align: right; font-size: 16px;">₹${totalAmt}</td>
+            <td style="padding: 7px 0; color: #111827; font-weight: 700;">Net Payable Amount</td>
+            <td style="padding: 7px 0; color: #111827; font-weight: 900; text-align: right; font-size: 15px;">₹${totalAmt}</td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #34d399; font-weight: 700; border-top: 1px dashed #1f2937;">Advance Paid</td>
-            <td style="padding: 10px 0; color: #34d399; font-weight: 800; border-top: 1px dashed #1f2937; text-align: right; font-size: 16px;">₹${paidAmt}</td>
+            <td style="padding: 9px 0; color: #047857; font-weight: 800; border-top: 1px dashed #D1D5DB;">Advance Paid</td>
+            <td style="padding: 9px 0; color: #047857; font-weight: 900; border-top: 1px dashed #D1D5DB; text-align: right; font-size: 16px;">₹${paidAmt}</td>
           </tr>
           <tr>
-            <td style="padding: 12px 10px; background: ${balanceDue > 0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 255, 136, 0.15)'}; color: ${balanceDue > 0 ? '#fbbf24' : '#00FF88'}; font-weight: 800; border-radius: 8px 0 0 8px;">
+            <td style="padding: 10px 10px; background: ${balanceDue > 0 ? '#FEF3C7' : '#D1FAE5'}; color: ${balanceDue > 0 ? '#92400E' : '#047857'}; font-weight: 800; border-radius: 8px 0 0 8px;">
               ${balanceDue > 0 ? '⚠️ Rest Due on Arrival at Arena' : '✓ Payment Status'}
             </td>
-            <td style="padding: 12px 10px; background: ${balanceDue > 0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 255, 136, 0.15)'}; color: ${balanceDue > 0 ? '#fbbf24' : '#00FF88'}; font-weight: 900; text-align: right; font-size: 18px; border-radius: 0 8px 8px 0;">
+            <td style="padding: 10px 10px; background: ${balanceDue > 0 ? '#FEF3C7' : '#D1FAE5'}; color: ${balanceDue > 0 ? '#92400E' : '#047857'}; font-weight: 900; text-align: right; font-size: 17px; border-radius: 0 8px 8px 0;">
               ${balanceDue > 0 ? `₹${balanceDue}` : 'Fully Paid'}
             </td>
           </tr>
@@ -301,18 +315,18 @@ async function sendBookingInvoiceEmail(booking) {
       </div>
 
       <!-- Action Button / Map Location -->
-      <div style="text-align: center; margin-bottom: 28px;">
-        <a href="https://maps.app.goo.gl/iF1kcgi6seEnsRfaA" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #00FF88 0%, #059669 100%); color: #040609; padding: 14px 28px; border-radius: 12px; font-weight: 900; font-size: 14px; text-decoration: none; letter-spacing: 0.5px; box-shadow: 0 10px 25px rgba(0, 255, 136, 0.25);">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="https://maps.app.goo.gl/iF1kcgi6seEnsRfaA" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: #FFFFFF; padding: 14px 28px; border-radius: 14px; font-weight: 900; font-size: 14px; text-decoration: none; letter-spacing: 0.5px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);">
           📍 GET MAP DIRECTIONS TO ARENA
         </a>
       </div>
 
       <!-- Footer Info -->
-      <div style="border-top: 1px solid #1f2937; padding-top: 20px; text-align: center; font-size: 12px; color: #6b7280; line-height: 1.6;">
-        <div style="font-weight: 800; color: #9ca3af; margin-bottom: 4px; font-size: 13px;">Khelo Patna Elite Turf</div>
+      <div style="border-top: 1px solid #E5E7EB; padding-top: 18px; text-align: center; font-size: 12px; color: #4B5563; line-height: 1.6;">
+        <div style="font-weight: 800; color: #111827; margin-bottom: 4px; font-size: 13px;">Khelo Patna Elite Turf</div>
         <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007</div>
-        <div>Helpline: <a href="tel:+919709701400" style="color: #00FF88; text-decoration: none; font-weight: 700;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #00FF88; text-decoration: none;">service@khelopatna.in</a></div>
-        <div style="margin-top: 10px; font-size: 11px; color: #4b5563;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
+        <div>Helpline: <a href="tel:+919709701400" style="color: #059669; text-decoration: none; font-weight: 800;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #059669; text-decoration: none; font-weight: 700;">service@khelopatna.in</a></div>
+        <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
       </div>
 
     </div>
@@ -325,7 +339,7 @@ async function sendBookingInvoiceEmail(booking) {
 }
 
 /**
- * Dispatches a $2000-grade luxury HTML fee payment receipt to the parent.
+ * Dispatches a high-contrast Light Gradient Turf fee payment receipt to the parent.
  */
 async function sendFeeInvoiceEmail(student, feeRecord) {
     const subject = `💳 Fee Receipt: ${student.name} (${feeRecord.monthFor}) — Khelo Patna Training Academy`;
@@ -336,55 +350,55 @@ async function sendFeeInvoiceEmail(student, feeRecord) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; background-color: #040609; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e5e7eb;">
-  <div style="max-width: 600px; margin: 20px auto; background-color: #0b0f19; border: 1px solid #1f2937; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,255,136,0.15);">
+<body style="margin: 0; padding: 20px 10px; background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111827;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border: 2px solid #10B981; border-radius: 24px; overflow: hidden; box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2);">
     
-    <!-- Header Banner -->
-    <div style="background: linear-gradient(135deg, #00FF88 0%, #059669 50%, #047857 100%); padding: 32px 24px; text-align: center; color: #040609;">
-      <div style="display: inline-block; background: rgba(4, 6, 9, 0.15); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">
-        TRAINING ACADEMY RECEIPT
+    <!-- Top Header Banner -->
+    <div style="background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%); padding: 32px 20px; text-align: center; color: #FFFFFF;">
+      <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">
+        ACADEMY FEE RECEIPT
       </div>
-      <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #040609;">
+      <h1 style="margin: 4px 0 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #FFFFFF;">
         Khelo Patna Training Academy
       </h1>
-      <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; opacity: 0.9; letter-spacing: 1px; text-transform: uppercase;">
+      <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 800; opacity: 0.95; letter-spacing: 1px; text-transform: uppercase; color: #D1FAE5;">
         TRAIN TODAY. LEAD TOMORROW.
       </p>
     </div>
 
     <!-- Body -->
-    <div style="padding: 28px 24px;">
+    <div style="padding: 24px 20px; background: #FFFFFF;">
       
-      <div style="border-bottom: 1px dashed #1f2937; padding-bottom: 18px; margin-bottom: 20px;">
-        <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">STUDENT NAME</div>
-        <div style="font-size: 19px; font-weight: 800; color: #ffffff; margin-top: 2px;">${student.name}</div>
-        <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">🏆 ${student.sport ? student.sport.toUpperCase() : ''} | Batch: ${student.batchTime || 'Standard'}</div>
+      <div style="border-bottom: 2px dashed #E5E7EB; padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">STUDENT NAME</div>
+        <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 2px;">${student.name}</div>
+        <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">🏆 ${student.sport ? student.sport.toUpperCase() : ''} | Batch: ${student.batchTime || 'Standard'}</div>
       </div>
 
       <!-- Receipt Card -->
-      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-        <div style="font-size: 11px; font-weight: 800; color: #00FF88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;">
+      <div style="background: #F0FDF4; border: 1.5px solid #A7F3D0; border-radius: 18px; padding: 18px; margin-bottom: 20px;">
+        <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
           📄 ACADEMY FEE DETAILS
         </div>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Billing Period</td>
-            <td style="padding: 10px 0; color: #ffffff; font-weight: 800; border-bottom: 1px solid #1f2937; text-align: right;">
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Billing Period</td>
+            <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right;">
               📅 ${feeRecord.monthFor}
             </td>
           </tr>
           <tr>
-            <td style="padding: 10px 0; color: #9ca3af; border-bottom: 1px solid #1f2937;">Receipt ID</td>
-            <td style="padding: 10px 0; color: #9ca3af; font-family: monospace; font-weight: 700; border-bottom: 1px solid #1f2937; text-align: right; font-size: 12px;">
+            <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Receipt ID</td>
+            <td style="padding: 9px 0; color: #374151; font-family: monospace; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right; font-size: 12px;">
               ${feeRecord._id}
             </td>
           </tr>
-          <tr style="background: rgba(0, 255, 136, 0.12);">
-            <td style="padding: 12px 10px; color: #00FF88; font-weight: 800; border-radius: 8px 0 0 8px;">
+          <tr>
+            <td style="padding: 10px 10px; background: #D1FAE5; color: #047857; font-weight: 800; border-radius: 8px 0 0 8px;">
               ✓ Total Fee Paid
             </td>
-            <td style="padding: 12px 10px; color: #00FF88; font-weight: 900; text-align: right; font-size: 18px; border-radius: 0 8px 8px 0;">
+            <td style="padding: 10px 10px; background: #D1FAE5; color: #047857; font-weight: 900; text-align: right; font-size: 18px; border-radius: 0 8px 8px 0;">
               ₹${feeRecord.amountPaid}
             </td>
           </tr>
@@ -392,11 +406,11 @@ async function sendFeeInvoiceEmail(student, feeRecord) {
       </div>
 
       <!-- Footer Info -->
-      <div style="border-top: 1px solid #1f2937; padding-top: 20px; text-align: center; font-size: 12px; color: #6b7280; line-height: 1.6;">
-        <div style="font-weight: 800; color: #9ca3af; margin-bottom: 4px; font-size: 13px;">Khelo Patna Training Academy</div>
+      <div style="border-top: 1px solid #E5E7EB; padding-top: 18px; text-align: center; font-size: 12px; color: #4B5563; line-height: 1.6;">
+        <div style="font-weight: 800; color: #111827; margin-bottom: 4px; font-size: 13px;">Khelo Patna Training Academy</div>
         <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007</div>
-        <div>Helpline: <a href="tel:+919709701400" style="color: #00FF88; text-decoration: none; font-weight: 700;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #00FF88; text-decoration: none;">service@khelopatna.in</a></div>
-        <div style="margin-top: 10px; font-size: 11px; color: #4b5563;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
+        <div>Helpline: <a href="tel:+919709701400" style="color: #059669; text-decoration: none; font-weight: 800;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #059669; text-decoration: none; font-weight: 700;">service@khelopatna.in</a></div>
+        <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
       </div>
 
     </div>
