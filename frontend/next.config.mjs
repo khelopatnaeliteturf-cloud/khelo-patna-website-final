@@ -23,6 +23,7 @@ const nextConfig = {
     return [
       { source: '/index.html', destination: '/', permanent: true },
       { source: '/book.html', destination: '/book', permanent: true },
+      { source: '/book-now.html', destination: '/book', permanent: true },
       { source: '/booking.html', destination: '/book', permanent: true },
       { source: '/cricket-turf.html', destination: '/cricket-turf', permanent: true },
       { source: '/football-turf.html', destination: '/football-turf', permanent: true },
