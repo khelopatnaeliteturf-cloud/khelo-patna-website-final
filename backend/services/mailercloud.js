@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 465;
+const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
 const SMTP_SECURE = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === 'true' : (SMTP_PORT === 465);
 const SMTP_USER = process.env.SMTP_USER || 'service@khelopatna.in';
 const SMTP_PASS = process.env.SMTP_PASS || '';
@@ -14,13 +14,16 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PA
     transporter = nodemailer.createTransport({
         host: SMTP_HOST,
         port: SMTP_PORT,
-        secure: SMTP_SECURE,
+        secure: SMTP_SECURE, // false for 587 (STARTTLS)
         auth: {
             user: SMTP_USER,
             pass: SMTP_PASS
         },
+        connectionTimeout: 10000, // 10 seconds timeout
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         tls: {
-            rejectUnauthorized: false // Helps avoid SSL handshake failures with custom domain mail
+            rejectUnauthorized: false
         }
     });
 } else {
