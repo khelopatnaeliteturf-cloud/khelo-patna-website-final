@@ -1005,7 +1005,8 @@ export default function BookPage() {
                                                     const year = parseInt(parts[0], 10);
                                                     const month = parseInt(parts[1], 10) - 1;
                                                     const day = parseInt(parts[2], 10);
-                                                    const d = new Date(year, month, day + 1);
+                                                    // 12:00 PM noon prevents any timezone rollbacks
+                                                    const d = new Date(year, month, day + 1, 12, 0, 0);
                                                     const yyyy = d.getFullYear();
                                                     const mm = String(d.getMonth() + 1).padStart(2, '0');
                                                     const dd = String(d.getDate()).padStart(2, '0');
@@ -1014,30 +1015,31 @@ export default function BookPage() {
                                             } catch (e) {}
                                             const d = new Date();
                                             d.setDate(d.getDate() + 1);
-                                            return d.toISOString().split('T')[0];
+                                            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                                         };
-                                        const tomorrowDateStr = getTomorrowDateStr(date);
-                                        let tomorrowFormatted = tomorrowDateStr;
-                                        try {
-                                            const parts = tomorrowDateStr.split('-');
-                                            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                                            tomorrowFormatted = d.toLocaleDateString('en-IN', {
-                                                weekday: 'short',
-                                                day: '2-digit',
-                                                month: 'short'
-                                            });
-                                        } catch (e) {}
 
-                                        let currentFormatted = date;
-                                        try {
-                                            const parts = date.split('-');
-                                            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-                                            currentFormatted = d.toLocaleDateString('en-IN', {
-                                                day: '2-digit',
-                                                month: 'short',
-                                                year: 'numeric'
-                                            });
-                                        } catch (e) {}
+                                        const formatFriendlyDate = (dateStr, includeYear = false) => {
+                                            try {
+                                                const parts = (dateStr || '').split('-');
+                                                if (parts.length === 3) {
+                                                    const year = parseInt(parts[0], 10);
+                                                    const month = parseInt(parts[1], 10) - 1;
+                                                    const day = parseInt(parts[2], 10);
+                                                    const d = new Date(year, month, day, 12, 0, 0);
+                                                    return d.toLocaleDateString('en-IN', {
+                                                        weekday: 'short',
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        ...(includeYear ? { year: 'numeric' } : {})
+                                                    });
+                                                }
+                                            } catch (e) {}
+                                            return dateStr;
+                                        };
+
+                                        const tomorrowDateStr = getTomorrowDateStr(date);
+                                        const tomorrowFormatted = formatFriendlyDate(tomorrowDateStr, false);
+                                        const currentFormatted = formatFriendlyDate(date, true);
 
                                         return (
                                             <div className="glass-panel animate-fade-in" style={{
