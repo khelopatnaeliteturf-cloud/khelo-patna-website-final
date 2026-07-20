@@ -157,14 +157,26 @@ const formatSlotTo12Hr = (slot) => {
     return `${formatHour(parts[0])} - ${formatHour(parts[1])}`;
 };
 
+// Clean vector SVG icons (No emojis used, 100% email client compatible)
+const svgIcons = {
+    calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+    clock: `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+    mapPin: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 6px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+    warning: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+    card: `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>`,
+    phone: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`,
+    mail: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`,
+    pinDetails: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 5px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`
+};
+
 /**
  * Dispatches a high-contrast Light Gradient Turf email pass with sport animations to the customer.
  */
 async function sendBookingInvoiceEmail(booking) {
     const isCricket = (booking.sport || '').toLowerCase().includes('cricket');
-    const sportEmoji = isCricket ? '🏏' : '⚽';
     const sportName = (booking.sport || 'TURF').toUpperCase();
-    const subject = `${sportEmoji} Booking Confirmed: ${sportName} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
+    const subject = `Booking Confirmed: ${sportName} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
 
     // Sport specific animation GIFs (100% supported across Gmail, Apple Mail, Outlook)
     const sportGifUrl = isCricket
@@ -206,7 +218,7 @@ async function sendBookingInvoiceEmail(booking) {
       </div>
 
       <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">
-        ${sportEmoji} ${sportName} ARENA RESERVED
+        ${sportName} ARENA RESERVED
       </div>
 
       <h1 style="margin: 4px 0 0 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #FFFFFF;">
@@ -227,11 +239,11 @@ async function sendBookingInvoiceEmail(booking) {
             <td style="vertical-align: top;">
               <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">RESERVED FOR</div>
               <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 2px;">${booking.customerName}</div>
-              <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">📞 ${booking.customerPhone} ${booking.customerEmail ? `| ✉️ ${booking.customerEmail}` : ''}</div>
+              <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">${svgIcons.phone} ${booking.customerPhone} ${booking.customerEmail ? `| ${svgIcons.mail} ${booking.customerEmail}` : ''}</div>
             </td>
             <td style="text-align: right; vertical-align: top; width: 40%;">
               <span style="display: inline-block; background: #D1FAE5; border: 1.5px solid #10B981; color: #047857; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 900; text-transform: uppercase;">
-                ✓ ${booking.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : booking.paymentStatus}
+                ${svgIcons.check} ${booking.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : booking.paymentStatus}
               </span>
             </td>
           </tr>
@@ -240,27 +252,27 @@ async function sendBookingInvoiceEmail(booking) {
 
       <!-- Main Slot Details Card -->
       <div style="background: #F0FDF4; border: 1.5px solid #A7F3D0; border-radius: 18px; padding: 18px; margin-bottom: 20px;">
-        <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-          📌 TURF RESERVATION DETAILS
+        <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+          ${svgIcons.pinDetails} TURF RESERVATION DETAILS
         </div>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
             <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Sport Arena</td>
             <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right; text-transform: uppercase;">
-              ${sportEmoji} ${sportName} ARENA
+              ${sportName} ARENA
             </td>
           </tr>
           <tr>
             <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Date</td>
             <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right;">
-              📅 ${formattedDate}
+              ${svgIcons.calendar} ${formattedDate}
             </td>
           </tr>
           <tr>
             <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Time</td>
             <td style="padding: 9px 0; color: #047857; font-weight: 900; border-bottom: 1px solid #D1FAE5; text-align: right; font-family: monospace; font-size: 14px;">
-              ⏰ ${formattedTime}
+              ${svgIcons.clock} ${formattedTime}
             </td>
           </tr>
           <tr>
@@ -272,7 +284,7 @@ async function sendBookingInvoiceEmail(booking) {
           <tr>
             <td style="padding: 9px 0; color: #4B5563; font-weight: 600;">Payment Method</td>
             <td style="padding: 9px 0; color: #111827; font-weight: 800; text-align: right; text-transform: uppercase;">
-              💳 ${(booking.paymentMethod || 'OFFLINE').toUpperCase()}
+              ${svgIcons.card} ${(booking.paymentMethod || 'OFFLINE').toUpperCase()}
             </td>
           </tr>
         </table>
@@ -281,7 +293,7 @@ async function sendBookingInvoiceEmail(booking) {
       <!-- Financial Receipt Breakdown Card -->
       <div style="background: #F9FAFB; border: 1.5px solid #E5E7EB; border-radius: 18px; padding: 18px; margin-bottom: 24px;">
         <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
-          💳 FINANCIAL BREAKDOWN
+          ${svgIcons.card} FINANCIAL BREAKDOWN
         </div>
 
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -305,7 +317,7 @@ async function sendBookingInvoiceEmail(booking) {
           </tr>
           <tr>
             <td style="padding: 10px 10px; background: ${balanceDue > 0 ? '#FEF3C7' : '#D1FAE5'}; color: ${balanceDue > 0 ? '#92400E' : '#047857'}; font-weight: 800; border-radius: 8px 0 0 8px;">
-              ${balanceDue > 0 ? '⚠️ Rest Due on Arrival at Arena' : '✓ Payment Status'}
+              ${balanceDue > 0 ? `${svgIcons.warning} Rest Due on Arrival at Arena` : `${svgIcons.check} Payment Status`}
             </td>
             <td style="padding: 10px 10px; background: ${balanceDue > 0 ? '#FEF3C7' : '#D1FAE5'}; color: ${balanceDue > 0 ? '#92400E' : '#047857'}; font-weight: 900; text-align: right; font-size: 17px; border-radius: 0 8px 8px 0;">
               ${balanceDue > 0 ? `₹${balanceDue}` : 'Fully Paid'}
@@ -317,7 +329,7 @@ async function sendBookingInvoiceEmail(booking) {
       <!-- Action Button / Map Location -->
       <div style="text-align: center; margin-bottom: 24px;">
         <a href="https://maps.app.goo.gl/iF1kcgi6seEnsRfaA" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: #FFFFFF; padding: 14px 28px; border-radius: 14px; font-weight: 900; font-size: 14px; text-decoration: none; letter-spacing: 0.5px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);">
-          📍 GET MAP DIRECTIONS TO ARENA
+          ${svgIcons.mapPin} GET MAP DIRECTIONS TO ARENA
         </a>
       </div>
 
@@ -342,7 +354,7 @@ async function sendBookingInvoiceEmail(booking) {
  * Dispatches a high-contrast Light Gradient Turf fee payment receipt to the parent.
  */
 async function sendFeeInvoiceEmail(student, feeRecord) {
-    const subject = `💳 Fee Receipt: ${student.name} (${feeRecord.monthFor}) — Khelo Patna Training Academy`;
+    const subject = `Fee Receipt: ${student.name} (${feeRecord.monthFor}) — Khelo Patna Training Academy`;
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -372,20 +384,20 @@ async function sendFeeInvoiceEmail(student, feeRecord) {
       <div style="border-bottom: 2px dashed #E5E7EB; padding-bottom: 16px; margin-bottom: 20px;">
         <div style="font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">STUDENT NAME</div>
         <div style="font-size: 18px; font-weight: 800; color: #111827; margin-top: 2px;">${student.name}</div>
-        <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">🏆 ${student.sport ? student.sport.toUpperCase() : ''} | Batch: ${student.batchTime || 'Standard'}</div>
+        <div style="font-size: 13px; color: #4B5563; margin-top: 2px;">${student.sport ? student.sport.toUpperCase() : ''} | Batch: ${student.batchTime || 'Standard'}</div>
       </div>
 
       <!-- Receipt Card -->
       <div style="background: #F0FDF4; border: 1.5px solid #A7F3D0; border-radius: 18px; padding: 18px; margin-bottom: 20px;">
         <div style="font-size: 11px; font-weight: 900; color: #047857; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
-          📄 ACADEMY FEE DETAILS
+          ${svgIcons.card} ACADEMY FEE DETAILS
         </div>
         
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
             <td style="padding: 9px 0; color: #4B5563; border-bottom: 1px solid #D1FAE5; font-weight: 600;">Billing Period</td>
             <td style="padding: 9px 0; color: #111827; font-weight: 800; border-bottom: 1px solid #D1FAE5; text-align: right;">
-              📅 ${feeRecord.monthFor}
+              ${svgIcons.calendar} ${feeRecord.monthFor}
             </td>
           </tr>
           <tr>
@@ -396,7 +408,7 @@ async function sendFeeInvoiceEmail(student, feeRecord) {
           </tr>
           <tr>
             <td style="padding: 10px 10px; background: #D1FAE5; color: #047857; font-weight: 800; border-radius: 8px 0 0 8px;">
-              ✓ Total Fee Paid
+              ${svgIcons.check} Total Fee Paid
             </td>
             <td style="padding: 10px 10px; background: #D1FAE5; color: #047857; font-weight: 900; text-align: right; font-size: 18px; border-radius: 0 8px 8px 0;">
               ₹${feeRecord.amountPaid}
