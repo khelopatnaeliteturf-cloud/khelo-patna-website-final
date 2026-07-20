@@ -34,6 +34,8 @@ const nextConfig = {
       { source: '/reviews.html', destination: '/review', permanent: true },
       { source: '/privacy.html', destination: '/privacy', permanent: true },
       { source: '/terms.html', destination: '/terms', permanent: true },
+      { source: '/terms-conditions.html', destination: '/terms', permanent: true },
+      { source: '/refund-policy.html', destination: '/terms', permanent: true },
       { source: '/about.html', destination: '/about', permanent: true },
       { source: '/login.html', destination: '/login', permanent: true },
       { source: '/academy.html', destination: '/academy', permanent: true },
