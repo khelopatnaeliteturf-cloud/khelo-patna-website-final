@@ -1,11 +1,11 @@
 const nodemailer = require('nodemailer');
 
-const SMTP_HOST = process.env.SMTP_HOST || '';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
-const SMTP_SECURE = process.env.SMTP_SECURE === 'true'; // true for 465, false for 587
-const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 465;
+const SMTP_SECURE = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === 'true' : (SMTP_PORT === 465);
+const SMTP_USER = process.env.SMTP_USER || 'service@khelopatna.in';
 const SMTP_PASS = process.env.SMTP_PASS || '';
-const SENDER_EMAIL = process.env.SMTP_SENDER_EMAIL || 'service@khelopatna.in';
+const SENDER_EMAIL = process.env.SMTP_SENDER_EMAIL || SMTP_USER || 'service@khelopatna.in';
 const SENDER_NAME = 'KheloPatna Elite Turf';
 
 // Create a nodemailer transporter
@@ -18,30 +18,40 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PA
         auth: {
             user: SMTP_USER,
             pass: SMTP_PASS
+        },
+        tls: {
+            rejectUnauthorized: false // Helps avoid SSL handshake failures with custom domain mail
         }
     });
+} else {
+    console.warn('[SMTP WARNING] Transporter not initialized. Missing SMTP_PASS or valid SMTP config.');
 }
 
 /**
  * Sends a transactional email using Nodemailer / SMTP.
  */
 async function sendEmail({ to, subject, htmlContent }) {
+    if (!to) {
+        console.warn('[EMAIL CANCELLED] No recipient email address provided.');
+        return false;
+    }
+
     if (!transporter) {
-        console.log(`[MOCK EMAIL (SMTP UNCONFIGURED)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
+        console.log(`[MOCK EMAIL (SMTP PASS MISSING ON SERVER)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
         return true;
     }
 
     try {
-        await transporter.sendMail({
+        const info = await transporter.sendMail({
             from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
             to: to,
             subject: subject,
             html: htmlContent
         });
-        console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}`);
+        console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}. Response ID: ${info.messageId}`);
         return true;
     } catch (err) {
-        console.error('SMTP email dispatch error:', err.message);
+        console.error('SMTP email dispatch error:', err);
         return false;
     }
 }
