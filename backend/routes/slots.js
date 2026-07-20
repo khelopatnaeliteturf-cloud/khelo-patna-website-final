@@ -144,6 +144,7 @@ router.get('/available-slots', async (req, res) => {
         }
 
         const slotsResponse = ALL_HOURLY_SLOTS.map(slot => {
+            const startHourStr = slot.startHour < 10 ? `0${slot.startHour}` : `${slot.startHour}`;
             // Only current running hour slot is too late to book for today
             const isTooLateToBook = (date === todayISTStr) && (slot.startHour === currentHourIST);
 
