@@ -1,49 +1,47 @@
-const axios = require('axios');
+const nodemailer = require('nodemailer');
 
-const MAILERCLOUD_API_KEY = process.env.MAILERCLOUD_API_KEY || '';
-const SENDER_EMAIL = process.env.MAILERCLOUD_SENDER_EMAIL || 'service@khelopatna.in';
+const SMTP_HOST = process.env.SMTP_HOST || '';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
+const SMTP_SECURE = process.env.SMTP_SECURE === 'true'; // true for 465, false for 587
+const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.SMTP_PASS || '';
+const SENDER_EMAIL = process.env.SMTP_SENDER_EMAIL || 'service@khelopatna.in';
 const SENDER_NAME = 'KheloPatna Elite Turf';
 
-const API_URL = 'https://api.mailercloud.com/v1/send/mail';
+// Create a nodemailer transporter
+let transporter = null;
+if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PASSWORD') {
+    transporter = nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_SECURE,
+        auth: {
+            user: SMTP_USER,
+            pass: SMTP_PASS
+        }
+    });
+}
 
 /**
- * Sends a transactional email using Mailercloud API.
+ * Sends a transactional email using Nodemailer / SMTP.
  */
 async function sendEmail({ to, subject, htmlContent }) {
-    if (!MAILERCLOUD_API_KEY) {
-        console.log(`[MOCK EMAIL] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
+    if (!transporter) {
+        console.log(`[MOCK EMAIL (SMTP UNCONFIGURED)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
         return true;
     }
 
     try {
-        const response = await axios.post(API_URL, {
+        await transporter.sendMail({
+            from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
+            to: to,
             subject: subject,
-            sender: {
-                name: SENDER_NAME,
-                email: SENDER_EMAIL
-            },
-            recipients: [
-                {
-                    email: to
-                }
-            ],
-            content: [
-                {
-                    type: 'text/html',
-                    value: htmlContent
-                }
-            ]
-        }, {
-            headers: {
-                'Authorization': MAILERCLOUD_API_KEY,
-                'Content-Type': 'application/json'
-            }
+            html: htmlContent
         });
-
-        console.log(`Email successfully dispatched via Mailercloud to ${to}`);
+        console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}`);
         return true;
     } catch (err) {
-        console.error('Mailercloud sending error:', err.response?.data || err.message);
+        console.error('SMTP email dispatch error:', err.message);
         return false;
     }
 }
