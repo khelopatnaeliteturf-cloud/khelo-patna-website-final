@@ -2770,10 +2770,30 @@ export default function AdminDashboard() {
                         
                         {/* Amount Breakdown Card */}
                         <div style={{ background: 'var(--bg-color)', borderRadius: '14px', padding: '16px', marginBottom: '14px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed var(--border-color)' }}>
-                                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Total Amount</span>
-                                <span style={{ fontSize: '1rem', fontWeight: 800 }}>{formatINR(b.totalAmount || 0)}</span>
-                            </div>
+                            {Number(b.discount || b.discountAmount || 0) > 0 ? (
+                                <>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Slot Rate Subtotal</span>
+                                        <span style={{ fontSize: '0.92rem', fontWeight: 700 }}>{formatINR((b.totalAmount || 0) + Number(b.discount || b.discountAmount || 0))}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed var(--border-color)' }}>
+                                        <span style={{ fontSize: '0.82rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '15px' }}>local_offer</span> Discount Applied {b.couponCode ? `(${b.couponCode})` : ''}
+                                        </span>
+                                        <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#10B981' }}>- {formatINR(b.discount || b.discountAmount || 0)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed var(--border-color)' }}>
+                                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600 }}>Net Total Amount</span>
+                                        <span style={{ fontSize: '1rem', fontWeight: 800 }}>{formatINR(b.totalAmount || 0)}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed var(--border-color)' }}>
+                                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Total Amount</span>
+                                    <span style={{ fontSize: '1rem', fontWeight: 800 }}>{formatINR(b.totalAmount || 0)}</span>
+                                </div>
+                            )}
+
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                 <span style={{ fontSize: '0.82rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '15px' }}>check_circle</span> Advance Paid
@@ -2795,7 +2815,7 @@ export default function AdminDashboard() {
                                 { icon: 'verified', label: 'Payment Status', value: b.paymentStatus || '—', color: b.paymentStatus === 'SUCCESS' ? '#10B981' : b.paymentStatus === 'PENDING' ? '#F59E0B' : b.paymentStatus === 'DROPPED' ? '#D97706' : b.paymentStatus === 'CANCELLED' ? '#9CA3AF' : '#EF4444' },
                                 { icon: 'tag', label: 'Cashfree Order ID', value: b.orderId || '—', color: '#3B82F6' },
                                 { icon: 'receipt', label: 'Transaction ID', value: b.transactionId || 'Not available', color: '#8B5CF6' },
-                            ].map((f, i) => (
+                            ].concat(Number(b.discount || b.discountAmount || 0) > 0 ? [{ icon: 'local_offer', label: 'Discount Savings', value: `Saved ${formatINR(b.discount || b.discountAmount)}`, color: '#10B981' }] : []).map((f, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', padding: '10px 12px', background: 'var(--bg-color)', borderRadius: '10px' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '16px', color: f.color, marginTop: '2px' }}>{f.icon}</span>
                                     <div style={{ minWidth: 0 }}>
