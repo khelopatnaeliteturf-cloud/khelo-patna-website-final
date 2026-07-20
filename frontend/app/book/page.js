@@ -1108,11 +1108,11 @@ export default function BookPage() {
                                                     }}>
                                                         {slot.booked ? '' : slot.blackout ? '' : `₹${slot.price}`}
                                                     </div>
-                                                    {(slot.booked || slot.blackout) && (
+                                                    {(slot.booked || slot.blackout || !slot.available) && (
                                                         <div className="slot-status-label" style={{
-                                                            color: slot.booked ? '#fca5a5' : 'var(--text-muted)'
+                                                            color: slot.booked ? '#fca5a5' : (slot.tooLate || slot.reason === 'Too Late To Book') ? '#F59E0B' : 'var(--text-muted)'
                                                         }}>
-                                                            {slot.booked ? 'Booked' : 'Closed'}
+                                                            {slot.booked ? 'Booked' : (slot.reason || 'Closed')}
                                                         </div>
                                                     )}
                                                     {isSelected && (
