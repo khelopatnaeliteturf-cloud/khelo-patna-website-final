@@ -19,6 +19,7 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PA
             user: SMTP_USER,
             pass: SMTP_PASS
         },
+        family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud servers without IPv6
         connectionTimeout: 10000, // 10 seconds timeout
         greetingTimeout: 10000,
         socketTimeout: 15000,
