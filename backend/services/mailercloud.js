@@ -64,7 +64,36 @@ async function sendEmail({ to, subject, htmlContent }) {
         return false;
     }
 
-    // 1. Try Resend HTTP API (Port 443 - Bypasses Render Free Tier SMTP Blocks)
+    // 1. Try Brevo (Sendinblue) HTTP API (Port 443 - Recommended for Render Free Tier)
+    if (process.env.BREVO_API_KEY) {
+        try {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': process.env.BREVO_API_KEY,
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+                    to: [{ email: to }],
+                    subject: subject,
+                    htmlContent: htmlContent
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log(`[BREVO DISPATCH SUCCESS] Email sent via Brevo HTTPS API to ${to}. Message ID: ${data.messageId}`);
+                return true;
+            } else {
+                console.error('[BREVO API ERROR]:', data);
+            }
+        } catch (brevoErr) {
+            console.error('[BREVO DISPATCH EXCEPTION]:', brevoErr.message);
+        }
+    }
+
+    // 2. Try Resend HTTP API (Port 443)
     if (process.env.RESEND_API_KEY) {
         try {
             const res = await fetch('https://api.resend.com/emails', {
@@ -89,35 +118,6 @@ async function sendEmail({ to, subject, htmlContent }) {
             }
         } catch (resendErr) {
             console.error('Resend HTTPS dispatch exception:', resendErr.message);
-        }
-    }
-
-    // 2. Try Brevo (Sendinblue) HTTP API (Port 443 - Bypasses Render Free Tier SMTP Blocks)
-    if (process.env.BREVO_API_KEY) {
-        try {
-            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'api-key': process.env.BREVO_API_KEY,
-                    'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-                    to: [{ email: to }],
-                    subject: subject,
-                    htmlContent: htmlContent
-                })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                console.log(`Email successfully dispatched via Brevo HTTPS API to ${to}. Message ID: ${data.messageId}`);
-                return true;
-            } else {
-                console.error('Brevo HTTPS API error response:', data);
-            }
-        } catch (brevoErr) {
-            console.error('Brevo HTTPS dispatch exception:', brevoErr.message);
         }
     }
 
