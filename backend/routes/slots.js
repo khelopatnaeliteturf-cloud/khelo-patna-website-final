@@ -143,7 +143,18 @@ router.get('/available-slots', async (req, res) => {
             });
         }
 
+        const nowMs = Date.now();
+        const leadTimeBufferMs = 60 * 60 * 1000; // 1-hour advance lead time buffer
+
         const slotsResponse = ALL_HOURLY_SLOTS.map(slot => {
+            const startHourNum = parseInt(slot.value.split('-')[0], 10);
+            const startHourStr = startHourNum < 10 ? `0${startHourNum}` : `${startHourNum}`;
+            const slotStartISTStr = `${date}T${startHourStr}:00:00+05:30`;
+            const slotStartMs = new Date(slotStartISTStr).getTime();
+
+            // Slot is too late to book if it starts in less than 1 hour from current time
+            const isTooLateToBook = !isNaN(slotStartMs) && (slotStartMs - nowMs) < leadTimeBufferMs;
+
             const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
             const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
             const isBlackoutSetting = isWeekday && slot.startHour >= settings.blackoutHours.start && slot.startHour < settings.blackoutHours.end;
@@ -155,7 +166,7 @@ router.get('/available-slots', async (req, res) => {
                     isCustomClosure = true;
                     closureReason = closure.reason || 'Closed';
                 } else {
-                    const slotStart = new Date(date + `T${slot.value.split('-')[0]}:00:00`);
+                    const slotStart = new Date(date + `T${startHourStr}:00:00`);
                     if (slotStart >= closure.startDate && slotStart < closure.endDate) {
                         isCustomClosure = true;
                         closureReason = closure.reason || 'Closed';
@@ -163,8 +174,14 @@ router.get('/available-slots', async (req, res) => {
                 }
             });
 
-            const isClosed = isBlackoutSetting || isCustomClosure;
+            const isClosed = isBlackoutSetting || isCustomClosure || isTooLateToBook;
             const isAvailable = !isBooked && !isClosed;
+
+            let displayReason = '';
+            if (isBooked) displayReason = 'Booked';
+            else if (isTooLateToBook) displayReason = 'Too Late To Book';
+            else if (isCustomClosure) displayReason = closureReason;
+            else if (isBlackoutSetting) displayReason = 'Academy';
 
             return {
                 value: slot.value,
@@ -173,17 +190,12 @@ router.get('/available-slots', async (req, res) => {
                 available: isAvailable,
                 booked: isBooked,
                 blackout: isClosed,
-                reason: isBooked ? 'Booked' : (isCustomClosure ? closureReason : (isBlackoutSetting ? 'Academy' : ''))
+                tooLate: isTooLateToBook,
+                reason: displayReason
             };
         });
 
-        let filteredSlotsResponse = slotsResponse;
-        if (date === todayISTStr) {
-            filteredSlotsResponse = slotsResponse.filter(slot => {
-                const slotDef = ALL_HOURLY_SLOTS.find(s => s.value === slot.value);
-                return slotDef && slotDef.startHour > currentHourIST;
-            });
-        }
+        const filteredSlotsResponse = slotsResponse;
 
         res.json({
             day_info: {
