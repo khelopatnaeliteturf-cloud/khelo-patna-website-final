@@ -1422,4 +1422,48 @@ router.delete('/admin/coupons/:id', authenticateToken, authorizeRoles('ADMIN', '
     }
 });
 
+// GET /api/admin/test-smtp
+// Diagnostic endpoint to test Hostinger SMTP ports and servers
+router.get('/admin/test-smtp', authenticateToken, async (req, res) => {
+    const nodemailer = require('nodemailer');
+    const results = [];
+
+    const configsToTest = [
+        { name: 'Hostinger Standard (Port 465 SSL)', host: process.env.SMTP_HOST || 'smtp.hostinger.com', port: 465, secure: true },
+        { name: 'Hostinger Standard (Port 587 STARTTLS)', host: process.env.SMTP_HOST || 'smtp.hostinger.com', port: 587, secure: false },
+        { name: 'Hostinger Titan Mail (Port 465 SSL)', host: 'smtp.titan.email', port: 465, secure: true },
+        { name: 'Hostinger Titan Mail (Port 587 TLS)', host: 'smtp.titan.email', port: 587, secure: false },
+        { name: 'Direct Domain Mail (Port 465 SSL)', host: 'mail.khelopatna.in', port: 465, secure: true },
+        { name: 'Direct Domain Mail (Port 587 TLS)', host: 'mail.khelopatna.in', port: 587, secure: false }
+    ];
+
+    for (const cfg of configsToTest) {
+        try {
+            const tp = nodemailer.createTransport({
+                host: cfg.host,
+                port: cfg.port,
+                secure: cfg.secure,
+                auth: {
+                    user: process.env.SMTP_USER || 'service@khelopatna.in',
+                    pass: process.env.SMTP_PASS || ''
+                },
+                connectionTimeout: 6000,
+                greetingTimeout: 6000,
+                socketTimeout: 6000,
+                tls: { rejectUnauthorized: false }
+            });
+            await tp.verify();
+            results.push({ config: cfg.name, host: cfg.host, port: cfg.port, status: 'CONNECTED_SUCCESSFULLY' });
+        } catch (err) {
+            results.push({ config: cfg.name, host: cfg.host, port: cfg.port, status: 'FAILED', error: err.message });
+        }
+    }
+
+    res.json({
+        smtpUser: process.env.SMTP_USER || 'service@khelopatna.in',
+        hasPasswordSet: !!(process.env.SMTP_PASS && process.env.SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PASSWORD'),
+        diagnosticResults: results
+    });
+});
+
 module.exports = router;
