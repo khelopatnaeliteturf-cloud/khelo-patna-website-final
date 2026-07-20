@@ -56,7 +56,7 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PA
 }
 
 /**
- * Sends a transactional email using Nodemailer / SMTP.
+ * Sends a transactional email using Resend / Brevo HTTPS APIs (Port 443) or Nodemailer SMTP.
  */
 async function sendEmail({ to, subject, htmlContent }) {
     if (!to) {
@@ -64,6 +64,64 @@ async function sendEmail({ to, subject, htmlContent }) {
         return false;
     }
 
+    // 1. Try Resend HTTP API (Port 443 - Bypasses Render Free Tier SMTP Blocks)
+    if (process.env.RESEND_API_KEY) {
+        try {
+            const res = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from: process.env.RESEND_SENDER || `${SENDER_NAME} <onboarding@resend.dev>`,
+                    to: [to],
+                    subject: subject,
+                    html: htmlContent
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log(`Email successfully dispatched via Resend HTTPS API to ${to}. ID: ${data.id}`);
+                return true;
+            } else {
+                console.error('Resend HTTPS API error response:', data);
+            }
+        } catch (resendErr) {
+            console.error('Resend HTTPS dispatch exception:', resendErr.message);
+        }
+    }
+
+    // 2. Try Brevo (Sendinblue) HTTP API (Port 443 - Bypasses Render Free Tier SMTP Blocks)
+    if (process.env.BREVO_API_KEY) {
+        try {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': process.env.BREVO_API_KEY,
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+                    to: [{ email: to }],
+                    subject: subject,
+                    htmlContent: htmlContent
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                console.log(`Email successfully dispatched via Brevo HTTPS API to ${to}. Message ID: ${data.messageId}`);
+                return true;
+            } else {
+                console.error('Brevo HTTPS API error response:', data);
+            }
+        } catch (brevoErr) {
+            console.error('Brevo HTTPS dispatch exception:', brevoErr.message);
+        }
+    }
+
+    // 3. Fallback to Nodemailer SMTP (Note: Render Free Tier blocks outbound SMTP ports 25, 465, 587)
     if (!transporter) {
         console.log(`[MOCK EMAIL (SMTP PASS MISSING ON SERVER)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
         return true;
@@ -79,7 +137,7 @@ async function sendEmail({ to, subject, htmlContent }) {
         console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}. Response ID: ${info.messageId}`);
         return true;
     } catch (err) {
-        console.error('SMTP email dispatch error:', err);
+        console.error('SMTP email dispatch error:', err.message || err);
         return false;
     }
 }
