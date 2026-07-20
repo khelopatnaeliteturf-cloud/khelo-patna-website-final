@@ -171,17 +171,15 @@ const svgIcons = {
 };
 
 /**
- * Dispatches a high-contrast Light Gradient Turf email pass with sport animations to the customer.
+ * Dispatches a high-contrast Light Gradient Turf email pass with official logo and match pitch animation.
  */
 async function sendBookingInvoiceEmail(booking) {
     const isCricket = (booking.sport || '').toLowerCase().includes('cricket');
     const sportName = (booking.sport || 'TURF').toUpperCase();
     const subject = `Booking Confirmed: ${sportName} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
 
-    // Sport specific animation GIFs (100% supported across Gmail, Apple Mail, Outlook)
-    const sportGifUrl = isCricket
-        ? 'https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif' // Animated Cricket action GIF
-        : 'https://media.giphy.com/media/26tP41fh76vmLO3Oo/giphy.gif'; // Animated Football action GIF
+    // Official logo URL
+    const logoUrl = 'https://khelopatna.in/logo.png';
 
     const totalAmt = Number(booking.totalAmount || 0);
     const discountAmt = Number(booking.discount || booking.discountAmount || 0);
@@ -199,6 +197,56 @@ async function sendBookingInvoiceEmail(booking) {
         formattedDate = booking.date;
     }
 
+    // Sport Match Day Pitch Action Graphic over the receipt card
+    const pitchActionGraphic = isCricket ? `
+      <!-- Cricket Shot Over The Pitch Animation Graphic -->
+      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 18px; padding: 18px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 1.5px solid #34D399; box-shadow: 0 8px 20px rgba(4, 120, 87, 0.25);">
+        <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 4px;">MATCH DAY ACTION</div>
+        <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF;">BATSMAN HITS A MASSIVE 6 OVER THE PITCH!</div>
+        <div style="font-size: 12px; color: #D1FAE5; margin-top: 2px; font-weight: 600;">Indoor Cricket Net 1 &bull; Floodlight Match Ready</div>
+        
+        <!-- Cricket Pitch SVG Illustration -->
+        <svg viewBox="0 0 400 70" style="width: 100%; max-width: 360px; margin-top: 10px; height: 55px;">
+          <!-- Pitch Grass Turf -->
+          <rect x="10" y="25" width="380" height="30" rx="15" fill="#059669" stroke="#34D399" stroke-width="2"/>
+          <!-- Pitch Strip -->
+          <rect x="130" y="30" width="140" height="20" fill="#D97706" rx="3" opacity="0.85"/>
+          <!-- Bowler & Batsman Stumps -->
+          <line x1="140" y1="26" x2="140" y2="48" stroke="#FFFFFF" stroke-width="3"/>
+          <line x1="260" y1="26" x2="260" y2="48" stroke="#FFFFFF" stroke-width="3"/>
+          <!-- High 6 Shot Ball Trajectory Arc -->
+          <path d="M 142 35 Q 240 -12 355 20" stroke="#FBBF24" stroke-width="3" fill="none" stroke-dasharray="6,4"/>
+          <!-- Cricket Ball in Flight -->
+          <circle cx="355" cy="20" r="6" fill="#EF4444" stroke="#FFFFFF" stroke-width="1.5"/>
+          <!-- SIX Banner Badge -->
+          <rect x="330" y="0" width="50" height="18" rx="9" fill="#FBBF24"/>
+          <text x="355" y="13" font-size="11" font-weight="900" fill="#040609" text-anchor="middle">6 RUNS!</text>
+        </svg>
+      </div>
+    ` : `
+      <!-- Football Goal Pitch Animation Graphic -->
+      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 18px; padding: 18px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 1.5px solid #34D399; box-shadow: 0 8px 20px rgba(4, 120, 87, 0.25);">
+        <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 4px;">MATCH DAY ACTION</div>
+        <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF;">SPECTACULAR TOP-CORNER GOAL SCORED!</div>
+        <div style="font-size: 12px; color: #D1FAE5; margin-top: 2px; font-weight: 600;">Indoor Football Arena &bull; Pro FIFA Turf Ready</div>
+        
+        <!-- Football Pitch SVG Illustration -->
+        <svg viewBox="0 0 400 70" style="width: 100%; max-width: 360px; margin-top: 10px; height: 55px;">
+          <!-- Pitch Grass Turf -->
+          <rect x="10" y="25" width="380" height="30" rx="15" fill="#059669" stroke="#34D399" stroke-width="2"/>
+          <!-- Goal Post Net -->
+          <rect x="325" y="16" width="45" height="38" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-dasharray="3,3"/>
+          <!-- Ball Trajectory Curve into Goal -->
+          <path d="M 50 40 Q 190 -8 340 24" stroke="#FBBF24" stroke-width="3" fill="none" stroke-dasharray="6,4"/>
+          <!-- Football in Net -->
+          <circle cx="340" cy="24" r="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+          <!-- GOAL Banner Badge -->
+          <rect x="315" y="0" width="55" height="18" rx="9" fill="#10B981"/>
+          <text x="342" y="13" font-size="11" font-weight="900" fill="#FFFFFF" text-anchor="middle">GOAL!</text>
+        </svg>
+      </div>
+    `;
+
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -212,9 +260,9 @@ async function sendBookingInvoiceEmail(booking) {
     <!-- Top Turf Green Gradient Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%); padding: 32px 20px; text-align: center; color: #FFFFFF;">
       
-      <!-- Sport Animated GIF Badge -->
+      <!-- Official Khelo Patna Logo Badge -->
       <div style="margin-bottom: 12px;">
-        <img src="${sportGifUrl}" alt="${sportName}" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); object-fit: cover;">
+        <img src="${logoUrl}" alt="Khelo Patna Elite Turf Logo" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); background: #FFFFFF; object-fit: contain; padding: 4px;">
       </div>
 
       <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">
@@ -232,6 +280,9 @@ async function sendBookingInvoiceEmail(booking) {
     <!-- Booking Content Container -->
     <div style="padding: 24px 20px; background: #FFFFFF;">
       
+      <!-- Match Day Action Animation Graphic Over Receipt -->
+      ${pitchActionGraphic}
+
       <!-- Customer Info & Status Badge -->
       <div style="border-bottom: 2px dashed #E5E7EB; padding-bottom: 16px; margin-bottom: 20px;">
         <table style="width: 100%; border-collapse: collapse;">
