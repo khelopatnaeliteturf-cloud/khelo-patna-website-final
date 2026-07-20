@@ -996,6 +996,97 @@ export default function BookPage() {
                                 </div>
                             ) : (
                                 <div>
+                                    {/* Smart Recommendation Banner when 0 slots available for selected date */}
+                                    {!slots.some(s => s.available) && (() => {
+                                        const getTomorrowDateStr = (currentDateStr) => {
+                                            try {
+                                                const d = new Date(currentDateStr + 'T00:00:00');
+                                                d.setDate(d.getDate() + 1);
+                                                return d.toISOString().split('T')[0];
+                                            } catch (e) {
+                                                const d = new Date();
+                                                d.setDate(d.getDate() + 1);
+                                                return d.toISOString().split('T')[0];
+                                            }
+                                        };
+                                        const tomorrowDateStr = getTomorrowDateStr(date);
+                                        let tomorrowFormatted = tomorrowDateStr;
+                                        try {
+                                            tomorrowFormatted = new Date(tomorrowDateStr + 'T00:00:00').toLocaleDateString('en-IN', {
+                                                weekday: 'short',
+                                                day: '2-digit',
+                                                month: 'short'
+                                            });
+                                        } catch (e) {}
+
+                                        let currentFormatted = date;
+                                        try {
+                                            currentFormatted = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', {
+                                                day: '2-digit',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            });
+                                        } catch (e) {}
+
+                                        return (
+                                            <div className="glass-panel animate-fade-in" style={{
+                                                padding: '28px 24px',
+                                                marginBottom: '28px',
+                                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.08) 100%)',
+                                                border: '1px solid rgba(245, 158, 11, 0.35)',
+                                                borderRadius: '20px',
+                                                textAlign: 'center',
+                                                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+                                            }}>
+                                                <div style={{
+                                                    width: '48px', height: '48px', borderRadius: '50%',
+                                                    background: 'rgba(245, 158, 11, 0.2)', display: 'flex',
+                                                    alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px'
+                                                }}>
+                                                    <span style={{ fontSize: '1.5rem' }}>⏳</span>
+                                                </div>
+
+                                                <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FBBF24', marginBottom: '6px' }}>
+                                                    All Slots for {currentFormatted} are Fully Booked or Passed
+                                                </h4>
+                                                <p style={{ color: 'var(--text-secondary)', fontFamily: 'Inter', fontSize: '0.86rem', maxWidth: '500px', margin: '0 auto 20px', lineHeight: 1.6 }}>
+                                                    No open slots remain for this date. Switch to tomorrow or try another arena below to reserve your slot!
+                                                </p>
+
+                                                {/* 1-Click Action Buttons */}
+                                                <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setDate(tomorrowDateStr)}
+                                                        className="btn-premium"
+                                                        style={{
+                                                            padding: '12px 24px',
+                                                            fontSize: '0.82rem',
+                                                            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                                            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.35)'
+                                                        }}
+                                                    >
+                                                        <span>📅 Switch to Tomorrow ({tomorrowFormatted})</span>
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSport(sport === 'cricket' ? 'football' : 'cricket')}
+                                                        className="btn-premium"
+                                                        style={{
+                                                            padding: '12px 24px',
+                                                            fontSize: '0.82rem',
+                                                            background: 'rgba(255, 255, 255, 0.08)',
+                                                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                                                        }}
+                                                    >
+                                                        <span>{sport === 'cricket' ? '⚽ Try Football Arena' : '🏏 Try Cricket Arena'}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
                                     <div className="slot-grid">
                                         {slots.map((slot) => {
                                             const isSelected = selectedSlots.includes(slot.value);
