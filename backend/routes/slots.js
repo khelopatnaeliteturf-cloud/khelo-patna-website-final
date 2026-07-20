@@ -197,10 +197,7 @@ router.get('/available-slots', async (req, res) => {
 
         let filteredSlotsResponse = slotsResponse;
         if (date === todayISTStr && req.query.include_past !== 'true') {
-            filteredSlotsResponse = slotsResponse.filter(slot => {
-                const slotDef = ALL_HOURLY_SLOTS.find(s => s.value === slot.value);
-                return slotDef && slotDef.startHour >= currentHourIST;
-            });
+            filteredSlotsResponse = slotsResponse.filter(slot => !slot.tooLate);
         }
 
         res.json({
