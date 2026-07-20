@@ -133,8 +133,9 @@ export default function BookPage() {
                 }
                 setPaymentSuccessInfo({
                     orderId: orderId,
-                    amount: data.payment_details?.amount,
-                    method: String(displayMethod).toUpperCase()
+                    amount: data.payment_details?.amount || data.booking_details?.paidAmount,
+                    method: String(displayMethod).toUpperCase(),
+                    bookingDetails: data.booking_details
                 });
             } else {
                 setPaymentFailedInfo({
@@ -581,56 +582,210 @@ export default function BookPage() {
                     </div>
                 )}
 
-                {/* ─── Payment Success ─── */}
-                {paymentSuccessInfo && !verifyingPayment && (
-                    <div style={{
-                        display: 'flex', flexDirection: 'column', alignItems: 'center',
-                        justifyContent: 'center', minHeight: '65vh'
-                    }}>
-                        <div className="glass-card animate-fade-in" style={{
-                            maxWidth: '520px', width: '100%', padding: '48px 40px',
-                            textAlign: 'center', border: '1px solid rgba(57, 255, 20, 0.25)'
+                {/* ─── Payment Success View ─── */}
+                {paymentSuccessInfo && !verifyingPayment && (() => {
+                    const bd = paymentSuccessInfo.bookingDetails;
+                    const totalRate = bd ? Number(bd.totalAmount || 0) : Number(paymentSuccessInfo.amount || 0);
+                    const paidNow = Number(paymentSuccessInfo.amount || bd?.paidAmount || 0);
+                    const restDue = Math.max(0, totalRate - paidNow);
+
+                    const formatBookingDate = (dStr) => {
+                        if (!dStr) return '—';
+                        try {
+                            return new Date(dStr + 'T00:00:00').toLocaleDateString('en-IN', {
+                                weekday: 'short',
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                            });
+                        } catch (e) {
+                            return dStr;
+                        }
+                    };
+
+                    const formatSlotTo12Hr = (slotVal) => {
+                        if (!slotVal || typeof slotVal !== 'string') return slotVal;
+                        const parts = slotVal.split('-');
+                        if (parts.length !== 2) return slotVal;
+
+                        const formatHour = (h) => {
+                            let hourNum = parseInt(h, 10);
+                            if (isNaN(hourNum)) return h;
+                            if (hourNum === 0 || hourNum === 24) return '12:00 AM';
+                            if (hourNum === 12) return '12:00 PM';
+                            if (hourNum > 12) {
+                                const val = hourNum - 12;
+                                return `${val < 10 ? '0' + val : val}:00 PM`;
+                            }
+                            return `${hourNum < 10 ? '0' + hourNum : hourNum}:00 AM`;
+                        };
+
+                        return `${formatHour(parts[0])} - ${formatHour(parts[1])}`;
+                    };
+
+                    return (
+                        <div style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                            justifyContent: 'center', minHeight: '70vh', padding: '20px 0'
                         }}>
-                            {/* Green checkmark ring */}
-                            <div className="success-check-ring">
-                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                    <path d="M12 25L20 33L36 15" stroke="var(--neon)" strokeWidth="3.5"
-                                          strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </div>
-
-                            <h2 className="gradient-text" style={{ fontSize: '1.6rem', marginBottom: '8px' }}>
-                                Booking Successful!
-                            </h2>
-                            <p style={{
-                                color: 'var(--text-secondary)', fontFamily: 'Inter', fontSize: '0.9rem',
-                                lineHeight: 1.6, marginBottom: '28px'
+                            <div className="glass-card animate-fade-in" style={{
+                                maxWidth: '580px', width: '100%', padding: '40px 32px',
+                                textAlign: 'center', border: '1px solid rgba(57, 255, 20, 0.3)',
+                                boxShadow: '0 20px 50px rgba(16, 185, 129, 0.15)', borderRadius: '24px'
                             }}>
-                                Your turf slot has been secured. A confirmation message and email receipt are on their way.
-                            </p>
+                                {/* Green checkmark ring */}
+                                <div className="success-check-ring" style={{ margin: '0 auto 20px' }}>
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <path d="M12 25L20 33L36 15" stroke="var(--neon)" strokeWidth="3.5"
+                                              strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                </div>
 
-                            {/* Details panel */}
-                            <div className="glass-panel" style={{ padding: '20px', textAlign: 'left', marginBottom: '28px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
-                                    <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Order ID</span>
-                                    <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600 }}>{paymentSuccessInfo.orderId}</span>
+                                <div style={{
+                                    display: 'inline-block', background: 'rgba(16, 185, 129, 0.15)',
+                                    border: '1px solid rgba(16, 185, 129, 0.3)', color: '#10B981',
+                                    padding: '4px 14px', borderRadius: '20px', fontSize: '0.72rem',
+                                    fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px'
+                                }}>
+                                    SLOT RESERVED & CONFIRMED
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-ghost)' }}>
-                                    <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Paid Amount</span>
-                                    <span style={{ color: 'var(--neon)', fontFamily: 'Unbounded', fontSize: '0.9rem', fontWeight: 700 }}>₹{paymentSuccessInfo.amount}</span>
+
+                                <h2 className="gradient-text" style={{ fontSize: '1.8rem', marginBottom: '6px' }}>
+                                    Booking Successful!
+                                </h2>
+                                <p style={{
+                                    color: 'var(--text-secondary)', fontFamily: 'Inter', fontSize: '0.88rem',
+                                    lineHeight: 1.6, marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px'
+                                }}>
+                                    Your booking reference pass has been generated. Confirmation notification and receipt have been dispatched.
+                                </p>
+
+                                {/* Complete Booking Pass Panel */}
+                                <div className="glass-panel" style={{ padding: '24px', textAlign: 'left', marginBottom: '24px', borderRadius: '18px' }}>
+                                    
+                                    {/* Header info */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '16px', borderBottom: '1px dashed var(--border-subtle)', marginBottom: '16px' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>RESERVED FOR</div>
+                                            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>
+                                                {bd?.customerName || 'Valued Customer'}
+                                            </div>
+                                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                                📞 {bd?.customerPhone || '—'}
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <span style={{
+                                                display: 'inline-block', background: '#10B981', color: '#040609',
+                                                padding: '4px 10px', borderRadius: '10px', fontSize: '0.68rem',
+                                                fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px'
+                                            }}>
+                                                CONFIRMED
+                                            </span>
+                                            <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                {paymentSuccessInfo.orderId}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Details Table */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        
+                                        {/* Sport */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Sport Arena</span>
+                                            <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                                                {bd?.sport ? `${bd.sport === 'cricket' ? '🏏' : bd.sport === 'football' ? '⚽' : '🎯'} ${bd.sport} Arena` : 'Khelo Patna Turf'}
+                                            </span>
+                                        </div>
+
+                                        {/* Date */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Date</span>
+                                            <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.85rem', fontWeight: 700 }}>
+                                                📅 {formatBookingDate(bd?.date)}
+                                            </span>
+                                        </div>
+
+                                        {/* Time Slots */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600, marginTop: '2px' }}>Time</span>
+                                            <span style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '0.88rem', fontWeight: 800, textAlign: 'right', maxWidth: '65%' }}>
+                                                ⏰ {(bd?.timeSlots || []).map(formatSlotTo12Hr).join(', ') || '—'}
+                                            </span>
+                                        </div>
+
+                                        {/* Financial Breakdown */}
+                                        <div style={{ borderTop: '1px dashed var(--border-subtle)', paddingTop: '12px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            
+                                            {/* Total Slot Rate */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Total Slot Rate</span>
+                                                <span style={{ color: 'var(--text-secondary)', fontFamily: 'Space Grotesk', fontSize: '0.85rem', fontWeight: 700 }}>
+                                                    ₹{totalRate}
+                                                </span>
+                                            </div>
+
+                                            {/* Paid Amount */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>
+                                                    Paid Online ({paymentSuccessInfo.method})
+                                                </span>
+                                                <span style={{ color: 'var(--neon)', fontFamily: 'Unbounded', fontSize: '0.95rem', fontWeight: 800 }}>
+                                                    ₹{paidNow}
+                                                </span>
+                                            </div>
+
+                                            {/* Rest Due at Venue */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: restDue > 0 ? 'rgba(251, 191, 36, 0.08)' : 'rgba(16, 185, 129, 0.08)', padding: '8px 12px', borderRadius: '10px' }}>
+                                                <span style={{ color: restDue > 0 ? '#FBBF24' : '#10B981', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 800 }}>
+                                                    {restDue > 0 ? 'Rest Due at Venue' : 'Payment Status'}
+                                                </span>
+                                                <span style={{ color: restDue > 0 ? '#FBBF24' : '#10B981', fontFamily: 'Unbounded', fontSize: '0.9rem', fontWeight: 800 }}>
+                                                    {restDue > 0 ? `₹${restDue}` : 'PAID IN FULL'}
+                                                </span>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-                                    <span style={{ color: 'var(--text-muted)', fontFamily: 'Space Grotesk', fontSize: '0.78rem', fontWeight: 600 }}>Payment Type</span>
-                                    <span style={{ color: '#fff', fontFamily: 'Space Grotesk', fontSize: '0.82rem', fontWeight: 600 }}>{paymentSuccessInfo.method}</span>
+
+                                {/* Action Buttons */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <a 
+                                        href="https://maps.google.com/?q=Khelo+Patna+Elite+Turf+Kumhrar+Patna" 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="btn-premium"
+                                        style={{ textDecoration: 'none', width: '100%', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+                                    >
+                                        <span>📍 Get Directions on Google Maps</span>
+                                    </a>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        <button 
+                                            onClick={() => window.print()}
+                                            className="btn-premium" 
+                                            style={{ textDecoration: 'none', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
+                                        >
+                                            <span>🖨️ Print Pass</span>
+                                        </button>
+                                        <Link 
+                                            href="/" 
+                                            className="btn-premium" 
+                                            style={{ textDecoration: 'none', justifyContent: 'center' }}
+                                        >
+                                            <span>Return Home</span>
+                                        </Link>
+                                    </div>
                                 </div>
+
                             </div>
-
-                            <Link href="/" className="btn-premium" style={{ textDecoration: 'none', width: '100%', justifyContent: 'center' }}>
-                                <span>Return to Homepage</span>
-                            </Link>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* ─── Payment Failed ─── */}
                 {paymentFailedInfo && !verifyingPayment && (

@@ -428,7 +428,20 @@ router.post('/payment/verify', async (req, res) => {
                     payment_status: 'SUCCESS',
                     payment_details: hasValidDetails 
                         ? booking.paymentDetails 
-                        : { amount: booking.paidAmount, payment_method: booking.paymentMethod || 'offline' }
+                        : { amount: booking.paidAmount, payment_method: booking.paymentMethod || 'offline' },
+                    booking_details: {
+                        customerName: booking.customerName,
+                        customerPhone: booking.customerPhone,
+                        customerEmail: booking.customerEmail,
+                        sport: booking.sport,
+                        date: booking.date,
+                        timeSlots: booking.timeSlots,
+                        totalAmount: booking.totalAmount,
+                        paidAmount: booking.paidAmount,
+                        discountAmount: booking.discountAmount || booking.discount || 0,
+                        couponCode: booking.couponCode,
+                        orderId: booking.orderId
+                    }
                 });
             }
         } else if (order_id.startsWith('KPFEE-')) {
@@ -524,10 +537,25 @@ router.post('/payment/verify', async (req, res) => {
                 }
             }
 
+            const booking = await Booking.findOne({ orderId: order_id });
+
             return res.json({
                 success: true,
                 payment_status: 'SUCCESS',
-                payment_details: verifyResult.payment_details
+                payment_details: verifyResult.payment_details,
+                booking_details: booking ? {
+                    customerName: booking.customerName,
+                    customerPhone: booking.customerPhone,
+                    customerEmail: booking.customerEmail,
+                    sport: booking.sport,
+                    date: booking.date,
+                    timeSlots: booking.timeSlots,
+                    totalAmount: booking.totalAmount,
+                    paidAmount: booking.paidAmount,
+                    discountAmount: booking.discountAmount || booking.discount || 0,
+                    couponCode: booking.couponCode,
+                    orderId: booking.orderId
+                } : null
             });
         }
 
