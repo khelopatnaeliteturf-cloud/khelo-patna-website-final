@@ -1,3 +1,9 @@
+// Force IPv4-first DNS resolution process-wide to prevent ENETUNREACH IPv6 errors on cloud hosts
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
+
 // Shim global crypto for Baileys compatibility in Node 18
 if (!globalThis.crypto) {
     globalThis.crypto = require('crypto').webcrypto;

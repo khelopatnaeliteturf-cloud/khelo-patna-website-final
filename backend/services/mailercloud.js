@@ -2,6 +2,10 @@ const nodemailer = require('nodemailer');
 const dns = require('dns');
 const net = require('net');
 
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
+
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
 const SMTP_SECURE = process.env.SMTP_SECURE !== undefined ? process.env.SMTP_SECURE === 'true' : (SMTP_PORT === 465);
