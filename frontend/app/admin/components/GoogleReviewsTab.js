@@ -112,38 +112,35 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             padding-bottom: 12px;
                         }
                         .logo-circle {
-                            width: 50px;
-                            height: 50px;
-                            border-radius: 10px;
-                            background: #059669;
+                            width: 75px;
+                            height: 75px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            border: 2px solid #fbbf24;
                             overflow: hidden;
                         }
                         .logo-circle img {
-                            width: 85%;
-                            height: 85%;
+                            width: 100%;
+                            height: 100%;
                             object-fit: contain;
                         }
                         .school-info {
                             text-align: left;
                         }
                         .school-name {
-                            font-size: 26px;
+                            font-size: 30px;
                             font-weight: 900;
                             color: #1e293b;
                             margin: 0;
                             letter-spacing: -0.5px;
                         }
                         .school-tagline {
-                            font-size: 11px;
+                            font-size: 13px;
                             color: #fbbf24;
                             font-weight: 700;
                             margin: 4px 0 0 0;
                             text-transform: uppercase;
-                            letter-spacing: 1.5px;
+                            letter-spacing: 2px;
                         }
                         .main-content {
                             display: flex;
@@ -155,101 +152,101 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             padding: 10px 0;
                         }
                         .heading {
-                            font-size: 32px;
+                            font-size: 40px;
                             font-weight: 900;
                             color: #1e293b;
-                            margin: 0 0 6px 0;
+                            margin: 0 0 8px 0;
                             text-align: center;
                             letter-spacing: -1px;
                         }
                         .stars {
                             display: flex;
-                            gap: 6px;
-                            margin-bottom: 12px;
+                            gap: 8px;
+                            margin-bottom: 16px;
                         }
                         .star {
-                            font-size: 30px;
+                            font-size: 38px;
                             color: #fbbf24;
                         }
                         .description {
-                            font-size: 13.5px;
+                            font-size: 16px;
                             color: #64748b;
                             text-align: center;
-                            max-width: 85%;
+                            max-width: 90%;
                             line-height: 1.5;
-                            margin-bottom: 20px;
+                            margin-bottom: 24px;
                         }
                         .qr-box {
-                            padding: 15px;
+                            padding: 20px;
                             background: white;
-                            border: 3px solid #059669;
-                            border-radius: 14px;
+                            border: 4px solid #059669;
+                            border-radius: 16px;
                             box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.05);
                             display: flex;
                             flex-direction: column;
                             align-items: center;
-                            gap: 8px;
+                            gap: 10px;
                         }
                         .qr-image {
-                            width: 150px;
-                            height: 150px;
+                            width: 230px;
+                            height: 230px;
                             display: block;
                         }
                         .qr-label {
-                            font-size: 11px;
+                            font-size: 14px;
                             font-weight: 800;
                             color: #059669;
                             text-transform: uppercase;
-                            letter-spacing: 1px;
+                            letter-spacing: 1.5px;
                         }
                         .steps-box {
                             width: 100%;
                             background: #f8fafc;
                             border: 1px solid #e2e8f0;
-                            border-radius: 14px;
-                            padding: 12px 20px;
+                            border-radius: 16px;
+                            padding: 16px 24px;
                             box-sizing: border-box;
-                            margin-top: 20px;
+                            margin-top: 24px;
                         }
                         .steps-title {
-                            font-size: 13px;
+                            font-size: 16px;
                             font-weight: 800;
                             color: #1e293b;
                             text-transform: uppercase;
                             text-align: center;
-                            margin-bottom: 8px;
+                            margin-bottom: 12px;
                             letter-spacing: 0.5px;
                         }
                         .step-item {
                             display: flex;
                             align-items: flex-start;
-                            gap: 10px;
-                            margin-bottom: 6px;
-                            font-size: 12px;
+                            gap: 12px;
+                            margin-bottom: 8px;
+                            font-size: 15px;
                             color: #475569;
-                            line-height: 1.3;
+                            line-height: 1.4;
                         }
                         .step-num {
                             background: #059669;
                             color: white;
                             font-weight: bold;
-                            width: 16px;
-                            height: 16px;
+                            width: 20px;
+                            height: 20px;
                             border-radius: 50%;
                             display: flex;
                             align-items: center;
                             justify-content: center;
                             flex-shrink: 0;
-                            font-size: 9px;
-                            margin-top: 1px;
+                            font-size: 11px;
+                            margin-top: 2px;
                         }
                         .footer {
                             width: 100%;
                             border-top: 1px solid #e2e8f0;
-                            padding-top: 12px;
+                            padding-top: 16px;
                             display: flex;
                             justify-content: space-between;
-                            font-size: 10px;
+                            font-size: 13px;
                             color: #64748b;
                             font-weight: 600;
                         }
@@ -320,6 +317,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         </div>
                         <div class="footer">
                             <span>📍 Kumhrar, Sandalpur Road, Patna</span>
+                            <span>📞 (+91) 970 970 1400</span>
                             <span>🌐 www.khelopatna.in</span>
                         </div>
                     </div>
