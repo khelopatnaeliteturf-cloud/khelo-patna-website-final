@@ -64,27 +64,35 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                 <head>
                     <title>Print Google Review Poster - Khelo Patna</title>
                     <style>
+                        @page {
+                            size: A4;
+                            margin: 0;
+                        }
                         body {
                             margin: 0;
                             padding: 0;
                             background-color: #f1f5f9;
                             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                             display: flex;
-                            justifyContent: center;
+                            justify-content: center;
                             align-items: center;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
                         }
                         .a4-container {
                             width: 210mm;
                             height: 297mm;
                             background: white;
                             box-sizing: border-box;
-                            padding: 25mm 20mm;
+                            padding: 12mm 15mm;
                             display: flex;
                             flex-direction: column;
-                            justifyContent: space-between;
+                            justify-content: space-between;
                             align-items: center;
                             position: relative;
                             border: 12px solid #059669; /* Emerald Green Primary */
+                            page-break-after: avoid;
+                            page-break-inside: avoid;
                         }
                         .a4-inner-border {
                             position: absolute;
@@ -101,16 +109,16 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             gap: 20px;
                             width: 100%;
                             border-bottom: 3px double #fbbf24;
-                            padding-bottom: 20px;
+                            padding-bottom: 12px;
                         }
                         .logo-circle {
-                            width: 60px;
-                            height: 60px;
-                            border-radius: 12px;
+                            width: 50px;
+                            height: 50px;
+                            border-radius: 10px;
                             background: #059669;
                             display: flex;
                             align-items: center;
-                            justifyContent: center;
+                            justify-content: center;
                             border: 2px solid #fbbf24;
                             overflow: hidden;
                         }
@@ -123,14 +131,14 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             text-align: left;
                         }
                         .school-name {
-                            font-size: 28px;
+                            font-size: 26px;
                             font-weight: 900;
                             color: #1e293b;
                             margin: 0;
                             letter-spacing: -0.5px;
                         }
                         .school-tagline {
-                            font-size: 12px;
+                            font-size: 11px;
                             color: #fbbf24;
                             font-weight: 700;
                             margin: 4px 0 0 0;
@@ -141,54 +149,54 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             display: flex;
                             flex-direction: column;
                             align-items: center;
-                            justifyContent: center;
+                            justify-content: center;
                             flex-grow: 1;
                             width: 100%;
-                            padding: 20px 0;
+                            padding: 10px 0;
                         }
                         .heading {
-                            font-size: 38px;
+                            font-size: 32px;
                             font-weight: 900;
                             color: #1e293b;
-                            margin: 0 0 10px 0;
+                            margin: 0 0 6px 0;
                             text-align: center;
                             letter-spacing: -1px;
                         }
                         .stars {
                             display: flex;
                             gap: 6px;
-                            margin-bottom: 20px;
+                            margin-bottom: 12px;
                         }
                         .star {
-                            font-size: 36px;
+                            font-size: 30px;
                             color: #fbbf24;
                         }
                         .description {
-                            font-size: 16px;
+                            font-size: 13.5px;
                             color: #64748b;
                             text-align: center;
-                            max-width: 80%;
-                            line-height: 1.6;
-                            margin-bottom: 30px;
+                            max-width: 85%;
+                            line-height: 1.5;
+                            margin-bottom: 20px;
                         }
                         .qr-box {
-                            padding: 20px;
+                            padding: 15px;
                             background: white;
                             border: 3px solid #059669;
-                            border-radius: 16px;
-                            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+                            border-radius: 14px;
+                            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.05);
                             display: flex;
                             flex-direction: column;
                             align-items: center;
-                            gap: 10px;
+                            gap: 8px;
                         }
                         .qr-image {
-                            width: 180px;
-                            height: 180px;
+                            width: 150px;
+                            height: 150px;
                             display: block;
                         }
                         .qr-label {
-                            font-size: 12px;
+                            font-size: 11px;
                             font-weight: 800;
                             color: #059669;
                             text-transform: uppercase;
@@ -198,59 +206,65 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                             width: 100%;
                             background: #f8fafc;
                             border: 1px solid #e2e8f0;
-                            border-radius: 16px;
-                            padding: 18px 24px;
+                            border-radius: 14px;
+                            padding: 12px 20px;
                             box-sizing: border-box;
-                            margin-top: 30px;
+                            margin-top: 20px;
                         }
                         .steps-title {
-                            font-size: 14px;
+                            font-size: 13px;
                             font-weight: 800;
                             color: #1e293b;
                             text-transform: uppercase;
                             text-align: center;
-                            margin-bottom: 12px;
+                            margin-bottom: 8px;
                             letter-spacing: 0.5px;
                         }
                         .step-item {
                             display: flex;
                             align-items: flex-start;
-                            gap: 12px;
-                            margin-bottom: 8px;
-                            font-size: 13px;
+                            gap: 10px;
+                            margin-bottom: 6px;
+                            font-size: 12px;
                             color: #475569;
-                            line-height: 1.4;
+                            line-height: 1.3;
                         }
                         .step-num {
                             background: #059669;
                             color: white;
                             font-weight: bold;
-                            width: 18px;
-                            height: 18px;
+                            width: 16px;
+                            height: 16px;
                             border-radius: 50%;
                             display: flex;
                             align-items: center;
-                            justifyContent: center;
+                            justify-content: center;
                             flex-shrink: 0;
-                            font-size: 10px;
+                            font-size: 9px;
                             margin-top: 1px;
                         }
                         .footer {
                             width: 100%;
                             border-top: 1px solid #e2e8f0;
-                            padding-top: 20px;
+                            padding-top: 12px;
                             display: flex;
-                            justifyContent: space-between;
-                            font-size: 11px;
+                            justify-content: space-between;
+                            font-size: 10px;
                             color: #64748b;
                             font-weight: 600;
                         }
                         @media print {
-                            body { background: white; }
-                            .a4-container {
-                                border: none;
+                            body {
+                                background: white;
                                 width: 210mm;
                                 height: 297mm;
+                                overflow: hidden;
+                            }
+                            .a4-container {
+                                border: 12px solid #059669 !important;
+                                width: 210mm !important;
+                                height: 297mm !important;
+                                padding: 12mm 15mm !important;
                             }
                             .a4-inner-border {
                                 top: 4mm; left: 4mm; right: 4mm; bottom: 4mm;
