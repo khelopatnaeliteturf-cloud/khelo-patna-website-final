@@ -2701,7 +2701,7 @@ export default function AdminDashboard() {
         const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
         const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
         return (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }} onClick={() => setSelectedBookingState(null)}>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10050, padding: '20px' }} onClick={() => setSelectedBookingState(null)}>
                 <div style={{ background: 'var(--card-bg)', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
                     {/* Modal Header - Customer Profile */}
                     <div style={{ padding: '28px 28px 20px', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
