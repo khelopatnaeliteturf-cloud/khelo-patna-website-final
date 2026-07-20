@@ -197,53 +197,32 @@ async function sendBookingInvoiceEmail(booking) {
         formattedDate = booking.date;
     }
 
-    // Sport Match Day Pitch Action Graphic over the receipt card
-    const pitchActionGraphic = isCricket ? `
-      <!-- Cricket Shot Over The Pitch Animation Graphic -->
-      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 18px; padding: 18px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 1.5px solid #34D399; box-shadow: 0 8px 20px rgba(4, 120, 87, 0.25);">
-        <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 4px;">MATCH DAY ACTION</div>
-        <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF;">BATSMAN HITS A MASSIVE 6 OVER THE PITCH!</div>
-        <div style="font-size: 12px; color: #D1FAE5; margin-top: 2px; font-weight: 600;">Indoor Cricket Net 1 &bull; Floodlight Match Ready</div>
+    // Sport Match Day Action Animation Card (Hosted on khelopatna.in for 100% Gmail GIF rendering)
+    const actionGifUrl = isCricket
+        ? 'https://khelopatna.in/cricket-action.gif'
+        : 'https://khelopatna.in/football-action.gif';
+
+    const pitchActionGraphic = `
+      <!-- Player Match Action Animation Card over the receipt -->
+      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 20px; padding: 20px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 2px solid #34D399; box-shadow: 0 10px 25px rgba(4, 120, 87, 0.25); overflow: hidden;">
         
-        <!-- Cricket Pitch SVG Illustration -->
-        <svg viewBox="0 0 400 70" style="width: 100%; max-width: 360px; margin-top: 10px; height: 55px;">
-          <!-- Pitch Grass Turf -->
-          <rect x="10" y="25" width="380" height="30" rx="15" fill="#059669" stroke="#34D399" stroke-width="2"/>
-          <!-- Pitch Strip -->
-          <rect x="130" y="30" width="140" height="20" fill="#D97706" rx="3" opacity="0.85"/>
-          <!-- Bowler & Batsman Stumps -->
-          <line x1="140" y1="26" x2="140" y2="48" stroke="#FFFFFF" stroke-width="3"/>
-          <line x1="260" y1="26" x2="260" y2="48" stroke="#FFFFFF" stroke-width="3"/>
-          <!-- High 6 Shot Ball Trajectory Arc -->
-          <path d="M 142 35 Q 240 -12 355 20" stroke="#FBBF24" stroke-width="3" fill="none" stroke-dasharray="6,4"/>
-          <!-- Cricket Ball in Flight -->
-          <circle cx="355" cy="20" r="6" fill="#EF4444" stroke="#FFFFFF" stroke-width="1.5"/>
-          <!-- SIX Banner Badge -->
-          <rect x="330" y="0" width="50" height="18" rx="9" fill="#FBBF24"/>
-          <text x="355" y="13" font-size="11" font-weight="900" fill="#040609" text-anchor="middle">6 RUNS!</text>
-        </svg>
-      </div>
-    ` : `
-      <!-- Football Goal Pitch Animation Graphic -->
-      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 18px; padding: 18px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 1.5px solid #34D399; box-shadow: 0 8px 20px rgba(4, 120, 87, 0.25);">
-        <div style="font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 4px;">MATCH DAY ACTION</div>
-        <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF;">SPECTACULAR TOP-CORNER GOAL SCORED!</div>
-        <div style="font-size: 12px; color: #D1FAE5; margin-top: 2px; font-weight: 600;">Indoor Football Arena &bull; Pro FIFA Turf Ready</div>
+        <div style="font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 8px;">
+          ${isCricket ? 'CRICKET MATCH DAY ACTION' : 'FOOTBALL MATCH DAY ACTION'}
+        </div>
+
+        <!-- Animated Player Action GIF -->
+        <div style="margin: 8px auto 12px auto; max-width: 380px; border-radius: 14px; overflow: hidden; border: 2.5px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+          <img src="${actionGifUrl}" alt="${sportName} Action Animation" style="width: 100%; height: 170px; object-fit: cover; display: block;">
+        </div>
+
+        <div style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF; margin-top: 6px;">
+          ${isCricket ? 'BATSMAN HITS A MASSIVE 6 OVER THE PITCH!' : 'SPECTACULAR GOAL SCORED INTO THE NET!'}
+        </div>
         
-        <!-- Football Pitch SVG Illustration -->
-        <svg viewBox="0 0 400 70" style="width: 100%; max-width: 360px; margin-top: 10px; height: 55px;">
-          <!-- Pitch Grass Turf -->
-          <rect x="10" y="25" width="380" height="30" rx="15" fill="#059669" stroke="#34D399" stroke-width="2"/>
-          <!-- Goal Post Net -->
-          <rect x="325" y="16" width="45" height="38" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-dasharray="3,3"/>
-          <!-- Ball Trajectory Curve into Goal -->
-          <path d="M 50 40 Q 190 -8 340 24" stroke="#FBBF24" stroke-width="3" fill="none" stroke-dasharray="6,4"/>
-          <!-- Football in Net -->
-          <circle cx="340" cy="24" r="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
-          <!-- GOAL Banner Badge -->
-          <rect x="315" y="0" width="55" height="18" rx="9" fill="#10B981"/>
-          <text x="342" y="13" font-size="11" font-weight="900" fill="#FFFFFF" text-anchor="middle">GOAL!</text>
-        </svg>
+        <div style="font-size: 12px; color: #D1FAE5; margin-top: 3px; font-weight: 700;">
+          ${isCricket ? 'Indoor Cricket Net &bull; Floodlight Match Ready' : 'Indoor Football Arena &bull; Pro FIFA Turf Ready'}
+        </div>
+
       </div>
     `;
 
