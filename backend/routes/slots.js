@@ -143,17 +143,9 @@ router.get('/available-slots', async (req, res) => {
             });
         }
 
-        const nowMs = Date.now();
-        const leadTimeBufferMs = 60 * 60 * 1000; // 1-hour advance lead time buffer
-
         const slotsResponse = ALL_HOURLY_SLOTS.map(slot => {
-            const startHourNum = parseInt(slot.value.split('-')[0], 10);
-            const startHourStr = startHourNum < 10 ? `0${startHourNum}` : `${startHourNum}`;
-            const slotStartISTStr = `${date}T${startHourStr}:00:00+05:30`;
-            const slotStartMs = new Date(slotStartISTStr).getTime();
-
-            // Slot is too late to book if it starts in less than 1 hour from current time
-            const isTooLateToBook = !isNaN(slotStartMs) && (slotStartMs - nowMs) < leadTimeBufferMs;
+            // Only current running hour slot is too late to book for today
+            const isTooLateToBook = (date === todayISTStr) && (slot.startHour === currentHourIST);
 
             const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
             const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;

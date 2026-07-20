@@ -30,16 +30,17 @@ const getSportFilter = (sport) => (
  * flight) to reduce double-booking races between concurrent checkouts.
  */
 async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null, onlySuccess = false }) {
-    // Enforce 1-hour advance lead time (blackout slots starting in < 60 mins)
-    const nowMs = Date.now();
-    const leadTimeBufferMs = 60 * 60 * 1000;
-    for (const slotVal of (timeSlots || [])) {
-        const startHourNum = parseInt(slotVal.split('-')[0], 10);
-        const startHourStr = startHourNum < 10 ? `0${startHourNum}` : `${startHourNum}`;
-        const slotStartISTStr = `${date}T${startHourStr}:00:00+05:30`;
-        const slotStartMs = new Date(slotStartISTStr).getTime();
-        if (!isNaN(slotStartMs) && (slotStartMs - nowMs) < leadTimeBufferMs) {
-            return true;
+    // Only current or past hour slots on today's date are blocked
+    const nowIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+    const todayISTStr = nowIST.toISOString().split('T')[0];
+    const currentHourIST = nowIST.getUTCHours();
+
+    if (date === todayISTStr) {
+        for (const slotVal of (timeSlots || [])) {
+            const startHourNum = parseInt(slotVal.split('-')[0], 10);
+            if (!isNaN(startHourNum) && startHourNum <= currentHourIST) {
+                return true;
+            }
         }
     }
 
