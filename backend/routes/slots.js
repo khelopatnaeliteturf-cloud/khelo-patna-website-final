@@ -143,10 +143,20 @@ router.get('/available-slots', async (req, res) => {
             });
         }
 
+        const isAdmin = req.query.is_admin === 'true' || req.query.include_past === 'true';
+        const nowMs = Date.now();
+        const leadTimeBufferMs = 60 * 60 * 1000; // 60 minutes advance lead time for online customers
+
         const slotsResponse = ALL_HOURLY_SLOTS.map(slot => {
             const startHourStr = slot.startHour < 10 ? `0${slot.startHour}` : `${slot.startHour}`;
-            // Only current running hour slot is too late to book for today
-            const isTooLateToBook = (date === todayISTStr) && (slot.startHour === currentHourIST);
+            const slotStartISTStr = `${date}T${startHourStr}:00:00+05:30`;
+            const slotStartMs = new Date(slotStartISTStr).getTime();
+
+            // Slot is past if its end time (startHour + 1) has passed
+            const isPastSlot = (date === todayISTStr) && (!isNaN(slotStartMs) && (slotStartMs + 60 * 60 * 1000) <= nowMs);
+
+            // Online customer lead time check: slot starts in less than 60 minutes from now
+            const isTooLateToBook = !isAdmin && (date === todayISTStr) && (!isNaN(slotStartMs) && (slotStartMs - nowMs) < leadTimeBufferMs);
 
             const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
             const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
@@ -184,16 +194,15 @@ router.get('/available-slots', async (req, res) => {
                 booked: isBooked,
                 blackout: isClosed,
                 tooLate: isTooLateToBook,
+                isPast: isPastSlot,
                 reason: displayReason
             };
         });
 
         let filteredSlotsResponse = slotsResponse;
-        if (date === todayISTStr && req.query.include_past !== 'true') {
-            filteredSlotsResponse = slotsResponse.filter(slot => {
-                const slotDef = ALL_HOURLY_SLOTS.find(s => s.value === slot.value);
-                return slotDef && slotDef.startHour >= currentHourIST;
-            });
+        if (!isAdmin && date === todayISTStr) {
+            // Filter out past ended slots for online users so past hours do not clog grid
+            filteredSlotsResponse = slotsResponse.filter(slot => !slot.isPast);
         }
 
         res.json({

@@ -29,17 +29,18 @@ const getSportFilter = (sport) => (
  * Considers confirmed (SUCCESS) bookings and recent PENDING ones (payment in
  * flight) to reduce double-booking races between concurrent checkouts.
  */
-async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null, onlySuccess = false }) {
-    // Only current or past hour slots on today's date are blocked
-    const nowIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
-    const todayISTStr = nowIST.toISOString().split('T')[0];
-    const currentHourIST = nowIST.getUTCHours();
-
-    if (date === todayISTStr) {
+async function hasSlotConflict({ tenantId, date, sport, timeSlots, excludeBookingId = null, onlySuccess = false, isAdmin = false }) {
+    // Online customer 1-hour advance lead time check (blackout slots starting in < 60 mins)
+    if (!isAdmin) {
+        const nowMs = Date.now();
+        const leadTimeBufferMs = 60 * 60 * 1000;
         for (const slotVal of (timeSlots || [])) {
             const startHourNum = parseInt(slotVal.split('-')[0], 10);
-            if (!isNaN(startHourNum) && startHourNum <= currentHourIST) {
-                return true;
+            const startHourStr = startHourNum < 10 ? `0${startHourNum}` : `${startHourNum}`;
+            const slotStartISTStr = `${date}T${startHourStr}:00:00+05:30`;
+            const slotStartMs = new Date(slotStartISTStr).getTime();
+            if (!isNaN(slotStartMs) && (slotStartMs - nowMs) < leadTimeBufferMs) {
+                return true; // Conflict for online users
             }
         }
     }
@@ -1000,9 +1001,8 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         const tenantId = req.user.tenantId || null;
         const branchId = req.user.branchId || null;
 
-        // Check slot availability (conflict check on the shared physical ground,
-        // including in-flight PENDING payments to avoid double-booking races)
-        const conflict = await hasSlotConflict({ tenantId, date, sport, timeSlots, onlySuccess: true });
+        // Check slot availability for admin (onlySuccess: true, isAdmin: true)
+        const conflict = await hasSlotConflict({ tenantId, date, sport, timeSlots, onlySuccess: true, isAdmin: true });
         if (conflict) {
             return res.status(409).json({ error: 'One or more of the selected slots are already booked.' });
         }

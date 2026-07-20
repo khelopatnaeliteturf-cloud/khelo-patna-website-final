@@ -190,7 +190,7 @@ export default function AdminDashboard() {
         const fetchRescheduleSlots = async () => {
             setLoadingRescheduleSlots(true);
             try {
-                const res = await fetch(`${BACKEND_URL}/api/available-slots?sport=${selectedBooking.sport}&date=${rescheduleDate}`);
+                const res = await fetch(`${BACKEND_URL}/api/available-slots?sport=${selectedBooking.sport}&date=${rescheduleDate}&is_admin=true`);
                 if (!res.ok) throw new Error('Failed to load slots');
                 const data = await res.json();
                 
@@ -1432,7 +1432,7 @@ export default function AdminDashboard() {
         const fetchOfflineSlots = async () => {
             setLoadingOfflineSlots(true);
             try {
-                const res = await fetch(`${BACKEND_URL}/api/available-slots?sport=${offlineBookingForm.sport}&date=${offlineBookingForm.date}`);
+                const res = await fetch(`${BACKEND_URL}/api/available-slots?sport=${offlineBookingForm.sport}&date=${offlineBookingForm.date}&is_admin=true`);
                 if (!res.ok) throw new Error('Failed to load slots');
                 const data = await res.json();
                 if (active) {
