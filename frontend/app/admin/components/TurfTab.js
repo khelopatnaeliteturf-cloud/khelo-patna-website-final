@@ -3,13 +3,32 @@ import React from 'react';
 export default function TurfTab(props) {
     const { activeSidebarKey, bookingsLog, selectedBooking, generateCustomerId, bookingsFilter, setBookingsFilter, bookingsDateRange, setBookingsDateRange, bookingsCustomStartDate, setBookingsCustomStartDate, bookingsCustomEndDate, setBookingsCustomEndDate, setShowOfflineBookingModal, setShowBookingsReportModal, formatINR, formatSlotTo12Hr, setSelectedBookingState, turfSettings, closuresList, handleSaveSettings, setTurfSettings, handleCreateClosure, newClosure, setNewClosure, handleDeleteClosure } = props;
         if (activeSidebarKey === 'bookings') {
+            // Net revenue helper: include SUCCESS payments + CANCELLED payments where refund was skipped/retained
+            const getBookingNetRevenue = (b) => {
+                if (b.paymentStatus === 'SUCCESS') {
+                    return Number(b.paidAmount || 0);
+                }
+                if (b.paymentStatus === 'CANCELLED') {
+                    const refund = b.paymentDetails?.refund;
+                    const isRefunded = refund && (refund.status === 'SUCCESS' || (refund.amount > 0 && refund.status !== 'SKIPPED' && refund.status !== 'FAILED_GATEWAY'));
+                    if (isRefunded) {
+                        const refundAmt = Number(refund.amount || b.paidAmount || 0);
+                        return Math.max(0, Number(b.paidAmount || 0) - refundAmt);
+                    } else {
+                        // Cancelled WITHOUT refund: Turf retains the collected amount!
+                        return Number(b.paidAmount || 0);
+                    }
+                }
+                return 0;
+            };
+
             // Stats calculations
-            const totalRevenue = bookingsLog.reduce((sum, b) => sum + (b.paidAmount || b.totalAmount || 0), 0);
+            const totalRevenue = bookingsLog.reduce((sum, b) => sum + getBookingNetRevenue(b), 0);
             const totalBookingsCount = bookingsLog.length;
             const paidCount = bookingsLog.filter(b => b.paymentStatus === 'SUCCESS').length;
             const pendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
             const failedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
-            const totalPendingAmount = bookingsLog.filter(b => b.paymentStatus !== 'SUCCESS').reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
+            const totalPendingAmount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
             
             const selectedBookingCustId = selectedBooking ? generateCustomerId(selectedBooking.customerName, selectedBooking.customerPhone) : '';
             const selectedBookingBalance = selectedBooking ? (selectedBooking.totalAmount || 0) - (selectedBooking.paidAmount || 0) : 0;

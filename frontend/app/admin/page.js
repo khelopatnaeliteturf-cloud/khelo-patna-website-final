@@ -3483,16 +3483,31 @@ export default function AdminDashboard() {
         const reportPendingCount = bookingsLog.filter(b => b.paymentStatus === 'PENDING').length;
         const reportFailedCount = bookingsLog.filter(b => b.paymentStatus === 'FAILED' || b.paymentStatus === 'CANCELLED').length;
         
-        const reportTotalRevenue = bookingsLog.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
-        const reportTotalOutstanding = bookingsLog.reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
+        const getBookingNetRevenue = (b) => {
+            if (b.paymentStatus === 'SUCCESS') return Number(b.paidAmount || 0);
+            if (b.paymentStatus === 'CANCELLED') {
+                const refund = b.paymentDetails?.refund;
+                const isRefunded = refund && (refund.status === 'SUCCESS' || (refund.amount > 0 && refund.status !== 'SKIPPED' && refund.status !== 'FAILED_GATEWAY'));
+                if (isRefunded) {
+                    const refundAmt = Number(refund.amount || b.paidAmount || 0);
+                    return Math.max(0, Number(b.paidAmount || 0) - refundAmt);
+                } else {
+                    return Number(b.paidAmount || 0);
+                }
+            }
+            return 0;
+        };
+
+        const reportTotalRevenue = bookingsLog.reduce((sum, b) => sum + getBookingNetRevenue(b), 0);
+        const reportTotalOutstanding = bookingsLog.filter(b => b.paymentStatus === 'PENDING').reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
         
         const cricketBookings = bookingsLog.filter(b => b.sport === 'cricket');
         const footballBookings = bookingsLog.filter(b => b.sport === 'football');
         const netsBookings = bookingsLog.filter(b => b.sport === 'nets');
         
-        const cricketRevenue = cricketBookings.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
-        const footballRevenue = footballBookings.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
-        const netsRevenue = netsBookings.reduce((sum, b) => sum + (b.paidAmount || 0), 0);
+        const cricketRevenue = cricketBookings.reduce((sum, b) => sum + getBookingNetRevenue(b), 0);
+        const footballRevenue = footballBookings.reduce((sum, b) => sum + getBookingNetRevenue(b), 0);
+        const netsRevenue = netsBookings.reduce((sum, b) => sum + getBookingNetRevenue(b), 0);
         
         return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }} onClick={() => setShowBookingsReportModal(false)}>
