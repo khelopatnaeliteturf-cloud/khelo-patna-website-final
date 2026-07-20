@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
@@ -7,6 +8,15 @@ const SMTP_USER = process.env.SMTP_USER || 'service@khelopatna.in';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SENDER_EMAIL = process.env.SMTP_SENDER_EMAIL || SMTP_USER || 'service@khelopatna.in';
 const SENDER_NAME = 'KheloPatna Elite Turf';
+
+// Custom DNS lookup that strictly enforces IPv4
+function lookupIPv4(hostname, options, callback) {
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
+    }
+    return dns.lookup(hostname, Object.assign({}, options, { family: 4, all: false }), callback);
+}
 
 // Create a nodemailer transporter
 let transporter = null;
@@ -19,7 +29,8 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS && SMTP_PASS !== 'YOUR_HOSTINGER_MAIL_PA
             user: SMTP_USER,
             pass: SMTP_PASS
         },
-        family: 4, // Force IPv4 to prevent ENETUNREACH errors on cloud servers without IPv6
+        lookup: lookupIPv4, // Force DNS to ONLY return IPv4 (prevents ENETUNREACH on Cloud hosts like Render)
+        family: 4,
         connectionTimeout: 10000, // 10 seconds timeout
         greetingTimeout: 10000,
         socketTimeout: 15000,
