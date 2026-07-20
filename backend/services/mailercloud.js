@@ -171,7 +171,7 @@ const svgIcons = {
 };
 
 /**
- * Dispatches a high-contrast Light Gradient Turf email pass with official logo and match pitch animation.
+ * Dispatches a high-contrast, clean, elegant Light Gradient Turf receipt pass to the customer.
  */
 async function sendBookingInvoiceEmail(booking) {
     const isCricket = (booking.sport || '').toLowerCase().includes('cricket');
@@ -196,35 +196,6 @@ async function sendBookingInvoiceEmail(booking) {
     } catch (e) {
         formattedDate = booking.date;
     }
-
-    // Sport Match Day Action Animation Card (Hosted on khelopatna.in for 100% Gmail GIF rendering)
-    const actionGifUrl = isCricket
-        ? 'https://khelopatna.in/cricket-action.gif'
-        : 'https://khelopatna.in/football-action.gif';
-
-    const pitchActionGraphic = `
-      <!-- Player Match Action Animation Card over the receipt -->
-      <div style="background: linear-gradient(135deg, #064E3B 0%, #047857 100%); border-radius: 20px; padding: 20px 16px; text-align: center; color: #FFFFFF; margin-bottom: 22px; border: 2px solid #34D399; box-shadow: 0 10px 25px rgba(4, 120, 87, 0.25); overflow: hidden;">
-        
-        <div style="font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #A7F3D0; margin-bottom: 8px;">
-          ${isCricket ? 'CRICKET MATCH DAY ACTION' : 'FOOTBALL MATCH DAY ACTION'}
-        </div>
-
-        <!-- Animated Player Action GIF -->
-        <div style="margin: 8px auto 12px auto; max-width: 380px; border-radius: 14px; overflow: hidden; border: 2.5px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
-          <img src="${actionGifUrl}" alt="${sportName} Action Animation" style="width: 100%; height: 170px; object-fit: cover; display: block;">
-        </div>
-
-        <div style="font-size: 16px; font-weight: 900; letter-spacing: -0.3px; color: #FFFFFF; margin-top: 6px;">
-          ${isCricket ? 'BATSMAN HITS A MASSIVE 6 OVER THE PITCH!' : 'SPECTACULAR GOAL SCORED INTO THE NET!'}
-        </div>
-        
-        <div style="font-size: 12px; color: #D1FAE5; margin-top: 3px; font-weight: 700;">
-          ${isCricket ? 'Indoor Cricket Net &bull; Floodlight Match Ready' : 'Indoor Football Arena &bull; Pro FIFA Turf Ready'}
-        </div>
-
-      </div>
-    `;
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -259,9 +230,6 @@ async function sendBookingInvoiceEmail(booking) {
     <!-- Booking Content Container -->
     <div style="padding: 24px 20px; background: #FFFFFF;">
       
-      <!-- Match Day Action Animation Graphic Over Receipt -->
-      ${pitchActionGraphic}
-
       <!-- Customer Info & Status Badge -->
       <div style="border-bottom: 2px dashed #E5E7EB; padding-bottom: 16px; margin-bottom: 20px;">
         <table style="width: 100%; border-collapse: collapse;">
