@@ -342,7 +342,9 @@ router.post('/payment/create-order', async (req, res) => {
                 }
             }
 
-            await sendBookingNotifications(newBooking);
+            sendBookingNotifications(newBooking).catch(notifyErr => {
+                console.error('Error sending zero amount booking notifications:', notifyErr);
+            });
 
             return res.json({
                 success: true,
@@ -1027,11 +1029,10 @@ To confirm your booking, please pay using this secure link:
 🔗 ${paymentLink}
 
 Thank you! 🏆`;
-            try {
-                await sendWhatsAppMessage(customerPhone, waText);
-            } catch (waErr) {
+            // Share Payment Link on WhatsApp asynchronously (non-blocking)
+            sendWhatsAppMessage(customerPhone, waText).catch(waErr => {
                 console.error('Error sending payment link WhatsApp:', waErr);
-            }
+            });
 
         } else {
             // Direct / Offline Booking flow
@@ -1058,12 +1059,10 @@ Thank you! 🏆`;
             // Cancel other conflicting pending bookings
             await cancelConflictingPendingBookings(newBooking);
 
-            // Trigger standard confirmation alerts
-            try {
-                await sendBookingNotifications(newBooking);
-            } catch (notifyErr) {
-                console.error('Error sending offline booking notifications:', notifyErr);
-            }
+            // Trigger standard confirmation alerts asynchronously in background (instant admin response)
+            sendBookingNotifications(newBooking).catch(notifyErr => {
+                console.error('Error sending offline booking notifications in background:', notifyErr);
+            });
         }
 
         // Record Audit Log record

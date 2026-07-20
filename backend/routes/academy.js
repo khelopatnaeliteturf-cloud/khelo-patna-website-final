@@ -360,13 +360,8 @@ router.post('/academy/students/:studentId/fees', authenticateToken, authorizeRol
         }).save();
 
         const waMessage = `💳 *KheloPatna Academy Fee Receipt* 💳\n\nDear parent, we have successfully received monthly tuition fees for *${student.name}*.\n\n*Invoice Summary*:\n*   Sport: ${student.sport.toUpperCase()}\n*   Month: ${monthFor}\n*   Amount Paid: ₹${amountPaid}\n*   Receipt ID: ${feeRecord._id}\n\nThank you for choosing KheloPatna! 🏆`;
-        await sendWhatsAppMessage(student.phone, waMessage);
-
-        try {
-            await sendFeeInvoiceEmail(student, feeRecord);
-        } catch (e) {
-            console.error('Error sending fee email:', e);
-        }
+        sendWhatsAppMessage(student.phone, waMessage).catch(err => console.error('Error sending fee WhatsApp:', err));
+        sendFeeInvoiceEmail(student, feeRecord).catch(err => console.error('Error sending fee email:', err));
 
         res.json({
             success: true,
