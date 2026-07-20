@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
+const net = require('net');
 
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.hostinger.com';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT) || 587;
@@ -9,13 +10,21 @@ const SMTP_PASS = process.env.SMTP_PASS || '';
 const SENDER_EMAIL = process.env.SMTP_SENDER_EMAIL || SMTP_USER || 'service@khelopatna.in';
 const SENDER_NAME = 'KheloPatna Elite Turf';
 
-// Custom DNS lookup that strictly enforces IPv4
+// Custom DNS lookup using resolve4 to strictly fetch IPv4 A-records
 function lookupIPv4(hostname, options, callback) {
     if (typeof options === 'function') {
         callback = options;
         options = {};
     }
-    return dns.lookup(hostname, Object.assign({}, options, { family: 4, all: false }), callback);
+    if (net.isIP(hostname)) {
+        return callback(null, hostname, net.isIPv6(hostname) ? 6 : 4);
+    }
+    dns.resolve4(hostname, (err, addresses) => {
+        if (err || !addresses || !addresses.length) {
+            return dns.lookup(hostname, Object.assign({}, options, { family: 4, all: false }), callback);
+        }
+        return callback(null, addresses[0], 4);
+    });
 }
 
 // Create a nodemailer transporter
