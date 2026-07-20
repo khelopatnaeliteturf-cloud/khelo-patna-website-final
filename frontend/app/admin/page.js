@@ -3283,29 +3283,71 @@ export default function AdminDashboard() {
                                         {offlineAvailableSlots.map((slot, idx) => {
                                             const isSelected = offlineBookingForm.timeSlots.includes(slot.value);
                                             const isAvailable = slot.available;
+                                            const isBookedSlot = !isAvailable && (slot.booked || slot.reason === 'Booked');
                                             
                                             let bg = 'rgba(255,255,255,0.02)';
                                             let color = 'var(--text-color)';
                                             let border = '1px solid var(--border-color)';
                                             let cursor = 'pointer';
 
-                                            if (!isAvailable) {
+                                            if (isBookedSlot) {
+                                                bg = 'rgba(239, 68, 68, 0.12)';
+                                                color = '#F87171';
+                                                border = '1px solid rgba(239, 68, 68, 0.5)';
+                                                cursor = 'pointer';
+                                            } else if (!isAvailable) {
                                                 bg = 'rgba(255, 0, 0, 0.04)';
                                                 color = 'var(--text-muted)';
                                                 border = '1px solid rgba(239, 68, 68, 0.2)';
-                                                cursor = 'not-allowed';
+                                                cursor = 'default';
                                             } else if (isSelected) {
                                                 bg = 'var(--gradient-2)';
                                                 color = '#fff';
                                                 border = 'none';
                                             }
 
+                                            const handleAdminSlotClick = async () => {
+                                                if (isAvailable) {
+                                                    handleToggleOfflineSlot(slot.value);
+                                                } else if (isBookedSlot) {
+                                                    // Search local log first for instant modal pop-up
+                                                    const localMatch = (bookingsLog || []).find(b => 
+                                                        b.date === offlineBookingForm.date && 
+                                                        (b.timeSlots || []).includes(slot.value) && 
+                                                        (b.paymentStatus === 'SUCCESS' || b.paymentStatus === 'PENDING')
+                                                    ) || (bookingsLog || []).find(b => 
+                                                        b.date === offlineBookingForm.date && 
+                                                        (b.timeSlots || []).includes(slot.value)
+                                                    );
+
+                                                    if (localMatch) {
+                                                        setSelectedBookingState(localMatch);
+                                                        return;
+                                                    }
+
+                                                    // Fallback fetch via backend API lookup
+                                                    try {
+                                                        const res = await fetch(`${BACKEND_URL}/api/admin/bookings-lookup?date=${offlineBookingForm.date}&slot=${slot.value}`, {
+                                                            headers: getHeaders()
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.booking) {
+                                                            setSelectedBookingState(data.booking);
+                                                        } else {
+                                                            notifyInfo(`Slot ${slot.text} is booked on ${offlineBookingForm.date}.`);
+                                                        }
+                                                    } catch (err) {
+                                                        notifyInfo(`Slot ${slot.text} is booked on ${offlineBookingForm.date}.`);
+                                                    }
+                                                }
+                                            };
+
                                             return (
                                                 <button
                                                     key={idx}
                                                     type="button"
-                                                    disabled={!isAvailable}
-                                                    onClick={() => handleToggleOfflineSlot(slot.value)}
+                                                    onClick={handleAdminSlotClick}
+                                                    title={isBookedSlot ? 'Click to view booking details' : undefined}
                                                     style={{
                                                         padding: '10px',
                                                         borderRadius: '8px',
@@ -3325,10 +3367,10 @@ export default function AdminDashboard() {
                                                     }}
                                                 >
                                                     <div>{slot.text}</div>
-                                                    <div style={{ fontSize: '0.62rem', opacity: 0.8 }}>
+                                                    <div style={{ fontSize: '0.62rem', opacity: 0.9, fontWeight: isBookedSlot ? 700 : 500 }}>
                                                         {isAvailable 
                                                             ? `₹${offlineBookingForm.sport === 'nets' ? (100 * (offlineBookingForm.participantsCount || 1)) : slot.price}` 
-                                                            : (slot.reason === 'Booked' ? 'Booked' : (slot.reason || 'Closed'))}
+                                                            : (isBookedSlot ? '🔒 Booked (View Info)' : (slot.reason || 'Closed'))}
                                                     </div>
                                                 </button>
                                             );

@@ -1465,4 +1465,24 @@ router.get('/admin/test-smtp', authenticateToken, async (req, res) => {
     });
 });
 
+// GET /api/admin/bookings-lookup
+// Lookup booking by date and slot for interactive slot details modal
+router.get('/admin/bookings-lookup', authenticateToken, async (req, res) => {
+    const { date, slot } = req.query;
+    if (!date || !slot) {
+        return res.status(400).json({ error: 'Date and slot parameters are required.' });
+    }
+    try {
+        const booking = await Booking.findOne({
+            date: date,
+            timeSlots: slot,
+            paymentStatus: { $ne: 'CANCELLED' }
+        }).sort({ createdAt: -1 });
+        res.json({ booking });
+    } catch (err) {
+        console.error('Bookings lookup error:', err);
+        res.status(500).json({ error: 'Server error looking up booking.' });
+    }
+});
+
 module.exports = router;
