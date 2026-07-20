@@ -18,6 +18,28 @@ const nextConfig = {
         destination: `${backend}/api/:path*`
       }
     ];
+  },
+  async redirects() {
+    return [
+      { source: '/index.html', destination: '/', permanent: true },
+      { source: '/book.html', destination: '/book', permanent: true },
+      { source: '/booking.html', destination: '/book', permanent: true },
+      { source: '/cricket-turf.html', destination: '/cricket-turf', permanent: true },
+      { source: '/football-turf.html', destination: '/football-turf', permanent: true },
+      { source: '/checkout.html', destination: '/book', permanent: true },
+      { source: '/enquiry.html', destination: '/enquiry', permanent: true },
+      { source: '/contact.html', destination: '/contact', permanent: true },
+      { source: '/review.html', destination: '/review', permanent: true },
+      { source: '/reviews.html', destination: '/review', permanent: true },
+      { source: '/privacy.html', destination: '/privacy', permanent: true },
+      { source: '/terms.html', destination: '/terms', permanent: true },
+      { source: '/about.html', destination: '/about', permanent: true },
+      { source: '/login.html', destination: '/login', permanent: true },
+      { source: '/academy.html', destination: '/academy', permanent: true },
+      { source: '/gallery.html', destination: '/about', permanent: true },
+      { source: '/services.html', destination: '/', permanent: true },
+      { source: '/pricing.html', destination: '/book', permanent: true }
+    ];
   }
 };
 

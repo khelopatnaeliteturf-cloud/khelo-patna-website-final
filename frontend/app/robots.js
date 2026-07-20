@@ -4,9 +4,10 @@ export default function robots() {
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: ['/admin/', '/api/', '/login'],
+                disallow: ['/admin/', '/api/', '/login', '/maintenance'],
             },
         ],
         sitemap: 'https://khelopatna.in/sitemap.xml',
+        host: 'https://khelopatna.in',
     };
 }

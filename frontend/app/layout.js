@@ -69,6 +69,75 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         />
         <meta name="theme-color" content="#040609" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "LocalBusiness",
+                  "@id": "https://khelopatna.in/#localbusiness",
+                  "name": "KheloPatna Elite Turf",
+                  "image": [
+                    "https://khelopatna.in/logo.png",
+                    "https://khelopatna.in/og-image.jpg"
+                  ],
+                  "telephone": "+919709701400",
+                  "email": "service@khelopatna.in",
+                  "url": "https://khelopatna.in",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
+                    "addressLocality": "Patna",
+                    "addressRegion": "Bihar",
+                    "postalCode": "800007",
+                    "addressCountry": "IN"
+                  },
+                  "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": 25.6000,
+                    "longitude": 85.1800
+                  },
+                  "openingHoursSpecification": {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": [
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday"
+                    ],
+                    "opens": "06:00",
+                    "closes": "23:00"
+                  },
+                  "sameAs": [
+                    "https://facebook.com",
+                    "https://instagram.com",
+                    "https://youtube.com"
+                  ]
+                },
+                {
+                  "@type": "SportsActivityLocation",
+                  "@id": "https://khelopatna.in/#sportsarena",
+                  "name": "KheloPatna Elite Turf Sports Arena",
+                  "description": "Patna's premier indoor cricket & football turf with professional lighting, bowling machines, and training academy.",
+                  "url": "https://khelopatna.in",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
+                    "addressLocality": "Patna",
+                    "addressRegion": "Bihar",
+                    "postalCode": "800007",
+                    "addressCountry": "IN"
+                  }
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body className={poppins.className}>
         {/* Skip to main content link for accessibility */}
