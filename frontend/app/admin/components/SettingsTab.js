@@ -550,6 +550,67 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                         </div>
                     );
                 })()}
+
+                {/* Official Brand Media & Marketing Assets Card */}
+                <div style={{ background: 'var(--card-bg, #040609)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', marginTop: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '20px' }}>
+                        <div>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="material-icons-outlined" style={{ color: 'var(--emerald)' }}>auto_awesome</span>
+                                Official Brand Media Assets
+                            </h3>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                                Download official animated logo GIFs and high-resolution assets for WhatsApp DPs, Instagram, and promotional media.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                        {/* Animated GIF Card */}
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                            <div style={{ width: '110px', height: '110px', borderRadius: '50%', background: '#030806', border: '3px solid rgba(16,185,129,0.4)', boxShadow: '0 0 25px rgba(16,185,129,0.25)', overflow: 'hidden', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img src="/khelo_patna_logo_animated.gif" alt="Khelo Patna Animated Logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+                            </div>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Animated Bouncing Logo (GIF)</h4>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--emerald)', fontWeight: 600, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>500 × 500 px · High-Res 60fps Loop</span>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '8px 0 16px 0', lineHeight: 1.4 }}>
+                                Bouncing white logo with sweeping neon light ray. Ideal for WhatsApp profile picture, Instagram display picture, and email signatures.
+                            </p>
+
+                            <a 
+                                href="/khelo_patna_logo_animated.gif" 
+                                download="khelo_patna_logo_animated.gif" 
+                                className="btn-premium w-100" 
+                                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', fontSize: '0.8rem', borderRadius: '10px', fontWeight: 700 }}
+                            >
+                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>download</span>
+                                Download Animated GIF
+                            </a>
+                        </div>
+
+                        {/* Standard PNG Logo Card */}
+                        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                            <div style={{ width: '110px', height: '110px', borderRadius: '50%', background: '#FFFFFF', border: '3px solid rgba(255,255,255,0.2)', boxShadow: '0 0 20px rgba(0,0,0,0.15)', overflow: 'hidden', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+                                <img src="/logo.png" alt="Khelo Patna Logo PNG" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            </div>
+                            <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Official Vector Logo (PNG)</h4>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>621 × 621 px · Transparent HD</span>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '8px 0 16px 0', lineHeight: 1.4 }}>
+                                Standard transparent PNG logo for print documents, letterheads, venue banners, and invoice templates.
+                            </p>
+
+                            <a 
+                                href="/logo.png" 
+                                download="khelo_patna_logo.png" 
+                                className="btn-premium-border w-100" 
+                                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px', fontSize: '0.8rem', borderRadius: '10px', fontWeight: 700 }}
+                            >
+                                <span className="material-icons-outlined" style={{ fontSize: '18px' }}>download</span>
+                                Download Transparent PNG
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Modal Dialog for Adjusting Access Controls */}

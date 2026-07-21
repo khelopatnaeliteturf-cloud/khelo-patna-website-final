@@ -5976,9 +5976,29 @@ export default function AdminDashboard() {
                             {totalNotifications > 0 && <span className="notification-badge">{totalNotifications}</span>}
                         </button>
 
-                        <button className="topbar-notification" title="Messages">
-                            <span className="material-icons-outlined" style={{ fontSize: '20px' }}>chat_bubble_outline</span>
-                        </button>
+                        <a 
+                            href="/khelo_patna_logo_animated.gif" 
+                            download="khelo_patna_logo_animated.gif"
+                            className="topbar-notification d-none d-sm-inline-flex"
+                            title="Download Animated Logo GIF (500x500)"
+                            style={{ 
+                                textDecoration: 'none', 
+                                color: 'var(--emerald)', 
+                                background: 'rgba(16,185,129,0.1)', 
+                                border: '1px solid rgba(16,185,129,0.25)', 
+                                padding: '6px 12px', 
+                                borderRadius: '10px', 
+                                fontSize: '0.74rem', 
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>download</span>
+                            <span>Animated Logo</span>
+                        </a>
 
                         <button className="theme-toggle" onClick={toggleTheme}>
                             <span className="material-icons-outlined">
