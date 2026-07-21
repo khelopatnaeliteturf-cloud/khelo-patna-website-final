@@ -7,6 +7,15 @@ export default function DashboardTab(props) {
     const [newBookings, setNewBookings] = React.useState([]);
     const [showNotification, setShowNotification] = React.useState(false);
 
+    const [hoveredKpi, setHoveredKpi] = React.useState(null);
+    const [hoveredChartPoint, setHoveredChartPoint] = React.useState(null);
+    const [hoveredSchedule, setHoveredSchedule] = React.useState(null);
+    const [hoveredActivity, setHoveredActivity] = React.useState(null);
+    const [hoveredBooking, setHoveredBooking] = React.useState(null);
+    const [hoveredAdmission, setHoveredAdmission] = React.useState(null);
+    const [hoveredInventory, setHoveredInventory] = React.useState(null);
+    const [hoveredBar, setHoveredBar] = React.useState(null);
+
     React.useEffect(() => {
         if (!bookingsLog || bookingsLog.length === 0) return;
 
@@ -115,6 +124,10 @@ export default function DashboardTab(props) {
 
         const statGradients = ['var(--gradient-1)', 'var(--gradient-2)', 'var(--gradient-3)', 'var(--gradient-4)', 'var(--gradient-5)'];
 
+        const todayTurfRevenue = todayBookings.reduce((sum, b) => sum + Number(b.paidAmount || b.totalPrice || 0), 0);
+        const todayAcademyRevenue = Math.max(0, (stats?.today_revenue || 0) - todayTurfRevenue);
+        const pendingStudentsList = (allStudents || []).filter(s => s.feeStatus === 'OVERDUE' || s.feeStatus === 'UNPAID' || (s.pendingBalance && s.pendingBalance > 0)).slice(0, 3);
+
         return (
             <div className="dashboard-next" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Welcome Banner + Quick Actions */}
@@ -200,16 +213,93 @@ export default function DashboardTab(props) {
                     </div>
                 )}
 
-                {/* 5 Metric Cards with Gradient Icon Backgrounds */}
+                {/* 5 Metric Cards with Hover Data Popover */}
                 <div className="dashboard-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
                     {[
-                        { label: "Today's Revenue", value: formatINR(stats?.today_revenue || 0), icon: 'payments', trend: 'Turf + Academy', trendLabel: 'earnings today', up: true },
-                        { label: "Today's Bookings", value: stats?.today_bookings || 0, icon: 'calendar_today', trend: `${stats?.today_checkins || 0}`, trendLabel: 'active check-ins', up: true },
-                        { label: 'Attendance', value: stats?.today_attendance_percent ? `${stats.today_attendance_percent}%` : '0%', icon: 'done_all', trend: `${stats?.today_present || 0} Present`, trendLabel: `/ ${stats?.today_absent || 0} Absent`, up: true },
-                        { label: 'Active Students', value: stats?.active_students || allStudents?.length || 0, icon: 'school', trend: `+${stats?.today_summary?.new_admissions || 0}`, trendLabel: 'admissions today', up: true },
-                        { label: 'Outstanding Dues', value: formatINR(pendingFeesAmount), icon: 'receipt_long', trend: 'Academy billing', trendLabel: 'unpaid', up: false }
+                        { 
+                            label: "Today's Revenue", 
+                            value: formatINR(stats?.today_revenue || 0), 
+                            icon: 'payments', 
+                            trend: 'Turf + Academy', 
+                            trendLabel: 'earnings today', 
+                            up: true,
+                            details: [
+                                { icon: 'sports_cricket', label: 'Turf Bookings', val: formatINR(todayTurfRevenue) },
+                                { icon: 'school', label: 'Academy Fees', val: formatINR(todayAcademyRevenue) },
+                                { icon: 'account_balance_wallet', label: 'Cash / UPI Ratio', val: 'Est. 60% Online' }
+                            ]
+                        },
+                        { 
+                            label: "Today's Bookings", 
+                            value: stats?.today_bookings || 0, 
+                            icon: 'calendar_today', 
+                            trend: `${stats?.today_checkins || 0}`, 
+                            trendLabel: 'active check-ins', 
+                            up: true,
+                            details: [
+                                { icon: 'meeting_room', label: 'Active Check-ins', val: `${stats?.today_checkins || 0} players` },
+                                { icon: 'schedule', label: 'Total Scheduled', val: `${stats?.today_bookings || 0} slots` },
+                                { icon: 'pie_chart', label: 'Capacity Used', val: `${Math.min(100, Math.round(((stats?.today_bookings || 0) / 16) * 100))}%` }
+                            ]
+                        },
+                        { 
+                            label: 'Attendance', 
+                            value: stats?.today_attendance_percent ? `${stats.today_attendance_percent}%` : '0%', 
+                            icon: 'done_all', 
+                            trend: `${stats?.today_present || 0} Present`, 
+                            trendLabel: `/ ${stats?.today_absent || 0} Absent`, 
+                            up: true,
+                            details: [
+                                { icon: 'check_circle', label: 'Present Trainees', val: `${stats?.today_present || 0}` },
+                                { icon: 'cancel', label: 'Absent Trainees', val: `${stats?.today_absent || 0}` },
+                                { icon: 'groups', label: 'Total Enrolled', val: `${(stats?.today_present || 0) + (stats?.today_absent || 0)}` }
+                            ]
+                        },
+                        { 
+                            label: 'Active Students', 
+                            value: stats?.active_students || allStudents?.length || 0, 
+                            icon: 'school', 
+                            trend: `+${stats?.today_summary?.new_admissions || 0}`, 
+                            trendLabel: 'admissions today', 
+                            up: true,
+                            details: [
+                                { icon: 'sports_cricket', label: 'Cricket Batches', val: `${allStudents.filter(s => s.sport === 'cricket').length} Trainees` },
+                                { icon: 'sports_soccer', label: 'Football Batches', val: `${allStudents.filter(s => s.sport === 'football').length} Trainees` },
+                                { icon: 'person_add', label: 'Admissions Today', val: `+${stats?.today_summary?.new_admissions || 0}` }
+                            ]
+                        },
+                        { 
+                            label: 'Outstanding Dues', 
+                            value: formatINR(pendingFeesAmount), 
+                            icon: 'receipt_long', 
+                            trend: 'Academy billing', 
+                            trendLabel: 'unpaid', 
+                            up: false,
+                            details: pendingStudentsList.length > 0 ? pendingStudentsList.map(s => ({
+                                icon: 'person',
+                                label: s.name,
+                                val: formatINR(s.pendingBalance || s.monthlyFee || 0)
+                            })) : [
+                                { icon: 'verified', label: 'Fee Clearance', val: '100% Up-to-date' }
+                            ]
+                        }
                     ].map((m, i) => (
-                        <div key={i} className="card-premium metric-card" style={{ padding: '18px', position: 'relative', overflow: 'hidden' }}>
+                        <div 
+                            key={i} 
+                            className="card-premium metric-card" 
+                            style={{ 
+                                padding: '18px', 
+                                position: 'relative', 
+                                cursor: 'pointer',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transform: hoveredKpi === i ? 'translateY(-4px)' : 'translateY(0)',
+                                boxShadow: hoveredKpi === i ? '0 12px 30px rgba(5, 150, 105, 0.2)' : 'var(--shadow-sm)',
+                                borderColor: hoveredKpi === i ? 'var(--primary)' : 'var(--border-color)',
+                                zIndex: hoveredKpi === i ? 20 : 1
+                            }}
+                            onMouseEnter={() => setHoveredKpi(i)}
+                            onMouseLeave={() => setHoveredKpi(null)}
+                        >
                             <div style={{ position: 'absolute', top: '-12px', right: '-12px', width: '64px', height: '64px', borderRadius: '50%', background: statGradients[i], opacity: 0.08 }} />
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: statGradients[i], color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
@@ -223,19 +313,53 @@ export default function DashboardTab(props) {
                             <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 500, marginBottom: '2px' }}>{m.label}</div>
                             <div style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}><AnimatedNumber value={m.value} /></div>
                             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 400, marginTop: '4px' }}>{m.trendLabel}</div>
+
+                            {/* Hover Data Popover */}
+                            {hoveredKpi === i && (
+                                <div className="animate-fade-in" style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    right: 0,
+                                    marginTop: '8px',
+                                    background: 'var(--card-bg, #070D1A)',
+                                    border: '1px solid var(--primary)',
+                                    boxShadow: '0 16px 36px rgba(0,0,0,0.4)',
+                                    borderRadius: '14px',
+                                    padding: '12px 14px',
+                                    zIndex: 100,
+                                    pointerEvents: 'none'
+                                }}>
+                                    <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span className="material-icons-outlined" style={{ fontSize: '14px' }}>info</span>
+                                        Live Breakdown
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        {m.details.map((d, idx) => (
+                                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.74rem' }}>
+                                                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span className="material-icons-outlined" style={{ fontSize: '13px', color: 'var(--primary)' }}>{d.icon}</span>
+                                                    {d.label}
+                                                </span>
+                                                <strong style={{ color: 'var(--text-main)', fontWeight: 700 }}>{d.val}</strong>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
 
                 {/* Middle Section: Chart + Schedule + Activity */}
                 <div className="dashboard-bento-grid" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr 3fr', gap: '20px' }}>
-                    {/* Weekly Revenue Line Chart */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Weekly Revenue Line Chart with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Revenue Overview</h3>
                             <button className="btn-secondary-stripe" style={{ fontSize: '0.78rem', padding: '4px 12px' }}>Last 6 Months</button>
                         </div>
-                        <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: '100%', height: 'auto' }}>
+                        <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                             <defs>
                                 <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
@@ -252,17 +376,31 @@ export default function DashboardTab(props) {
                             })}
                             <polygon points={areaStr} fill="url(#chartGrad)" />
                             <polyline points={lineStr} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                            {chartPoints.map((p, i) => (
-                                <circle key={i} cx={p.x} cy={p.y} r="4" fill="var(--card-bg)" stroke="var(--primary)" strokeWidth="2.5" />
-                            ))}
+                            {chartPoints.map((p, i) => {
+                                const val = chartData[i] || 0;
+                                const monthName = revenueAnalytics[i]?.month || chartLabels[i];
+                                const isHovered = hoveredChartPoint === i;
+                                return (
+                                    <g key={i} style={{ cursor: 'pointer' }} onMouseEnter={() => setHoveredChartPoint(i)} onMouseLeave={() => setHoveredChartPoint(null)}>
+                                        <circle cx={p.x} cy={p.y} r={isHovered ? "7" : "4"} fill={isHovered ? "var(--primary)" : "var(--card-bg)"} stroke="var(--primary)" strokeWidth={isHovered ? "3" : "2.5"} style={{ transition: 'all 0.2s ease' }} />
+                                        {isHovered && (
+                                            <g>
+                                                <rect x={Math.min(p.x - 55, chartW - 120)} y={Math.max(p.y - 45, 10)} width="110" height="34" rx="6" fill="var(--card-bg, #070D1A)" stroke="var(--primary)" strokeWidth="1.5" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.4))" />
+                                                <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 14} textAnchor="middle" fill="var(--primary)" fontSize="9" fontWeight="800">{monthName}</text>
+                                                <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 26} textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="700">{formatINR(val)}</text>
+                                            </g>
+                                        )}
+                                    </g>
+                                );
+                            })}
                             {chartLabels.map((d, i) => (
                                 <text key={i} x={chartPad.left + (i / Math.max(chartLabels.length - 1, 1)) * plotW} y={chartH - 5} textAnchor="middle" fill="var(--text-muted)" fontSize="10">{d}</text>
                             ))}
                         </svg>
                     </div>
 
-                    {/* Today's Schedule */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Today's Schedule with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Today's Schedule</h3>
                             <button onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View All</button>
@@ -274,23 +412,68 @@ export default function DashboardTab(props) {
                                     <span style={{ fontSize: '0.85rem' }}>No bookings scheduled today</span>
                                 </div>
                             ) : (
-                                todaySchedule.slice(0, 5).map((s, i) => (
-                                    <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', minWidth: '65px', paddingTop: '2px' }}>{s.time}</div>
-                                        <div style={{ width: '3px', borderRadius: '3px', background: statusColor(s.status), alignSelf: 'stretch', flexShrink: 0 }}></div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{s.title}</div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.subtitle}</div>
+                                todaySchedule.slice(0, 5).map((s, i) => {
+                                    const matchingBooking = todayBookings[i];
+                                    const isHovered = hoveredSchedule === i;
+                                    return (
+                                        <div 
+                                            key={i} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                gap: '12px', 
+                                                alignItems: 'flex-start',
+                                                padding: '8px 10px',
+                                                borderRadius: '10px',
+                                                background: isHovered ? 'var(--primary-light)' : 'transparent',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                position: 'relative'
+                                            }}
+                                            onMouseEnter={() => setHoveredSchedule(i)}
+                                            onMouseLeave={() => setHoveredSchedule(null)}
+                                        >
+                                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', minWidth: '65px', paddingTop: '2px' }}>{s.time}</div>
+                                            <div style={{ width: '3px', borderRadius: '3px', background: statusColor(s.status), alignSelf: 'stretch', flexShrink: 0 }}></div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{s.title}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.subtitle}</div>
+                                            </div>
+                                            <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: statusBg(s.status), color: statusColor(s.status), whiteSpace: 'nowrap', alignSelf: 'center' }}>{s.status}</span>
+
+                                            {/* Hover Popover Details */}
+                                            {isHovered && matchingBooking && (
+                                                <div className="animate-fade-in" style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: '20px',
+                                                    right: '20px',
+                                                    zIndex: 100,
+                                                    background: 'var(--card-bg, #070D1A)',
+                                                    border: '1px solid var(--primary)',
+                                                    borderRadius: '12px',
+                                                    padding: '12px',
+                                                    boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>
+                                                        {matchingBooking.customerName || 'Walk-in Guest'}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                                        <span>📞 Phone: {matchingBooking.customerPhone || 'N/A'}</span>
+                                                        <span>⚽ Sport Arena: {(matchingBooking.sport || 'Turf').toUpperCase()}</span>
+                                                        <span>💰 Paid: {formatINR(matchingBooking.paidAmount || 0)} ({matchingBooking.paymentMode || 'Online'})</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                        <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: statusBg(s.status), color: statusColor(s.status), whiteSpace: 'nowrap', alignSelf: 'center' }}>{s.status}</span>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>
 
-                    {/* Recent Activity */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Recent Activity with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Recent Activity</h3>
                             <span onClick={() => { setActiveTab('reports'); setActiveSidebarKey('activity-logs'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>View All</span>
@@ -302,18 +485,56 @@ export default function DashboardTab(props) {
                                     <span style={{ fontSize: '0.85rem' }}>No recent activity</span>
                                 </div>
                             ) : (
-                                recentActivities.map((a, i) => (
-                                    <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>{a.icon}</span>
+                                recentActivities.map((a, i) => {
+                                    const isHovered = hoveredActivity === i;
+                                    return (
+                                        <div 
+                                            key={i} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                gap: '10px', 
+                                                alignItems: 'flex-start',
+                                                padding: '6px 8px',
+                                                borderRadius: '8px',
+                                                background: isHovered ? 'var(--primary-light)' : 'transparent',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                position: 'relative'
+                                            }}
+                                            onMouseEnter={() => setHoveredActivity(i)}
+                                            onMouseLeave={() => setHoveredActivity(null)}
+                                        >
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <span className="material-icons-outlined" style={{ fontSize: '16px' }}>{a.icon}</span>
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.3 }}>{a.text}</div>
+                                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{a.sub}</div>
+                                            </div>
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{a.time}</span>
+
+                                            {/* Hover Popover */}
+                                            {isHovered && (
+                                                <div className="animate-fade-in" style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    right: '0',
+                                                    width: '220px',
+                                                    zIndex: 100,
+                                                    background: 'var(--card-bg, #070D1A)',
+                                                    border: '1px solid var(--primary)',
+                                                    borderRadius: '10px',
+                                                    padding: '10px 12px',
+                                                    boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '2px' }}>{a.text}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{a.sub} · Recorded {a.time}</div>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.3 }}>{a.text}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{a.sub}</div>
-                                        </div>
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>{a.time}</span>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>
@@ -321,8 +542,8 @@ export default function DashboardTab(props) {
 
                 {/* Bottom Section: 4 cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-                    {/* Upcoming Bookings */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Upcoming Bookings with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Upcoming Bookings</h3>
                             <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
@@ -330,8 +551,24 @@ export default function DashboardTab(props) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').slice(0, 4).map((b, i) => {
                                 const d = new Date(b.date + 'T00:00:00');
+                                const isHovered = hoveredBooking === i;
                                 return (
-                                    <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                    <div 
+                                        key={i} 
+                                        style={{ 
+                                            display: 'flex', 
+                                            gap: '10px', 
+                                            alignItems: 'center',
+                                            padding: '6px 8px',
+                                            borderRadius: '8px',
+                                            background: isHovered ? 'var(--primary-light)' : 'transparent',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            position: 'relative'
+                                        }}
+                                        onMouseEnter={() => setHoveredBooking(i)}
+                                        onMouseLeave={() => setHoveredBooking(null)}
+                                    >
                                         <div style={{ width: '40px', height: '44px', borderRadius: '8px', background: 'var(--primary-light)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                             <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}>{d.getDate()}</span>
                                             <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>{d.toLocaleDateString('en-US', { month: 'short' })}</span>
@@ -341,6 +578,27 @@ export default function DashboardTab(props) {
                                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(b.timeSlots || []).map(formatSlotTo12Hr).join(', ') || 'TBD'} · {b.customerName || 'Walk-in'}</div>
                                         </div>
                                         <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)', color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : 'var(--warning)', whiteSpace: 'nowrap' }}>{b.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : 'UPCOMING'}</span>
+
+                                        {/* Hover Popover */}
+                                        {isHovered && (
+                                            <div className="animate-fade-in" style={{
+                                                position: 'absolute',
+                                                top: '100%',
+                                                left: '0',
+                                                right: '0',
+                                                zIndex: 100,
+                                                background: 'var(--card-bg, #070D1A)',
+                                                border: '1px solid var(--primary)',
+                                                borderRadius: '10px',
+                                                padding: '10px',
+                                                boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+                                                pointerEvents: 'none'
+                                            }}>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)' }}>{b.customerName || 'Walk-in'}</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>📞 {b.customerPhone || 'No Phone'}</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-main)', marginTop: '2px', fontWeight: 600 }}>Amount: {formatINR(b.paidAmount || 0)} Paid</div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -348,8 +606,8 @@ export default function DashboardTab(props) {
                         </div>
                     </div>
 
-                    {/* Recent Admissions */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Recent Admissions with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Recent Admissions</h3>
                             <span onClick={() => { setActiveTab('membership-management'); setActiveSidebarKey('membership-management'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
@@ -363,8 +621,24 @@ export default function DashboardTab(props) {
                             ) : (
                                 recentAdmissions.map((s, i) => {
                                     const dateStr = s.admissionDate ? new Date(s.admissionDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : 'N/A';
+                                    const isHovered = hoveredAdmission === i;
                                     return (
-                                        <div key={s._id || i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div 
+                                            key={s._id || i} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                gap: '10px',
+                                                padding: '6px 8px',
+                                                borderRadius: '8px',
+                                                background: isHovered ? 'var(--primary-light)' : 'transparent',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                position: 'relative'
+                                            }}
+                                            onMouseEnter={() => setHoveredAdmission(i)}
+                                            onMouseLeave={() => setHoveredAdmission(null)}
+                                        >
                                             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: studentColors[i % studentColors.length], color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0 }}>{s.name?.charAt(0)}</div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
@@ -375,6 +649,27 @@ export default function DashboardTab(props) {
                                                     {s.sport?.charAt(0).toUpperCase() + s.sport?.slice(1)} · {s.batchTime}
                                                 </div>
                                             </div>
+
+                                            {/* Hover Popover */}
+                                            {isHovered && (
+                                                <div className="animate-fade-in" style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: '0',
+                                                    right: '0',
+                                                    zIndex: 100,
+                                                    background: 'var(--card-bg, #070D1A)',
+                                                    border: '1px solid var(--primary)',
+                                                    borderRadius: '10px',
+                                                    padding: '10px',
+                                                    boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)' }}>Trainee: {s.name}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>📞 Contact: {s.guardianPhone || s.phone || 'N/A'}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-main)', marginTop: '2px', fontWeight: 600 }}>Batch: {s.batchTime || 'General'}</div>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })
@@ -382,8 +677,8 @@ export default function DashboardTab(props) {
                         </div>
                     </div>
 
-                    {/* Inventory Alert */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Inventory Alert with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Inventory Alert</h3>
                             <span onClick={() => { setActiveTab('inventory-management'); setActiveSidebarKey('stock-alerts'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
@@ -396,24 +691,63 @@ export default function DashboardTab(props) {
                                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>No low stock alerts</span>
                                 </div>
                             ) : (
-                                alerts.slice(0, 4).map((it, i) => (
-                                    <div key={it._id || i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>inventory_2</span>
+                                alerts.slice(0, 4).map((it, i) => {
+                                    const isHovered = hoveredInventory === i;
+                                    return (
+                                        <div 
+                                            key={it._id || i} 
+                                            style={{ 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                gap: '10px',
+                                                padding: '6px 8px',
+                                                borderRadius: '8px',
+                                                background: isHovered ? 'var(--primary-light)' : 'transparent',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                position: 'relative'
+                                            }}
+                                            onMouseEnter={() => setHoveredInventory(i)}
+                                            onMouseLeave={() => setHoveredInventory(null)}
+                                        >
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <span className="material-icons-outlined" style={{ fontSize: '16px' }}>inventory_2</span>
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{it.itemName}</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Stock: {it.availableQuantity}</div>
+                                            </div>
+                                            <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: it.availableQuantity === 0 ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', color: it.availableQuantity === 0 ? 'var(--danger)' : 'var(--warning)', whiteSpace: 'nowrap' }}>{it.availableQuantity === 0 ? 'Out of Stock' : 'Low Stock'}</span>
+
+                                            {/* Hover Popover */}
+                                            {isHovered && (
+                                                <div className="animate-fade-in" style={{
+                                                    position: 'absolute',
+                                                    top: '100%',
+                                                    left: '0',
+                                                    right: '0',
+                                                    zIndex: 100,
+                                                    background: 'var(--card-bg, #070D1A)',
+                                                    border: '1px solid var(--primary)',
+                                                    borderRadius: '10px',
+                                                    padding: '10px',
+                                                    boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)' }}>{it.itemName}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Available: {it.availableQuantity} units</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--warning)', marginTop: '2px', fontWeight: 600 }}>Action: Reorder from vendor</div>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{it.itemName}</div>
-                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Stock: {it.availableQuantity}</div>
-                                        </div>
-                                        <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: it.availableQuantity === 0 ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)', color: it.availableQuantity === 0 ? 'var(--danger)' : 'var(--warning)', whiteSpace: 'nowrap' }}>{it.availableQuantity === 0 ? 'Out of Stock' : 'Low Stock'}</span>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>
 
-                    {/* Monthly Revenue */}
-                    <div className="card-premium" style={{ padding: '20px' }}>
+                    {/* Monthly Revenue Bar Chart with Hover Data */}
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Monthly Revenue</h3>
                             <button className="btn-secondary-stripe" style={{ fontSize: '0.72rem', padding: '3px 10px' }}>6 Months</button>
@@ -422,25 +756,58 @@ export default function DashboardTab(props) {
                             <div style={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1.1 }}>{formatINR(stats?.finances?.total || 0)}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Total this month across turf, academy & store</div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px', height: '80px', padding: '0 4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '8px', height: '80px', padding: '0 4px', position: 'relative' }}>
                             {barData.map((v, i) => {
                                 const heightPct = maxBarVal > 0 ? (v / maxBarVal) * 100 : 0;
                                 const isCurrentMonth = i === barData.length - 1;
+                                const isHovered = hoveredBar === i;
+                                const monthName = revenueAnalytics[i]?.month || `Month ${i+1}`;
                                 return (
-                                    <div key={i} style={{ 
-                                        flex: 1, 
-                                        height: `${Math.max(heightPct, 5)}%`, 
-                                        background: isCurrentMonth ? 'var(--primary)' : 'rgba(37, 99, 235, 0.15)', 
-                                        borderRadius: '4px', 
-                                        transition: 'height 0.3s ease',
-                                        position: 'relative'
-                                    }} title={`${revenueAnalytics[i]?.month || ''}: ${formatINR(v)}`}></div>
+                                    <div 
+                                        key={i} 
+                                        onMouseEnter={() => setHoveredBar(i)}
+                                        onMouseLeave={() => setHoveredBar(null)}
+                                        style={{ 
+                                            flex: 1, 
+                                            height: `${Math.max(heightPct, 5)}%`, 
+                                            background: isHovered ? 'var(--primary)' : isCurrentMonth ? 'var(--success)' : 'rgba(37, 99, 235, 0.15)', 
+                                            borderRadius: '4px', 
+                                            transition: 'all 0.25s ease',
+                                            position: 'relative',
+                                            cursor: 'pointer',
+                                            transform: isHovered ? 'scaleY(1.05)' : 'scaleY(1)',
+                                            transformOrigin: 'bottom'
+                                        }} 
+                                    >
+                                        {/* Hover Popover */}
+                                        {isHovered && (
+                                            <div className="animate-fade-in" style={{
+                                                position: 'absolute',
+                                                bottom: '100%',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                marginBottom: '6px',
+                                                background: 'var(--card-bg, #070D1A)',
+                                                border: '1px solid var(--primary)',
+                                                borderRadius: '8px',
+                                                padding: '6px 10px',
+                                                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                                whiteSpace: 'nowrap',
+                                                zIndex: 100,
+                                                pointerEvents: 'none',
+                                                textAlign: 'center'
+                                            }}>
+                                                <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--primary)' }}>{monthName}</div>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-main)' }}>{formatINR(v)}</div>
+                                            </div>
+                                        )}
+                                    </div>
                                 );
                             })}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', padding: '0 4px' }}>
                             {revenueAnalytics.map((item, i) => (
-                                <span key={i} style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                                <span key={i} style={{ fontSize: '0.62rem', color: hoveredBar === i ? 'var(--primary)' : 'var(--text-muted)', fontWeight: hoveredBar === i ? 800 : 400, textTransform: 'uppercase', transition: 'all 0.2s' }}>
                                     {item.month ? item.month.split(' ')[0].slice(0, 3) : ''}
                                 </span>
                             ))}
