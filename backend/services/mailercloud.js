@@ -203,6 +203,37 @@ async function sendBookingInvoiceEmail(booking) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @keyframes logoBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-6px) scale(1.05); }
+    }
+    @keyframes lightRaySweep {
+      0% { left: -130%; opacity: 0; }
+      15% { opacity: 1; }
+      55% { left: 150%; opacity: 1; }
+      100% { left: 150%; opacity: 0; }
+    }
+    .email-logo-wrapper {
+      position: relative;
+      display: inline-block;
+      border-radius: 50%;
+      overflow: hidden;
+      animation: logoBounce 2.5s ease-in-out infinite;
+    }
+    .email-logo-wrapper::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -130%;
+      width: 60%;
+      height: 200%;
+      background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(57,255,20,0.4) 30%, rgba(255,255,255,0.95) 50%, rgba(57,255,20,0.4) 70%, rgba(255,255,255,0) 100%);
+      transform: rotate(25deg);
+      animation: lightRaySweep 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body style="margin: 0; padding: 20px 10px; background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111827;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border: 2px solid #10B981; border-radius: 24px; overflow: hidden; box-shadow: 0 15px 35px rgba(16, 185, 129, 0.2);">
@@ -210,9 +241,11 @@ async function sendBookingInvoiceEmail(booking) {
     <!-- Top Turf Green Gradient Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%); padding: 32px 20px; text-align: center; color: #FFFFFF;">
       
-      <!-- Official Khelo Patna Logo Badge -->
+      <!-- Official Khelo Patna Logo Badge with Bouncing & Light Ray Animation -->
       <div style="margin-bottom: 12px;">
-        <img src="${logoUrl}" alt="Khelo Patna Elite Turf Logo" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); background: #FFFFFF; object-fit: contain; padding: 4px;">
+        <div class="email-logo-wrapper" style="display: inline-block; position: relative; border-radius: 50%; overflow: hidden;">
+          <img src="${logoUrl}" alt="Khelo Patna Elite Turf Logo" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); background: #FFFFFF; object-fit: contain; padding: 4px;">
+        </div>
       </div>
 
       <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">

@@ -326,7 +326,9 @@ export default function HomePage() {
             }}>
                 <div className="container d-flex align-items-center justify-content-between">
                     <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src="/logo.png" alt="Logo" style={{ height: '42px', width: 'auto' }} />
+                        <div className="animated-turf-logo-container">
+                            <img src="/logo.png" alt="Logo" className="animated-turf-logo-img" style={{ height: '42px', width: 'auto' }} />
+                        </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                             <span className="logo-text" style={{
                                 fontFamily: 'Montserrat', fontWeight: 900, fontSize: '1.2rem',

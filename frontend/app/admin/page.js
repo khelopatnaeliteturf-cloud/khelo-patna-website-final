@@ -5721,10 +5721,11 @@ export default function AdminDashboard() {
                 </button>
 
                 <div className="sidebar-brand" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '20px', marginBottom: '16px', flexShrink: 0 }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                    <div className="animated-turf-logo-container" style={{ width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0, overflow: 'hidden' }}>
                         <img 
                             src="/logo.png" 
                             alt="Logo" 
+                            className="animated-turf-logo-img"
                             style={{ 
                                 width: '100%', 
                                 height: '100%', 
