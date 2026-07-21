@@ -572,14 +572,14 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontSize: '0.82rem',
                         fontWeight: '700',
                         border: 'none',
-                        background: activeSubTab === 'poster' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'poster' ? 'var(--white)' : 'var(--text-main)',
+                        background: activeSubTab === 'poster' ? '#059669' : 'rgba(255, 255, 255, 0.04)',
+                        color: activeSubTab === 'poster' ? '#FFFFFF' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         transition: 'all 0.25s',
-                        boxShadow: activeSubTab === 'poster' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
+                        boxShadow: activeSubTab === 'poster' ? '0 4px 12px rgba(5, 150, 105, 0.3)' : 'none'
                     }}
                 >
                     <span className="material-icons-outlined" style={{ fontSize: '17px' }}>print</span> QR Poster & Printables
@@ -593,14 +593,14 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         fontSize: '0.82rem',
                         fontWeight: '700',
                         border: 'none',
-                        background: activeSubTab === 'log' ? 'var(--emerald)' : 'rgba(255, 255, 255, 0.04)',
-                        color: activeSubTab === 'log' ? 'var(--white)' : 'var(--text-main)',
+                        background: activeSubTab === 'log' ? '#059669' : 'rgba(255, 255, 255, 0.04)',
+                        color: activeSubTab === 'log' ? '#FFFFFF' : 'var(--text-main)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         transition: 'all 0.25s',
-                        boxShadow: activeSubTab === 'log' ? '0 4px 12px rgba(16, 185, 129, 0.25)' : 'none'
+                        boxShadow: activeSubTab === 'log' ? '0 4px 12px rgba(5, 150, 105, 0.3)' : 'none'
                     }}
                 >
                     <span className="material-icons-outlined" style={{ fontSize: '17px' }}>insights</span> AI Logs & Device Stats
@@ -790,19 +790,19 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         {/* Print Actions Section */}
                         <div className="card-premium bg-white border shadow-sm rounded-4" style={{ padding: '24px' }}>
                             <h4 style={{ fontSize: '0.92rem', fontWeight: 800, marginBottom: '16px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ width: '4px', height: '14px', background: 'var(--emerald)', display: 'inline-block', borderRadius: '4px' }}></span> Print Actions
+                                <span style={{ width: '4px', height: '14px', background: '#059669', display: 'inline-block', borderRadius: '4px' }}></span> Print Actions
                             </h4>
                             <div className="row g-3 mb-3">
                                 <div className="col-12 col-md-6">
                                     <button
                                         onClick={() => handlePrint('a4')}
                                         className="btn w-100 text-start p-3 rounded-3"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--emerald)', border: 'none', color: '#fff', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(16,185,129,0.15)' }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#059669', border: 'none', color: '#fff', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(5,150,105,0.25)' }}
                                     >
                                         <span className="material-icons-outlined" style={{ fontSize: '24px' }}>print</span>
                                         <div>
                                             <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Print A4 Poster</div>
-                                            <div style={{ fontSize: '0.68rem', opacity: 0.85, fontWeight: 500 }}>High quality poster for your arena</div>
+                                            <div style={{ fontSize: '0.68rem', opacity: 0.9, fontWeight: 500 }}>High quality poster for your arena</div>
                                         </div>
                                     </button>
                                 </div>
@@ -843,7 +843,7 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                         target="_blank"
                                         rel="noreferrer"
                                         className="btn w-100 text-start p-2.5 rounded-3 text-white"
-                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#128c7e', border: 'none', textDecoration: 'none' }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#059669', border: 'none', textDecoration: 'none' }}
                                     >
                                         <span className="material-icons-outlined" style={{ fontSize: '18px' }}>share</span>
                                         <div>
@@ -873,12 +873,12 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         {/* Public Review Landing URL Section */}
                         <div className="card-premium bg-white border shadow-sm rounded-4" style={{ padding: '24px' }}>
                             <h4 style={{ fontSize: '0.92rem', fontWeight: 800, marginBottom: '16px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ width: '4px', height: '14px', background: 'var(--emerald)', display: 'inline-block', borderRadius: '4px' }}></span> Public Review Landing URL
+                                <span style={{ width: '4px', height: '14px', background: '#059669', display: 'inline-block', borderRadius: '4px' }}></span> Public Review Landing URL
                             </h4>
-                            <div className="d-flex align-items-center justify-content-between p-3 text-mono" style={{ background: 'rgba(16, 185, 129, 0.04)', borderRadius: '12px', border: '1px dashed rgba(16, 185, 129, 0.4)', fontSize: '0.82rem', color: '#1e293b', wordBreak: 'break-all', fontWeight: 600 }}>
+                            <div className="d-flex align-items-center justify-content-between p-3 text-mono" style={{ background: 'rgba(5, 150, 105, 0.06)', borderRadius: '12px', border: '1px dashed rgba(5, 150, 105, 0.35)', fontSize: '0.82rem', color: '#1e293b', wordBreak: 'break-all', fontWeight: 600 }}>
                                 <div className="d-flex align-items-center gap-2">
-                                    <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>link</span>
-                                    <strong style={{ color: '#059669' }}>{reviewUrl || 'Loading review url...'}</strong>
+                                    <span className="material-icons-outlined" style={{ fontSize: '18px', color: '#059669' }}>link</span>
+                                    <strong style={{ color: '#047857' }}>{reviewUrl || 'Loading review url...'}</strong>
                                 </div>
                                 <div className="d-flex gap-1">
                                     <button 
@@ -886,8 +886,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                             navigator.clipboard.writeText(reviewUrl);
                                             alert('URL copied to clipboard!');
                                         }}
-                                        className="btn bg-white border text-emerald d-flex align-items-center gap-1 py-1 px-2.5 rounded-2"
-                                        style={{ fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', color: 'var(--emerald)', borderColor: 'rgba(16,185,129,0.3)' }}
+                                        className="btn bg-white border d-flex align-items-center gap-1 py-1 px-2.5 rounded-2"
+                                        style={{ fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', color: '#047857', borderColor: 'rgba(5,150,105,0.35)' }}
                                     >
                                         <span className="material-icons-outlined" style={{ fontSize: '14px' }}>content_copy</span> Copy
                                     </button>
@@ -895,8 +895,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                                         href={reviewUrl}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="btn bg-white border text-emerald d-flex align-items-center gap-1 py-1 px-2.5 rounded-2"
-                                        style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--emerald)', borderColor: 'rgba(16,185,129,0.3)', textDecoration: 'none' }}
+                                        className="btn bg-white border d-flex align-items-center gap-1 py-1 px-2.5 rounded-2"
+                                        style={{ fontSize: '0.72rem', fontWeight: 700, color: '#047857', borderColor: 'rgba(5,150,105,0.35)', textDecoration: 'none' }}
                                     >
                                         <span className="material-icons-outlined" style={{ fontSize: '14px' }}>open_in_new</span> Open
                                     </a>
@@ -907,26 +907,26 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
                         {/* Onboarding Flowchart (How the AI review generator helps) */}
                         <div className="card-premium bg-white border shadow-sm rounded-4" style={{ padding: '24px' }}>
                             <h4 style={{ fontSize: '0.92rem', fontWeight: 800, marginBottom: '16px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '18px' }}>info</span> How the AI review generator helps
+                                <span className="material-icons-outlined" style={{ color: '#059669', fontSize: '18px' }}>info</span> How the AI review generator helps
                             </h4>
                             
                             {/* Horizontal grid flowchart */}
                             <div className="row g-2 align-items-center text-center mb-3">
                                 <div className="col-12 col-sm-3">
                                     <div className="p-2.5 rounded-3 bg-light border d-flex flex-column align-items-center" style={{ minHeight: '90px', justifyContent: 'center' }}>
-                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '22px', marginBottom: '4px' }}>qr_code</span>
+                                        <span className="material-icons-outlined" style={{ color: '#059669', fontSize: '22px', marginBottom: '4px' }}>qr_code</span>
                                         <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>Customer scans QR code</div>
                                     </div>
                                 </div>
                                 <div className="col-12 col-sm-3">
                                     <div className="p-2.5 rounded-3 bg-light border d-flex flex-column align-items-center" style={{ minHeight: '90px', justifyContent: 'center' }}>
-                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '22px', marginBottom: '4px' }}>psychology</span>
+                                        <span className="material-icons-outlined" style={{ color: '#059669', fontSize: '22px', marginBottom: '4px' }}>psychology</span>
                                         <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>AI generates review</div>
                                     </div>
                                 </div>
                                 <div className="col-12 col-sm-3">
                                     <div className="p-2.5 rounded-3 bg-light border d-flex flex-column align-items-center" style={{ minHeight: '90px', justifyContent: 'center' }}>
-                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '22px', marginBottom: '4px' }}>content_paste_go</span>
+                                        <span className="material-icons-outlined" style={{ color: '#059669', fontSize: '22px', marginBottom: '4px' }}>content_paste_go</span>
                                         <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>Copied to clipboard</div>
                                     </div>
                                 </div>
