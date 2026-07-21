@@ -5983,9 +5983,9 @@ export default function AdminDashboard() {
                             title="Download Animated Logo GIF (500x500)"
                             style={{ 
                                 textDecoration: 'none', 
-                                color: 'var(--emerald)', 
-                                background: 'rgba(16,185,129,0.1)', 
-                                border: '1px solid rgba(16,185,129,0.25)', 
+                                color: theme === 'light' ? '#047857' : 'var(--emerald)', 
+                                background: theme === 'light' ? 'rgba(4, 120, 87, 0.08)' : 'rgba(16,185,129,0.1)', 
+                                border: theme === 'light' ? '1px solid rgba(4, 120, 87, 0.3)' : '1px solid rgba(16,185,129,0.25)', 
                                 padding: '6px 12px', 
                                 borderRadius: '10px', 
                                 fontSize: '0.74rem', 
