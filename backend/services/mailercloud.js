@@ -178,8 +178,8 @@ async function sendBookingInvoiceEmail(booking) {
     const sportName = (booking.sport || 'TURF').toUpperCase();
     const subject = `Booking Confirmed: ${sportName} Arena — Khelo Patna Elite Turf [Ref: ${booking.orderId}]`;
 
-    // Official logo URL
-    const logoUrl = 'https://khelopatna.in/logo.png';
+    // Official animated logo GIF URL
+    const logoUrl = 'https://khelopatna.in/khelo_patna_logo_animated.gif';
 
     const totalAmt = Number(booking.totalAmount || 0);
     const discountAmt = Number(booking.discount || booking.discountAmount || 0);
@@ -241,11 +241,9 @@ async function sendBookingInvoiceEmail(booking) {
     <!-- Top Turf Green Gradient Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%); padding: 32px 20px; text-align: center; color: #FFFFFF;">
       
-      <!-- Official Khelo Patna Logo Badge with Bouncing & Light Ray Animation -->
-      <div style="margin-bottom: 12px;">
-        <div class="email-logo-wrapper" style="display: inline-block; position: relative; border-radius: 50%; overflow: hidden;">
-          <img src="${logoUrl}" alt="Khelo Patna Elite Turf Logo" style="width: 75px; height: 75px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 20px rgba(0,0,0,0.25); background: #FFFFFF; object-fit: contain; padding: 4px;">
-        </div>
+      <!-- Official Khelo Patna Animated Logo Badge -->
+      <div style="margin-bottom: 12px; text-align: center;">
+        <img src="${logoUrl}" alt="Khelo Patna Elite Turf Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 8px 25px rgba(0,0,0,0.3); background: #030806; display: inline-block;">
       </div>
 
       <div style="display: inline-block; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: #FFFFFF;">

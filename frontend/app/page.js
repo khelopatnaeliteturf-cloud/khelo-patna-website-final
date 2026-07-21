@@ -283,8 +283,8 @@ export default function HomePage() {
             {/* ═══ Ultra-Premium Animated Loading Screen ═══ */}
             <div className={`premium-loader-screen ${!isLoading ? 'fade-out' : ''}`}>
                 <div className="logo-loader-wrapper animate-fade-in">
-                    <div className="logo-loader-badge">
-                        <img src="/logo.png" alt="Khelo Patna Logo" />
+                    <div className="logo-loader-badge" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
+                        <img src="/khelo_patna_logo_animated.gif" alt="Khelo Patna Logo" style={{ width: '100px', height: '100px', borderRadius: '50%' }} />
                     </div>
                     <div className="logo-loader-title">
                         KHELO<span>PATNA</span>
