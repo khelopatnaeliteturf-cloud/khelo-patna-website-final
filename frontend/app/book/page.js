@@ -572,15 +572,25 @@ export default function BookPage() {
                 {verifyingPayment && (
                     <div style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center',
-                        justifyContent: 'center', minHeight: '65vh', gap: '20px'
+                        justifyContent: 'center', minHeight: '65vh'
                     }}>
-                        <div className="verify-spinner"></div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                            Verifying your booking payment…
-                        </h3>
-                        <p style={{ color: 'var(--text-muted)', fontFamily: 'Inter', fontSize: '0.88rem' }}>
-                            Please wait while we confirm details with the server.
-                        </p>
+                        <div className="logo-loader-wrapper animate-fade-in">
+                            <div className="logo-loader-badge">
+                                <img src="/logo.png" alt="Khelo Patna Logo" />
+                            </div>
+                            <div className="logo-loader-title">
+                                KHELO<span>PATNA</span>
+                            </div>
+                            <div className="logo-loader-bar-bg" style={{ marginBottom: '20px' }}>
+                                <div className="logo-loader-bar-fill"></div>
+                            </div>
+                            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                                Verifying your booking payment…
+                            </h3>
+                            <p style={{ color: 'var(--text-muted)', fontFamily: 'Inter', fontSize: '0.85rem', marginTop: '4px' }}>
+                                Please wait while we confirm details with the server.
+                            </p>
+                        </div>
                     </div>
                 )}
 
@@ -990,9 +1000,17 @@ export default function BookPage() {
                             </div>
 
                             {loading ? (
-                                <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                                    <div className="verify-spinner" style={{ margin: '0 auto 16px' }}></div>
-                                    <p style={{ color: 'var(--text-muted)', fontFamily: 'Inter', fontSize: '0.88rem' }}>
+                                <div className="logo-loader-wrapper" style={{ padding: '36px 0' }}>
+                                    <div className="logo-loader-badge" style={{ width: '64px', height: '64px', marginBottom: '14px' }}>
+                                        <img src="/logo.png" alt="Khelo Patna Logo" style={{ width: '42px', height: '42px' }} />
+                                    </div>
+                                    <div className="logo-loader-title" style={{ fontSize: '1rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
+                                        KHELO<span>PATNA</span>
+                                    </div>
+                                    <div className="logo-loader-bar-bg" style={{ width: '120px', marginBottom: '12px' }}>
+                                        <div className="logo-loader-bar-fill"></div>
+                                    </div>
+                                    <p style={{ color: 'var(--text-muted)', fontFamily: 'Inter', fontSize: '0.85rem' }}>
                                         Checking available slots…
                                     </p>
                                 </div>
