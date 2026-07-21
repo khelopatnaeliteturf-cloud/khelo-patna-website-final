@@ -282,12 +282,16 @@ export default function HomePage() {
 
             {/* ═══ Ultra-Premium Animated Loading Screen ═══ */}
             <div className={`premium-loader-screen ${!isLoading ? 'fade-out' : ''}`}>
-                <div className="loader-ball" />
-                <h2 style={{ fontFamily: 'Montserrat', fontSize: '1.2rem', color: '#fff', letterSpacing: '3px', marginTop: '24px', textTransform: 'uppercase' }}>
-                    KHELO<span style={{ color: 'var(--neon)' }}>PATNA</span>
-                </h2>
-                <div style={{ width: '150px', height: '2px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginTop: '14px', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{ position: 'absolute', height: '100%', width: '40%', background: 'linear-gradient(90deg, var(--cyan), var(--neon))', borderRadius: 'inherit', animation: 'shimmer 1.5s infinite linear' }} />
+                <div className="logo-loader-wrapper animate-fade-in">
+                    <div className="logo-loader-badge" style={{ width: '84px', height: '84px', marginBottom: '20px' }}>
+                        <img src="/logo.png" alt="Khelo Patna Logo" style={{ width: '56px', height: '56px' }} />
+                    </div>
+                    <div className="logo-loader-title" style={{ fontSize: '1.25rem', letterSpacing: '3px', marginBottom: '18px' }}>
+                        KHELO<span>PATNA</span>
+                    </div>
+                    <div className="logo-loader-bar-bg" style={{ width: '150px' }}>
+                        <div className="logo-loader-bar-fill"></div>
+                    </div>
                 </div>
             </div>
 
