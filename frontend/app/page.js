@@ -473,8 +473,8 @@ export default function HomePage() {
                                     <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)' }}>Turf Grade</span>
                                 </div>
                                 <div>
-                                    <h3 style={{ fontSize: '1.6rem', color: 'var(--gold)', fontFamily: 'Montserrat', fontWeight: 800, margin: 0 }}>140 kmph</h3>
-                                    <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)' }}>Bowling Feeds</span>
+                                    <h3 style={{ fontSize: '1.6rem', color: 'var(--gold)', fontFamily: 'Montserrat', fontWeight: 800, margin: 0 }}>35 FT</h3>
+                                    <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--text-muted)' }}>Bihar's Tallest Turf</span>
                                 </div>
                             </div>
                         </div>
