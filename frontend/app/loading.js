@@ -11,14 +11,17 @@ export default function Loading() {
             zIndex: 99999
         }}>
             <div className="logo-loader-wrapper animate-fade-in">
-                <div className="logo-loader-badge" style={{ width: '84px', height: '84px', marginBottom: '20px' }}>
-                    <img src="/logo.png" alt="Khelo Patna Logo" style={{ width: '56px', height: '56px' }} />
+                <div className="logo-loader-badge">
+                    <img src="/logo.png" alt="Khelo Patna Logo" />
                 </div>
-                <div className="logo-loader-title" style={{ fontSize: '1.25rem', letterSpacing: '3px', marginBottom: '18px' }}>
+                <div className="logo-loader-title">
                     KHELO<span>PATNA</span>
                 </div>
-                <div className="logo-loader-bar-bg" style={{ width: '150px' }}>
+                <div className="logo-loader-bar-bg">
                     <div className="logo-loader-bar-fill"></div>
+                </div>
+                <div className="logo-loader-subtitle">
+                    Loading the Turf Environment for you…
                 </div>
             </div>
         </div>

@@ -1001,18 +1001,18 @@ export default function BookPage() {
 
                             {loading ? (
                                 <div className="logo-loader-wrapper" style={{ padding: '36px 0' }}>
-                                    <div className="logo-loader-badge" style={{ width: '64px', height: '64px', marginBottom: '14px' }}>
-                                        <img src="/logo.png" alt="Khelo Patna Logo" style={{ width: '42px', height: '42px' }} />
+                                    <div className="logo-loader-badge">
+                                        <img src="/logo.png" alt="Khelo Patna Logo" />
                                     </div>
-                                    <div className="logo-loader-title" style={{ fontSize: '1rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
+                                    <div className="logo-loader-title">
                                         KHELO<span>PATNA</span>
                                     </div>
-                                    <div className="logo-loader-bar-bg" style={{ width: '120px', marginBottom: '12px' }}>
+                                    <div className="logo-loader-bar-bg">
                                         <div className="logo-loader-bar-fill"></div>
                                     </div>
-                                    <p style={{ color: 'var(--text-muted)', fontFamily: 'Inter', fontSize: '0.85rem' }}>
-                                        Checking available slots…
-                                    </p>
+                                    <div className="logo-loader-subtitle">
+                                        Loading the Turf Environment for you…
+                                    </div>
                                 </div>
                             ) : (
                                 <div>

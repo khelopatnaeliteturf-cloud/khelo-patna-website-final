@@ -1176,6 +1176,114 @@ select.glass-input option {
     z-index: 2;
 }
 
+.logo-loader-badge {
+    position: relative;
+    width: 105px;
+    height: 105px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.08);
+    border: 2.5px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    animation: logoBounce 2.2s ease-in-out infinite;
+    overflow: hidden;
+}
+
+.logo-loader-badge img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 16px rgba(16, 185, 129, 0.6));
+}
+
+.logo-loader-badge::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -130%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(57, 255, 20, 0.4) 25%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(57, 255, 20, 0.4) 75%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg);
+    animation: lightRaySweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+}
+
+.logo-loader-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 1.35rem;
+    letter-spacing: 3.5px;
+    color: #FFFFFF;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+}
+
+.logo-loader-title span {
+    color: #10B981;
+    text-shadow: 0 0 14px rgba(16, 185, 129, 0.55);
+}
+
+.logo-loader-bar-bg {
+    width: 160px;
+    height: 3.5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.logo-loader-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 45%;
+    background: linear-gradient(90deg, #00FF88 0%, #10B981 100%);
+    box-shadow: 0 0 12px #00FF88;
+    border-radius: 4px;
+    animation: loaderBarSweep 1.6s ease-in-out infinite;
+}
+
+.logo-loader-subtitle {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: rgba(232, 240, 234, 0.78);
+    letter-spacing: 0.6px;
+    margin-top: 16px;
+    animation: loaderTextPulse 2s ease-in-out infinite;
+}
+
+@keyframes loaderTextPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes loaderBarSweep {
+    0% {
+        left: -45%;
+        width: 35%;
+    }
+    50% {
+        width: 65%;
+    }
+    100% {
+        left: 100%;
+        width: 35%;
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════
    WHATSAPP FLOAT BUTTON
    ═══════════════════════════════════════════════════════════ */
