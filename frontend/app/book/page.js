@@ -341,7 +341,9 @@ export default function BookPage() {
                     })
                 });
                 const ppData = await ppRes.json();
-                if (!ppRes.ok) throw new Error(ppData.error || 'Failed to initiate PhonePe payment.');
+                if (!ppRes.ok) {
+                    throw new Error(ppData.error || 'PhonePe payment is currently unavailable. Please select Cashfree PG below to complete payment.');
+                }
 
                 if (ppData.mock && ppData.redirectUrl) {
                     setMockOrderDetails({ orderId: ppData.orderId, amount: chargeAmount });
