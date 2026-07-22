@@ -7,7 +7,13 @@ const SPORTS = [
     { id: 'football', label: 'Football', icon: 'sports_soccer', tagline: 'Turf training & league prep' }
 ];
 
-const DEFAULT_PLAN = { oneTimeAdmissionFee: 1500, monthlyFee: 2000, lateFeePenalty: 0, dueDayOfMonth: 5 };
+const DEFAULT_PLANS = {
+    cricket: { oneTimeAdmissionFee: 5000, monthlyFee: 2000, lateFeePenalty: 0, dueDayOfMonth: 5 },
+    football: { oneTimeAdmissionFee: 5000, monthlyFee: 2500, lateFeePenalty: 0, dueDayOfMonth: 5 },
+    all: { oneTimeAdmissionFee: 5000, monthlyFee: 2000, lateFeePenalty: 0, dueDayOfMonth: 5 }
+};
+
+const DEFAULT_PLAN = DEFAULT_PLANS.all;
 
 const formatINR = (v) => `₹${(Number(v) || 0).toLocaleString('en-IN')}`;
 
@@ -43,12 +49,13 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                 setPlans(next);
                 const draft = {};
                 SPORTS.forEach(sp => {
-                    const src = next[sp.id] || next['all'] || DEFAULT_PLAN;
+                    const fallback = DEFAULT_PLANS[sp.id] || DEFAULT_PLANS.all;
+                    const src = next[sp.id] || next['all'] || fallback;
                     draft[sp.id] = {
-                        oneTimeAdmissionFee: src.oneTimeAdmissionFee ?? 1500,
-                        monthlyFee: src.monthlyFee ?? 2000,
-                        lateFeePenalty: src.lateFeePenalty ?? 0,
-                        dueDayOfMonth: src.dueDayOfMonth ?? 5
+                        oneTimeAdmissionFee: src.oneTimeAdmissionFee ?? fallback.oneTimeAdmissionFee,
+                        monthlyFee: src.monthlyFee ?? fallback.monthlyFee,
+                        lateFeePenalty: src.lateFeePenalty ?? fallback.lateFeePenalty,
+                        dueDayOfMonth: src.dueDayOfMonth ?? fallback.dueDayOfMonth
                     };
                 });
                 setPlansDraft(draft);
@@ -63,12 +70,13 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
     useEffect(() => { loadPlans(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const planFor = (sportId) => {
-        const p = plans[sportId] || plans['all'];
+        const fallback = DEFAULT_PLANS[sportId] || DEFAULT_PLANS.all;
+        const p = plans[sportId] || plans['all'] || fallback;
         return {
-            oneTimeAdmissionFee: p?.oneTimeAdmissionFee ?? DEFAULT_PLAN.oneTimeAdmissionFee,
-            monthlyFee: p?.monthlyFee ?? DEFAULT_PLAN.monthlyFee,
-            lateFeePenalty: p?.lateFeePenalty ?? DEFAULT_PLAN.lateFeePenalty,
-            dueDayOfMonth: p?.dueDayOfMonth ?? DEFAULT_PLAN.dueDayOfMonth
+            oneTimeAdmissionFee: p?.oneTimeAdmissionFee ?? fallback.oneTimeAdmissionFee,
+            monthlyFee: p?.monthlyFee ?? fallback.monthlyFee,
+            lateFeePenalty: p?.lateFeePenalty ?? fallback.lateFeePenalty,
+            dueDayOfMonth: p?.dueDayOfMonth ?? fallback.dueDayOfMonth
         };
     };
 
@@ -311,7 +319,7 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                                         >
                                             <span className="material-icons-outlined sport-card__icon">{sp.icon}</span>
                                             <div style={{ textAlign: 'left', flex: 1 }}>
-                                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>{sp.label}</div>
+                                                <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-main)' }}>{sp.label}</div>
                                                 <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px' }}>{sp.tagline}</div>
                                                 <div className="sport-card__price">
                                                     {formatINR(p.monthlyFee)}<span style={{ fontSize: '0.7rem', fontWeight: 500, color: 'var(--text-muted)' }}>/month</span>

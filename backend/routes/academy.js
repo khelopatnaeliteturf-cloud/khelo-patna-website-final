@@ -1133,7 +1133,7 @@ router.post('/academy/enquiries/:id/convert', authenticateToken, authorizeRoles(
             experienceDetails: enquiry.experienceDetails,
             sport,
             batchTime: batchTime || '06:00-08:00 AM',
-            oneTimeAdmissionFee: oneTimeAdmissionFee !== undefined ? Number(oneTimeAdmissionFee) : (feeStructure?.oneTimeAdmissionFee || 1500),
+            oneTimeAdmissionFee: oneTimeAdmissionFee !== undefined ? Number(oneTimeAdmissionFee) : (feeStructure?.oneTimeAdmissionFee || 5000),
             monthlyFee: monthlyFee !== undefined ? Number(monthlyFee) : (feeStructure?.monthlyFee || (sport === 'cricket' ? 2000 : 2500)),
             currentSessionId: activeSession?._id
         });
