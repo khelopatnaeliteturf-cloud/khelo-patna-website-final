@@ -1,5 +1,26 @@
 import React from 'react';
 
+function renderWhatsAppFormatted(text) {
+    if (!text) return { __html: '' };
+    const escaped = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    
+    const formatted = escaped
+        .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+        .replace(/_(.*?)_/g, '<em>$1</em>')
+        .replace(/~(.*?)~/g, '<del>$1</del>')
+        .replace(/\n/g, '<br/>');
+
+    return { __html: formatted };
+}
+
+function getCleanSummary(text) {
+    if (!text) return '';
+    return String(text).replace(/[*_~]/g, '');
+}
+
 export default function CommunicationTab(props) {
     const { 
         commType, 
@@ -322,11 +343,11 @@ export default function CommunicationTab(props) {
                                                 </td>
                                                 <td className="font-monospace" style={{ fontWeight: 600 }}>{log.recipient}</td>
                                                 <td>
-                                                    <div style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    <div style={{ maxWidth: '340px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                         {isEmail ? (
                                                             <strong>{log.subject || '(No Subject)'}</strong>
                                                         ) : (
-                                                            log.content
+                                                            <span>{getCleanSummary(log.content)}</span>
                                                         )}
                                                     </div>
                                                 </td>
@@ -391,41 +412,41 @@ export default function CommunicationTab(props) {
             {/* Modal for viewing detailed log content */}
             {selectedLog && (
                 <div className="modal-backdrop-premium fade show d-flex align-items-center justify-content-center" style={{
-                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                    background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', zIndex: 10000
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh',
+                    background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(10px)', zIndex: 999999
                 }}>
                     <div className="card-premium animate-scale-up" style={{
-                        width: '90%', maxWidth: '800px', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+                        width: '90%', maxWidth: '750px', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
                         background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '24px',
-                        overflow: 'hidden', padding: 0
+                        overflow: 'hidden', padding: 0, boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
                     }}>
                         <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
                             <div>
-                                <h4 className="mb-1" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Communication Details</h4>
+                                <h4 className="mb-1" style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>Communication Details</h4>
                                 <p className="mb-0 text-muted" style={{ fontSize: '0.78rem' }}>
-                                    Sent: {new Date(selectedLog.createdAt).toLocaleString('en-IN')}
+                                    Sent: {new Date(selectedLog.createdAt).toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'medium' })}
                                 </p>
                             </div>
                             <button 
                                 onClick={() => setSelectedLog(null)} 
-                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
                             >
-                                <span className="material-icons-outlined">close</span>
+                                <span className="material-icons-outlined" style={{ fontSize: '24px' }}>close</span>
                             </button>
                         </div>
 
                         <div className="p-4" style={{ overflowY: 'auto', flex: 1 }}>
                             <div className="row g-3 mb-4">
                                 <div className="col-sm-6">
-                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700 }}>RECIPIENT</div>
-                                    <div className="font-monospace fw-bold" style={{ color: 'var(--text-main)' }}>{selectedLog.recipient}</div>
+                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>RECIPIENT</div>
+                                    <div className="font-monospace fw-bold" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{selectedLog.recipient}</div>
                                 </div>
                                 <div className="col-sm-3 col-6">
-                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700 }}>CHANNEL</div>
-                                    <div>{selectedLog.type}</div>
+                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>CHANNEL</div>
+                                    <div className="fw-bold" style={{ color: selectedLog.type === 'EMAIL' ? '#3b82f6' : '#10b981' }}>{selectedLog.type}</div>
                                 </div>
                                 <div className="col-sm-3 col-6">
-                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700 }}>STATUS</div>
+                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>STATUS</div>
                                     <div>
                                         {selectedLog.status === 'SENT' ? (
                                             <span className="text-success fw-bold">🟢 Sent Successfully</span>
@@ -436,8 +457,8 @@ export default function CommunicationTab(props) {
                                 </div>
                                 {selectedLog.type === 'EMAIL' && (
                                     <div className="col-12 border-top pt-3">
-                                        <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700 }}>SUBJECT</div>
-                                        <div className="fw-bold" style={{ color: 'var(--text-main)' }}>{selectedLog.subject || '(No Subject)'}</div>
+                                        <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>SUBJECT</div>
+                                        <div className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{selectedLog.subject || '(No Subject)'}</div>
                                     </div>
                                 )}
                                 {selectedLog.errorMessage && (
@@ -448,33 +469,36 @@ export default function CommunicationTab(props) {
                             </div>
 
                             <div className="border-top pt-3">
-                                <div className="text-muted mb-2" style={{ fontSize: '0.75rem', fontWeight: 700 }}>MESSAGE CONTENT</div>
+                                <div className="text-muted mb-2" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>MESSAGE CONTENT</div>
                                 {selectedLog.type === 'EMAIL' ? (
                                     <iframe 
                                         srcDoc={selectedLog.content} 
-                                        style={{ width: '100%', height: '400px', border: '1px solid var(--border-color)', borderRadius: '12px', background: '#fff' }} 
+                                        style={{ width: '100%', height: '420px', border: '1px solid var(--border-color)', borderRadius: '12px', background: '#fff' }} 
                                         title="Email Preview"
                                     />
                                 ) : (
-                                    <pre style={{
-                                        whiteSpace: 'pre-wrap',
-                                        wordBreak: 'break-word',
-                                        background: 'rgba(0,0,0,0.15)',
-                                        padding: '16px',
-                                        borderRadius: '12px',
+                                    <div style={{
+                                        background: 'var(--input-bg, rgba(16, 185, 129, 0.05))',
+                                        border: '1.5px solid rgba(16, 185, 129, 0.25)',
+                                        borderRadius: '16px',
+                                        padding: '20px 24px',
                                         color: 'var(--text-main)',
                                         fontFamily: 'inherit',
-                                        fontSize: '0.9rem',
-                                        border: '1px solid var(--border-color)'
+                                        fontSize: '0.94rem',
+                                        lineHeight: '1.65',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
                                     }}>
-                                        {selectedLog.content}
-                                    </pre>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem', fontWeight: 800, color: '#10b981', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>chat</span> WhatsApp Message
+                                        </div>
+                                        <div dangerouslySetInnerHTML={renderWhatsAppFormatted(selectedLog.content)} />
+                                    </div>
                                 )}
                             </div>
                         </div>
 
                         <div className="p-3 bg-light-subtle border-top text-end">
-                            <button onClick={() => setSelectedLog(null)} className="btn btn-secondary px-4" style={{ borderRadius: '10px' }}>
+                            <button onClick={() => setSelectedLog(null)} className="btn btn-secondary px-4" style={{ borderRadius: '10px', fontWeight: 600 }}>
                                 Close
                             </button>
                         </div>
