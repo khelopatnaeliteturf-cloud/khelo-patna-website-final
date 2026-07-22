@@ -1462,52 +1462,13 @@ export default function BookPage() {
                                          )}
                                      </div>
 
-                                     <div style={{ marginTop: '16px', marginBottom: '16px', textAlign: 'left' }}>
-                                         <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: 600 }}>
-                                             Select Payment Gateway:
-                                         </label>
-                                         <div style={{ display: 'flex', gap: '10px' }}>
-                                             <button
-                                                 type="button"
-                                                 onClick={() => setPaymentGateway('cashfree')}
-                                                 style={{
-                                                     flex: 1, padding: '10px 14px', borderRadius: '10px',
-                                                     background: paymentGateway === 'cashfree' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
-                                                     border: paymentGateway === 'cashfree' ? '1.5px solid #10B981' : '1px solid rgba(255,255,255,0.1)',
-                                                     color: paymentGateway === 'cashfree' ? '#10B981' : 'var(--text-muted)',
-                                                     fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
-                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                                     transition: 'all 0.2s ease'
-                                                 }}
-                                             >
-                                                 <span>💳 Cashfree PG</span>
-                                             </button>
-
-                                             <button
-                                                 type="button"
-                                                 onClick={() => setPaymentGateway('phonepe')}
-                                                 style={{
-                                                     flex: 1, padding: '10px 14px', borderRadius: '10px',
-                                                     background: paymentGateway === 'phonepe' ? 'rgba(95, 37, 159, 0.2)' : 'rgba(255,255,255,0.03)',
-                                                     border: paymentGateway === 'phonepe' ? '1.5px solid #A855F7' : '1px solid rgba(255,255,255,0.1)',
-                                                     color: paymentGateway === 'phonepe' ? '#C084FC' : 'var(--text-muted)',
-                                                     fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
-                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                                                     transition: 'all 0.2s ease'
-                                                 }}
-                                             >
-                                                 <span>🟣 PhonePe UPI</span>
-                                             </button>
-                                         </div>
-                                     </div>
-
                                     <button
                                         type="submit"
                                         className="btn-premium"
                                         disabled={loading}
-                                        style={{ minWidth: '220px', padding: '16px 36px' }}
+                                        style={{ minWidth: '220px', padding: '16px 36px', marginTop: '20px' }}
                                     >
-                                        <span>{loading ? 'Processing…' : (paymentGateway === 'phonepe' ? '🟣 Pay with PhonePe' : '💳 Pay & Reserve')}</span>
+                                        <span>{loading ? 'Processing…' : '💳 Pay & Reserve'}</span>
                                     </button>
                                 </div>
                             </form>
