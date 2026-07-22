@@ -436,7 +436,16 @@ router.get('/admin/communicate/logs', authenticateToken, authorizeRoles('RECEPTI
 
     try {
         const CommunicationLog = require('../models/CommunicationLog');
-        const query = { tenantId };
+        const query = {};
+
+        if (tenantId) {
+            query.$or = [
+                { tenantId: tenantId },
+                { tenantId: tenantId.toString() },
+                { tenantId: null },
+                { tenantId: { $exists: false } }
+            ];
+        }
 
         if (type) {
             query.type = type; // EMAIL or WHATSAPP
@@ -445,11 +454,21 @@ router.get('/admin/communicate/logs', authenticateToken, authorizeRoles('RECEPTI
             query.status = status; // SENT or FAILED
         }
         if (search) {
-            query.$or = [
-                { recipient: { $regex: search, $options: 'i' } },
-                { subject: { $regex: search, $options: 'i' } },
-                { content: { $regex: search, $options: 'i' } }
+            const searchRegex = { $regex: search, $options: 'i' };
+            const searchOr = [
+                { recipient: searchRegex },
+                { subject: searchRegex },
+                { content: searchRegex }
             ];
+            if (query.$or) {
+                query.$and = [
+                    { $or: query.$or },
+                    { $or: searchOr }
+                ];
+                delete query.$or;
+            } else {
+                query.$or = searchOr;
+            }
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
