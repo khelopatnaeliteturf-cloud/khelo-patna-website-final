@@ -1348,9 +1348,9 @@ export default function HomePage() {
                             <h4 style={{ fontSize: '0.85rem', fontFamily: 'Montserrat', fontWeight: 800, color: '#fff', marginBottom: '20px', letterSpacing: '1px' }}>SOCIAL MEDIA</h4>
                             <div style={{ display: 'flex', gap: '12px' }}>
                                 {[
-                                    { icon: "facebook", url: "https://facebook.com" },
-                                    { icon: "instagram", url: "https://instagram.com" },
-                                    { icon: "youtube", url: "https://youtube.com" }
+                                    { icon: "facebook", url: "https://www.facebook.com/profile.php?id=61577271700289#" },
+                                    { icon: "instagram", url: "https://www.instagram.com/khelopatna_eliteturf" },
+                                    { icon: "youtube", url: "https://www.youtube.com/channel/UCbpgjXcAau9Z9UbCP9Ilbvw/" }
                                 ].map((soc, idx) => (
                                     <a key={idx} href={soc.url} target="_blank" rel="noreferrer" className="icon-ring" style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.02)' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '18px', color: '#fff' }}>{soc.icon === 'facebook' ? 'facebook' : soc.icon === 'instagram' ? 'photo_camera' : 'smart_display'}</span>

@@ -114,9 +114,9 @@ export default function RootLayout({ children }) {
                     "closes": "23:00"
                   },
                   "sameAs": [
-                    "https://facebook.com",
-                    "https://instagram.com",
-                    "https://youtube.com"
+                    "https://www.facebook.com/profile.php?id=61577271700289#",
+                    "https://www.instagram.com/khelopatna_eliteturf",
+                    "https://www.youtube.com/channel/UCbpgjXcAau9Z9UbCP9Ilbvw/"
                   ]
                 },
                 {
