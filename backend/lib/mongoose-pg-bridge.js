@@ -115,7 +115,8 @@ function getTableName(modelName) {
         CheckInLog: 'check_in_logs',
         FinanceConfig: 'finance_configs',
         Invoice: 'invoices',
-        MapsReviewUsed: 'maps_reviews_used'
+        MapsReviewUsed: 'maps_reviews_used',
+        CommunicationLog: 'communication_logs'
     };
     return mappings[modelName] || `${modelName.toLowerCase()}s`;
 }
@@ -212,6 +213,7 @@ class QueryBuilder {
         this._selectFields = null;
         this._sortFields = null;
         this._limitVal = null;
+        this._skipVal = null;
     }
 
     select(fields) {
@@ -226,6 +228,11 @@ class QueryBuilder {
 
     limit(val) {
         this._limitVal = val;
+        return this;
+    }
+
+    skip(val) {
+        this._skipVal = val;
         return this;
     }
 
@@ -284,7 +291,12 @@ class QueryBuilder {
             limitClause = `LIMIT 1`;
         }
 
-        const sql = `SELECT ${selectCols} FROM ${this.tableName} ${whereClause} ${orderClause} ${limitClause}`;
+        let offsetClause = '';
+        if (this._skipVal !== null) {
+            offsetClause = `OFFSET ${this._skipVal}`;
+        }
+
+        const sql = `SELECT ${selectCols} FROM ${this.tableName} ${whereClause} ${orderClause} ${limitClause} ${offsetClause}`;
         const res = await client.query(sql, values);
 
         if (this.operation === 'findOne') {

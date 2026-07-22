@@ -1,5 +1,24 @@
 const dns = require('dns');
 const axios = require('axios');
+const Tenant = require('../models/Tenant');
+const CommunicationLog = require('../models/CommunicationLog');
+
+async function logWhatsApp({ to, content, status, errorMessage }) {
+    try {
+        const tenant = await Tenant.findOne({ subdomain: 'khelopatna' });
+        const tenantId = tenant ? tenant._id : null;
+        await new CommunicationLog({
+            tenantId,
+            type: 'WHATSAPP',
+            recipient: to,
+            content,
+            status,
+            errorMessage
+        }).save();
+    } catch (err) {
+        console.error('Error logging WhatsApp communication:', err.message || err);
+    }
+}
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
@@ -373,6 +392,9 @@ function forceReconnect() {
  * @param {string} text - Message body
  */
 async function sendWhatsAppMessage(toPhone, text) {
+    let success = false;
+    let errMessage = null;
+
     if (process.env.WA_SERVICE_URL) {
         try {
             // Sanitize phone number: remove non-digits
@@ -391,34 +413,48 @@ async function sendWhatsAppMessage(toPhone, text) {
                 timeout: 10000
             });
             
-            return response.data.success === true;
+            success = response.data.success === true;
+            if (!success) {
+                errMessage = 'Microservice returned success=false';
+            }
         } catch (err) {
-            console.error(`[WhatsApp Service] Failed to send message via microservice to ${toPhone}:`, err.response?.data || err.message);
-            return false;
+            const remoteErr = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+            console.error(`[WhatsApp Service] Failed to send message via microservice to ${toPhone}:`, remoteErr);
+            errMessage = remoteErr;
+        }
+    } else {
+        if (connectionStatus !== 'CONNECTED' || !sock) {
+            console.warn(`WhatsApp message not sent to ${toPhone}. Client status: ${connectionStatus}`);
+            errMessage = `Client not connected (Status: ${connectionStatus})`;
+        } else {
+            try {
+                // Sanitize phone number: remove non-digits
+                let cleanPhone = toPhone.replace(/\D/g, '');
+                // If it doesn't start with country code (e.g. starts with 10 digits in India), append country code "91"
+                if (cleanPhone.length === 10) {
+                    cleanPhone = '91' + cleanPhone;
+                }
+
+                const jid = `${cleanPhone}@s.whatsapp.net`;
+                await sock.sendMessage(jid, { text: text });
+                console.log(`WhatsApp message successfully sent to ${cleanPhone}`);
+                success = true;
+            } catch (err) {
+                console.error(`Failed to send WhatsApp message to ${toPhone}:`, err);
+                errMessage = err.message || 'WhatsApp Socket Error';
+            }
         }
     }
 
-    if (connectionStatus !== 'CONNECTED' || !sock) {
-        console.warn(`WhatsApp message not sent to ${toPhone}. Client status: ${connectionStatus}`);
-        return false;
-    }
+    // Log the result in the database asynchronously
+    logWhatsApp({
+        to: toPhone,
+        content: text,
+        status: success ? 'SENT' : 'FAILED',
+        errorMessage: success ? null : errMessage
+    }).catch(err => console.error('Error calling logWhatsApp:', err));
 
-    try {
-        // Sanitize phone number: remove non-digits
-        let cleanPhone = toPhone.replace(/\D/g, '');
-        // If it doesn't start with country code (e.g. starts with 10 digits in India), append country code "91"
-        if (cleanPhone.length === 10) {
-            cleanPhone = '91' + cleanPhone;
-        }
-
-        const jid = `${cleanPhone}@s.whatsapp.net`;
-        await sock.sendMessage(jid, { text: text });
-        console.log(`WhatsApp message successfully sent to ${cleanPhone}`);
-        return true;
-    } catch (err) {
-        console.error(`Failed to send WhatsApp message to ${toPhone}:`, err);
-        return false;
-    }
+    return success;
 }
 
 // Getters and setters

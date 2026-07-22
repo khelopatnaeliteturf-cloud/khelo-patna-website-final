@@ -173,6 +173,24 @@ async function ensureDefaultTenant() {
             ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: coupons table checked/created');
+
+        // ── Communication Logs Table ──────────────────────────────────────
+        console.log('  Bootstrap: ensuring communication_logs table exists...');
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS communication_logs (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+                type VARCHAR(20) NOT NULL CHECK (type IN ('EMAIL', 'WHATSAPP')),
+                recipient VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) DEFAULT NULL,
+                content TEXT NOT NULL,
+                status VARCHAR(20) CHECK (status IN ('SENT', 'FAILED')) DEFAULT 'SENT',
+                error_message TEXT DEFAULT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+            ALTER TABLE communication_logs ENABLE ROW LEVEL SECURITY;
+        `);
+        console.log('  Bootstrap: communication_logs table checked/created');
  
         // ── Bookings Table Columns Migration ─────────────────────────────
         console.log('  Bootstrap: ensuring bookings table has coupon columns...');

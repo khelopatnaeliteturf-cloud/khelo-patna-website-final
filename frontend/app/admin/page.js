@@ -6184,7 +6184,7 @@ export default function AdminDashboard() {
                             onRefresh={fetchStaffList}
                         />
                     )}
-                    {activeTab === 'communication' && <CommunicationTab commType={commType} setCommType={setCommType} handleCommunicateSubmit={handleCommunicateSubmit} commStudentMsg={commStudentMsg} setCommStudentMsg={setCommStudentMsg} allStudents={allStudents} commGroupMsg={commGroupMsg} setCommGroupMsg={setCommGroupMsg} commStaffMsg={commStaffMsg} setCommStaffMsg={setCommStaffMsg} commEmail={commEmail} setCommEmail={setCommEmail} />}
+                    {activeTab === 'communication' && <CommunicationTab commType={commType} setCommType={setCommType} handleCommunicateSubmit={handleCommunicateSubmit} commStudentMsg={commStudentMsg} setCommStudentMsg={setCommStudentMsg} allStudents={allStudents} commGroupMsg={commGroupMsg} setCommGroupMsg={setCommGroupMsg} commStaffMsg={commStaffMsg} setCommStaffMsg={setCommStaffMsg} commEmail={commEmail} setCommEmail={setCommEmail} backendUrl={BACKEND_URL} getHeaders={getHeaders} />}
                     {activeTab === 'website' && (
                         <WebsiteTab />
                     )}

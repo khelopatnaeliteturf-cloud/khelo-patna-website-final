@@ -344,6 +344,20 @@ CREATE TABLE finance_configs (
 );
 ALTER TABLE finance_configs ENABLE ROW LEVEL SECURITY;
 
+-- 21. Communication Logs Table
+CREATE TABLE communication_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('EMAIL', 'WHATSAPP')),
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) DEFAULT NULL,
+    content TEXT NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('SENT', 'FAILED')) DEFAULT 'SENT',
+    error_message TEXT DEFAULT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE communication_logs ENABLE ROW LEVEL SECURITY;
+
 -- ==========================================
 -- Database Indexes for Performance
 -- ==========================================
@@ -363,6 +377,9 @@ CREATE INDEX idx_inventory_tenant ON inventory_items (tenant_id);
 CREATE INDEX idx_pos_tenant ON pos_sales (tenant_id);
 CREATE INDEX idx_checkin_tenant ON check_in_logs (tenant_id);
 CREATE INDEX idx_finance_tenant ON finance_configs (tenant_id);
+CREATE INDEX idx_communication_logs_tenant ON communication_logs (tenant_id);
+CREATE INDEX idx_communication_logs_type ON communication_logs (type);
+CREATE INDEX idx_communication_logs_created ON communication_logs (created_at DESC);
 
 -- Operational search and date indexes
 CREATE INDEX idx_bookings_date ON bookings (tenant_id, date);

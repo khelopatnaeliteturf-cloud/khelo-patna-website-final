@@ -1,6 +1,26 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
 const net = require('net');
+const Tenant = require('../models/Tenant');
+const CommunicationLog = require('../models/CommunicationLog');
+
+async function logEmail({ to, subject, content, status, errorMessage }) {
+    try {
+        const tenant = await Tenant.findOne({ subdomain: 'khelopatna' });
+        const tenantId = tenant ? tenant._id : null;
+        await new CommunicationLog({
+            tenantId,
+            type: 'EMAIL',
+            recipient: to,
+            subject,
+            content,
+            status,
+            errorMessage
+        }).save();
+    } catch (err) {
+        console.error('Error logging email communication:', err.message || err);
+    }
+}
 
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
@@ -64,6 +84,9 @@ async function sendEmail({ to, subject, htmlContent }) {
         return false;
     }
 
+    let success = false;
+    let errMessage = null;
+
     // 1. Try Brevo (Sendinblue) HTTP API (Port 443 - Recommended for Render Free Tier)
     if (process.env.BREVO_API_KEY) {
         try {
@@ -84,17 +107,19 @@ async function sendEmail({ to, subject, htmlContent }) {
             const data = await res.json();
             if (res.ok) {
                 console.log(`[BREVO DISPATCH SUCCESS] Email sent via Brevo HTTPS API to ${to}. Message ID: ${data.messageId}`);
-                return true;
+                success = true;
             } else {
                 console.error('[BREVO API ERROR]:', data);
+                errMessage = JSON.stringify(data);
             }
         } catch (brevoErr) {
             console.error('[BREVO DISPATCH EXCEPTION]:', brevoErr.message);
+            errMessage = brevoErr.message;
         }
     }
 
     // 2. Try Resend HTTP API (Port 443)
-    if (process.env.RESEND_API_KEY) {
+    if (!success && process.env.RESEND_API_KEY) {
         try {
             const res = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
@@ -112,34 +137,49 @@ async function sendEmail({ to, subject, htmlContent }) {
             const data = await res.json();
             if (res.ok) {
                 console.log(`Email successfully dispatched via Resend HTTPS API to ${to}. ID: ${data.id}`);
-                return true;
+                success = true;
             } else {
                 console.error('Resend HTTPS API error response:', data);
+                errMessage = JSON.stringify(data);
             }
         } catch (resendErr) {
             console.error('Resend HTTPS dispatch exception:', resendErr.message);
+            errMessage = resendErr.message;
         }
     }
 
     // 3. Fallback to Nodemailer SMTP (Note: Render Free Tier blocks outbound SMTP ports 25, 465, 587)
-    if (!transporter) {
-        console.log(`[MOCK EMAIL (SMTP PASS MISSING ON SERVER)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
-        return true;
+    if (!success) {
+        if (!transporter) {
+            console.log(`[MOCK EMAIL (SMTP PASS MISSING ON SERVER)] To: ${to}\nSubject: ${subject}\nContent:\n${htmlContent}\n================================`);
+            success = true;
+        } else {
+            try {
+                const info = await transporter.sendMail({
+                    from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
+                    to: to,
+                    subject: subject,
+                    html: htmlContent
+                });
+                console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}. Response ID: ${info.messageId}`);
+                success = true;
+            } catch (err) {
+                console.error('SMTP email dispatch error:', err.message || err);
+                errMessage = err.message || 'SMTP Error';
+            }
+        }
     }
 
-    try {
-        const info = await transporter.sendMail({
-            from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
-            to: to,
-            subject: subject,
-            html: htmlContent
-        });
-        console.log(`Email successfully dispatched via SMTP (${SMTP_HOST}) to ${to}. Response ID: ${info.messageId}`);
-        return true;
-    } catch (err) {
-        console.error('SMTP email dispatch error:', err.message || err);
-        return false;
-    }
+    // Log the result in the database asynchronously
+    logEmail({
+        to,
+        subject,
+        content: htmlContent,
+        status: success ? 'SENT' : 'FAILED',
+        errorMessage: success ? null : errMessage
+    }).catch(err => console.error('Error calling logEmail:', err));
+
+    return success;
 }
 
 // Helper to format raw slots into 12-hour AM/PM format (e.g. "04:00 AM - 05:00 AM")

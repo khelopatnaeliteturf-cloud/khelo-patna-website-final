@@ -429,6 +429,53 @@ router.post('/admin/communicate/send-group-whatsapp', authenticateToken, authori
     }
 });
 
+// 7b. Get Communication Logs (Email & WhatsApp logs)
+router.get('/admin/communicate/logs', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
+    const tenantId = req.user.tenantId;
+    const { type, status, search, limit = 100, page = 1 } = req.query;
+
+    try {
+        const CommunicationLog = require('../models/CommunicationLog');
+        const query = { tenantId };
+
+        if (type) {
+            query.type = type; // EMAIL or WHATSAPP
+        }
+        if (status) {
+            query.status = status; // SENT or FAILED
+        }
+        if (search) {
+            query.$or = [
+                { recipient: { $regex: search, $options: 'i' } },
+                { subject: { $regex: search, $options: 'i' } },
+                { content: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const logs = await CommunicationLog.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await CommunicationLog.countDocuments(query);
+
+        res.json({
+            success: true,
+            logs,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching communication logs:', err);
+        res.status(500).json({ error: 'Server error fetching communication logs.' });
+    }
+});
+
 // 8. Public Enquiry submission
 router.post('/public/enquiries', async (req, res) => {
     try {
