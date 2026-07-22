@@ -43,6 +43,7 @@ export default function BookPage() {
     const [verifyingPayment, setVerifyingPayment] = useState(false);
     const [advancePercentage, setAdvancePercentage] = useState(100);
     const [payAdvanceOnly, setPayAdvanceOnly] = useState(false);
+    const [paymentGateway, setPaymentGateway] = useState('cashfree'); // 'cashfree' | 'phonepe'
     const [paymentFailedInfo, setPaymentFailedInfo] = useState(null);
 
     // Trigger slot fetch on sport/date change and handle URL query params on initial mount
@@ -321,11 +322,39 @@ export default function BookPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to create booking.');
 
-            // Success. Trigger pop checkout
+            // Success. Trigger payment gateway checkout
             if (data.zero_amount || chargeAmount === 0) {
                 window.location.href = `/book?order_id=${data.order_id}&payment_status=success`;
                 return;
             }
+
+            if (paymentGateway === 'phonepe') {
+                const ppRes = await fetch(`${BACKEND_URL}/api/payment/phonepe/initiate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: data.order_id,
+                        amount: chargeAmount,
+                        customerName: bookingDetails.name,
+                        customerEmail: bookingDetails.email || 'no-email@khelopatna.in',
+                        customerPhone: bookingDetails.phone
+                    })
+                });
+                const ppData = await ppRes.json();
+                if (!ppRes.ok) throw new Error(ppData.error || 'Failed to initiate PhonePe payment.');
+
+                if (ppData.mock && ppData.redirectUrl) {
+                    setMockOrderDetails({ orderId: ppData.orderId, amount: chargeAmount });
+                    setMockMessage('');
+                    setMockPaymentProcessing(false);
+                    setShowMockModal(true);
+                    setLoading(false);
+                    return;
+                }
+                window.location.href = ppData.redirectUrl;
+                return;
+            }
+
             await initiateCashfreeCheckout(data, chargeAmount);
 
         } catch (err) {
@@ -1431,13 +1460,52 @@ export default function BookPage() {
                                          )}
                                      </div>
 
+                                     <div style={{ marginTop: '16px', marginBottom: '16px', textAlign: 'left' }}>
+                                         <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                                             Select Payment Gateway:
+                                         </label>
+                                         <div style={{ display: 'flex', gap: '10px' }}>
+                                             <button
+                                                 type="button"
+                                                 onClick={() => setPaymentGateway('cashfree')}
+                                                 style={{
+                                                     flex: 1, padding: '10px 14px', borderRadius: '10px',
+                                                     background: paymentGateway === 'cashfree' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.03)',
+                                                     border: paymentGateway === 'cashfree' ? '1.5px solid #10B981' : '1px solid rgba(255,255,255,0.1)',
+                                                     color: paymentGateway === 'cashfree' ? '#10B981' : 'var(--text-muted)',
+                                                     fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
+                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                                     transition: 'all 0.2s ease'
+                                                 }}
+                                             >
+                                                 <span>💳 Cashfree PG</span>
+                                             </button>
+
+                                             <button
+                                                 type="button"
+                                                 onClick={() => setPaymentGateway('phonepe')}
+                                                 style={{
+                                                     flex: 1, padding: '10px 14px', borderRadius: '10px',
+                                                     background: paymentGateway === 'phonepe' ? 'rgba(95, 37, 159, 0.2)' : 'rgba(255,255,255,0.03)',
+                                                     border: paymentGateway === 'phonepe' ? '1.5px solid #A855F7' : '1px solid rgba(255,255,255,0.1)',
+                                                     color: paymentGateway === 'phonepe' ? '#C084FC' : 'var(--text-muted)',
+                                                     fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer',
+                                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                                                     transition: 'all 0.2s ease'
+                                                 }}
+                                             >
+                                                 <span>🟣 PhonePe UPI</span>
+                                             </button>
+                                         </div>
+                                     </div>
+
                                     <button
                                         type="submit"
                                         className="btn-premium"
                                         disabled={loading}
                                         style={{ minWidth: '220px', padding: '16px 36px' }}
                                     >
-                                        <span>{loading ? 'Processing…' : '💳 Pay & Reserve'}</span>
+                                        <span>{loading ? 'Processing…' : (paymentGateway === 'phonepe' ? '🟣 Pay with PhonePe' : '💳 Pay & Reserve')}</span>
                                     </button>
                                 </div>
                             </form>

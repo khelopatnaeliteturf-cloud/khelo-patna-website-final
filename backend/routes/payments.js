@@ -9,7 +9,8 @@ const Tenant = require('../models/Tenant');
 const Branch = require('../models/Branch');
 const AuditLog = require('../models/AuditLog');
 const Coupon = require('../models/Coupon');
-const { createOrder, verifyPayment } = require('../services/cashfree');
+const { createOrder, verifyPayment: verifyCFPayment } = require('../services/cashfree');
+const { createPhonePeOrder, verifyPhonePePayment, verifyChecksum: verifyPPChecksum } = require('../services/phonepe');
 const { sendWhatsAppMessage } = require('../services/whatsapp');
 const { sendBookingInvoiceEmail, sendFeeInvoiceEmail } = require('../services/mailercloud');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
@@ -484,7 +485,10 @@ router.post('/payment/verify', async (req, res) => {
             if (f) expectedAmount = f.amountDue;
         }
 
-        const verifyResult = await verifyPayment(order_id, expectedAmount);
+        const isPhonePeOrder = order_id.includes('-PP-') || order_id.includes('PHONEPE');
+        const verifyResult = isPhonePeOrder 
+            ? await verifyPhonePePayment(order_id, expectedAmount)
+            : await verifyCFPayment(order_id, expectedAmount);
 
         if (verifyResult.success && verifyResult.payment_status === 'SUCCESS') {
             if (order_id.startsWith('KP-')) {
@@ -742,6 +746,159 @@ router.post('/payment/webhook', async (req, res) => {
     } catch (err) {
         console.error('Webhook error:', err);
         res.status(500).send('Server error processing webhook.');
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PhonePe Payment Gateway Integration Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+// POST /api/payment/phonepe/initiate — Start PhonePe Checkout
+router.post('/payment/phonepe/initiate', async (req, res) => {
+    try {
+        const { orderId, amount, customerName, customerEmail, customerPhone } = req.body;
+        if (!orderId || !amount || !customerPhone) {
+            return res.status(400).json({ error: 'orderId, amount, and customerPhone are required.' });
+        }
+
+        const backendSelfUrl = (process.env.BACKEND_SELF_URL || 'http://localhost:5001').replace(/\/+$/, '');
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://khelopatna.in').replace(/\/+$/, '');
+
+        const redirectUrl = `${backendSelfUrl}/api/payment/phonepe/redirect?order_id=${encodeURIComponent(orderId)}`;
+        const callbackUrl = `${backendSelfUrl}/api/payment/phonepe/callback`;
+
+        const ppOrder = await createPhonePeOrder({
+            amount: Number(amount),
+            orderId,
+            customerName: customerName || 'KheloPatna Customer',
+            customerEmail: customerEmail || 'service@khelopatna.in',
+            customerPhone,
+            redirectUrl,
+            callbackUrl
+        });
+
+        res.json({
+            success: true,
+            orderId: ppOrder.orderId,
+            redirectUrl: ppOrder.redirectUrl,
+            mock: ppOrder.mock || false
+        });
+    } catch (err) {
+        console.error('PhonePe initiate error:', err);
+        res.status(500).json({ error: err.message || 'Failed to initiate PhonePe payment.' });
+    }
+});
+
+// ALL /api/payment/phonepe/redirect — Handle customer redirect from PhonePe
+router.all('/payment/phonepe/redirect', async (req, res) => {
+    try {
+        const orderId = req.query.order_id || req.body?.merchantTransactionId || req.body?.order_id;
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://khelopatna.in').replace(/\/+$/, '');
+
+        if (!orderId) {
+            return res.redirect(`${frontendUrl}/book?payment_status=failed`);
+        }
+
+        // Verify PhonePe transaction status
+        const verifyResult = await verifyPhonePePayment(orderId);
+        const isSuccess = verifyResult.success && verifyResult.payment_status === 'SUCCESS';
+
+        if (isSuccess) {
+            if (orderId.startsWith('KP-')) {
+                const booking = await Booking.findOne({ orderId });
+                if (booking && (booking.paymentStatus === 'PENDING' || booking.paymentStatus === 'DROPPED' || booking.paymentStatus === 'FAILED')) {
+                    booking.paymentStatus = 'SUCCESS';
+                    booking.paymentMethod = 'phonepe';
+                    booking.transactionId = verifyResult.payment_details?.transaction_id || orderId;
+                    booking.paymentDetails = verifyResult.payment_details;
+                    await booking.save();
+                    await cancelConflictingPendingBookings(booking);
+                    await sendBookingNotifications(booking);
+                }
+                return res.redirect(`${frontendUrl}/book?order_id=${encodeURIComponent(orderId)}&payment_status=success`);
+            } else if (orderId.startsWith('KPFEE-')) {
+                const feeRecord = await Fee.findOne({ orderId });
+                if (feeRecord && feeRecord.status !== 'PAID') {
+                    feeRecord.status = 'PAID';
+                    feeRecord.paymentDate = new Date();
+                    feeRecord.amountPaid = feeRecord.amountDue;
+                    feeRecord.paymentDetails = verifyResult.payment_details;
+                    await feeRecord.save();
+                    await sendFeeNotifications(feeRecord);
+                }
+                return res.redirect(`${frontendUrl}/academy/pay-fees?order_id=${encodeURIComponent(orderId)}&payment_status=success`);
+            }
+        }
+
+        // Default fallback redirect for failed/cancelled payment
+        const targetPage = orderId.startsWith('KPFEE-') ? '/academy/pay-fees' : '/book';
+        return res.redirect(`${frontendUrl}${targetPage}?order_id=${encodeURIComponent(orderId)}&payment_status=failed`);
+    } catch (err) {
+        console.error('PhonePe redirect error:', err);
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://khelopatna.in').replace(/\/+$/, '');
+        return res.redirect(`${frontendUrl}/book?payment_status=failed`);
+    }
+});
+
+// POST /api/payment/phonepe/callback — Handle server-to-server webhook
+router.post('/payment/phonepe/callback', async (req, res) => {
+    try {
+        const xVerify = req.headers['x-verify'];
+        const responseBase64 = req.body?.response;
+
+        if (responseBase64 && !verifyPPChecksum(responseBase64, xVerify)) {
+            console.error('Invalid PhonePe webhook checksum signature.');
+            return res.status(400).json({ error: 'Invalid checksum signature.' });
+        }
+
+        let decodedData = {};
+        if (responseBase64) {
+            const decodedJson = Buffer.from(responseBase64, 'base64').toString('utf-8');
+            decodedData = JSON.parse(decodedJson);
+        }
+
+        const dataObj = decodedData.data || {};
+        const orderId = dataObj.merchantTransactionId;
+        const code = decodedData.code || dataObj.state;
+        const isSuccess = decodedData.success && (code === 'PAYMENT_SUCCESS' || code === 'COMPLETED');
+
+        if (orderId && isSuccess) {
+            if (orderId.startsWith('KP-')) {
+                const booking = await Booking.findOne({ orderId });
+                if (booking && (booking.paymentStatus === 'PENDING' || booking.paymentStatus === 'DROPPED' || booking.paymentStatus === 'FAILED')) {
+                    booking.paymentStatus = 'SUCCESS';
+                    booking.paymentMethod = 'phonepe';
+                    booking.transactionId = dataObj.transactionId || orderId;
+                    booking.paymentDetails = {
+                        transaction_id: dataObj.transactionId,
+                        amount: Number(dataObj.amount) / 100,
+                        payment_method: dataObj.paymentInstrument?.type || 'PHONEPE_UPI'
+                    };
+                    await booking.save();
+                    await cancelConflictingPendingBookings(booking);
+                    await sendBookingNotifications(booking);
+                }
+            } else if (orderId.startsWith('KPFEE-')) {
+                const feeRecord = await Fee.findOne({ orderId });
+                if (feeRecord && feeRecord.status !== 'PAID') {
+                    feeRecord.status = 'PAID';
+                    feeRecord.paymentDate = new Date();
+                    feeRecord.amountPaid = feeRecord.amountDue;
+                    feeRecord.paymentDetails = {
+                        transaction_id: dataObj.transactionId,
+                        amount: Number(dataObj.amount) / 100,
+                        payment_method: dataObj.paymentInstrument?.type || 'PHONEPE_UPI'
+                    };
+                    await feeRecord.save();
+                    await sendFeeNotifications(feeRecord);
+                }
+            }
+        }
+
+        res.json({ success: true, processed: true });
+    } catch (err) {
+        console.error('PhonePe callback webhook error:', err);
+        res.status(500).json({ error: 'Internal server error processing PhonePe callback.' });
     }
 });
 

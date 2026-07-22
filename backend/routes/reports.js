@@ -650,6 +650,16 @@ router.get('/reports/integrations', authenticateToken, authorizeRoles('SUPER_ADM
             mock: !cfConfigured
         });
 
+        // 2b. PhonePe Payment Gateway
+        const ppConfigured = !!(process.env.PHONEPE_MERCHANT_ID && process.env.PHONEPE_SALT_KEY);
+        statuses.push({
+            name: 'PhonePe PG',
+            status: ppConfigured ? 'HEALTHY' : 'WARNING',
+            details: ppConfigured ? `Configured in ${process.env.PHONEPE_ENV || 'sandbox'} environment` : 'Sandbox Mock Mode (Merchant ID missing)',
+            badge: ppConfigured ? 'success' : 'warning',
+            mock: !ppConfigured
+        });
+
         // 3. Cloudinary Asset Storage
         const clConfigured = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
         statuses.push({
