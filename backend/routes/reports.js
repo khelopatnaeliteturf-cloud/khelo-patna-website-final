@@ -641,14 +641,14 @@ router.get('/reports/integrations', authenticateToken, authorizeRoles('SUPER_ADM
             mock: !clConfigured
         });
 
-        // 4. Mailercloud Email Engine
-        const mcConfigured = !!process.env.MAILERCLOUD_API_KEY;
+        // 4. Brevo Email Engine
+        const brevoConfigured = !!process.env.BREVO_API_KEY;
         statuses.push({
-            name: 'Mailercloud Email',
-            status: mcConfigured ? 'HEALTHY' : 'WARNING',
-            details: mcConfigured ? 'API connection configured' : 'Mock Mode (emails print to console logs)',
-            badge: mcConfigured ? 'success' : 'warning',
-            mock: !mcConfigured
+            name: 'Brevo Email',
+            status: brevoConfigured ? 'HEALTHY' : 'WARNING',
+            details: brevoConfigured ? 'Brevo HTTPS API connection configured & active' : 'Mock Mode (emails print to console logs). Add BREVO_API_KEY to go live.',
+            badge: brevoConfigured ? 'success' : 'warning',
+            mock: !brevoConfigured
         });
 
         // 5. WhatsApp Client (via Baileys)
