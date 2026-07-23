@@ -390,7 +390,7 @@ router.post('/admin/whatsapp/reconnect', authenticateToken, authorizeRoles('RECE
 // Incoming Webhook for external Baileys microservice
 const { handleIncomingWebhook } = require('../services/botStates');
 
-router.post('/whatsapp/webhook', async (req, res) => {
+router.post('/whatsapp/webhook', (req, res) => {
     const { phone, text, secret } = req.body;
     const apiSecret = process.env.WA_API_SECRET;
     if (apiSecret && secret !== apiSecret && req.headers['x-wa-secret'] !== apiSecret) {
@@ -400,13 +400,18 @@ router.post('/whatsapp/webhook', async (req, res) => {
     if (!phone || !incomingText) {
         return res.status(400).json({ error: 'phone and text/message are required.' });
     }
-    try {
-        await handleIncomingWebhook({ phone, text: incomingText });
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error handling incoming WhatsApp webhook:', err);
-        res.status(500).json({ error: 'Error processing webhook.' });
-    }
+
+    // Immediately respond 200 OK to microservice to avoid 502/500 gateway timeouts
+    res.json({ success: true, status: 'QUEUED' });
+
+    // Process bot logic asynchronously in background
+    setImmediate(async () => {
+        try {
+            await handleIncomingWebhook({ phone, text: incomingText });
+        } catch (err) {
+            console.error('[WhatsApp Webhook Async Error]:', err.message || err);
+        }
+    });
 });
 
 // 6. Send Single WhatsApp Message

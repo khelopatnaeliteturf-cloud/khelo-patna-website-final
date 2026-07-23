@@ -206,6 +206,32 @@ app.get('/api/admin/whatsapp/diagnose', authenticateToken, authorizeRoles('SUPER
     res.json(getDiagnostics());
 });
 
+// Primary Incoming Webhook for external Baileys Microservice
+const { handleIncomingWebhook } = require('./services/botStates');
+app.post('/api/whatsapp/webhook', (req, res) => {
+    const { phone, text, secret } = req.body;
+    const apiSecret = process.env.WA_API_SECRET;
+    if (apiSecret && secret !== apiSecret && req.headers['x-wa-secret'] !== apiSecret) {
+        return res.status(403).json({ error: 'Unauthorized webhook call.' });
+    }
+    const incomingText = text || req.body?.message;
+    if (!phone || !incomingText) {
+        return res.status(400).json({ error: 'phone and text/message are required.' });
+    }
+
+    // Immediately respond 200 OK to microservice to avoid 502/500 gateway timeouts
+    res.json({ success: true, status: 'QUEUED' });
+
+    // Process bot logic asynchronously in background
+    setImmediate(async () => {
+        try {
+            await handleIncomingWebhook({ phone, text: incomingText });
+        } catch (err) {
+            console.error('[WhatsApp Primary Webhook Async Error]:', err.message || err);
+        }
+    });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     if (req.query.trigger_reconnect === 'true') {
