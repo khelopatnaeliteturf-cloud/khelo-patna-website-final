@@ -406,11 +406,37 @@ class Document {
         if (uuid) {
             // Row already exists - perform UPDATE
             const sql = `UPDATE ${this._tableName} SET ${setClauses.join(', ')} WHERE id = $1 RETURNING *`;
-            const res = await client.query(sql, [uuid, ...updateVals]);
-            if (res.rows.length > 0) {
-                const mapped = mapRow(res.rows[0]);
-                for (const mk of Object.keys(mapped)) {
-                    this[mk] = mapped[mk];
+            try {
+                const res = await client.query(sql, [uuid, ...updateVals]);
+                if (res.rows.length > 0) {
+                    const mapped = mapRow(res.rows[0]);
+                    for (const mk of Object.keys(mapped)) {
+                        this[mk] = mapped[mk];
+                    }
+                }
+            } catch (err) {
+                if (err.code === '42703') { // Column does not exist in PostgreSQL
+                    const colMatch = err.message.match(/column "([^"]+)"/);
+                    if (colMatch && colMatch[1]) {
+                        const missingCol = colMatch[1];
+                        try {
+                            await client.query(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${missingCol} TEXT`);
+                            const retryRes = await client.query(sql, [uuid, ...updateVals]);
+                            if (retryRes.rows.length > 0) {
+                                const mapped = mapRow(retryRes.rows[0]);
+                                for (const mk of Object.keys(mapped)) {
+                                    this[mk] = mapped[mk];
+                                }
+                            }
+                        } catch (retryErr) {
+                            console.error('Failed to auto-create missing PostgreSQL column:', retryErr);
+                            throw err;
+                        }
+                    } else {
+                        throw err;
+                    }
+                } else {
+                    throw err;
                 }
             }
         } else {
@@ -419,13 +445,40 @@ class Document {
             insertVals[0] = generatedUuid;
             const placeholders = insertCols.map((_, i) => `$${i + 1}`).join(', ');
             const sql = `INSERT INTO ${this._tableName} (${insertCols.join(', ')}) VALUES (${placeholders}) RETURNING *`;
-            const res = await client.query(sql, insertVals);
-            if (res.rows.length > 0) {
-                const mapped = mapRow(res.rows[0]);
-                for (const mk of Object.keys(mapped)) {
-                    this[mk] = mapped[mk];
+            try {
+                const res = await client.query(sql, insertVals);
+                if (res.rows.length > 0) {
+                    const mapped = mapRow(res.rows[0]);
+                    for (const mk of Object.keys(mapped)) {
+                        this[mk] = mapped[mk];
+                    }
+                    this._id = this.id;
                 }
-                this._id = this.id;
+            } catch (err) {
+                if (err.code === '42703') {
+                    const colMatch = err.message.match(/column "([^"]+)"/);
+                    if (colMatch && colMatch[1]) {
+                        const missingCol = colMatch[1];
+                        try {
+                            await client.query(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${missingCol} TEXT`);
+                            const retryRes = await client.query(sql, insertVals);
+                            if (retryRes.rows.length > 0) {
+                                const mapped = mapRow(retryRes.rows[0]);
+                                for (const mk of Object.keys(mapped)) {
+                                    this[mk] = mapped[mk];
+                                }
+                                this._id = this.id;
+                            }
+                        } catch (retryErr) {
+                            console.error('Failed to auto-create missing PostgreSQL column on INSERT:', retryErr);
+                            throw err;
+                        }
+                    } else {
+                        throw err;
+                    }
+                } else {
+                    throw err;
+                }
             }
         }
         this._isModifiedMap.clear();
