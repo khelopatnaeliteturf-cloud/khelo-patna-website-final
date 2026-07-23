@@ -2493,6 +2493,11 @@ export default function AdminDashboard() {
     };
     const handleLogout = handleSignOut;
 
+    // Format helper
+    const formatINR = (amount) => {
+        return '₹' + (Number(amount) || 0).toLocaleString('en-IN');
+    };
+
     // Calendar helper variables
     const monthName = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const firstDayIndex = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
