@@ -172,13 +172,20 @@ function startServicePolling() {
     const poll = async () => {
         lastPollTime = new Date().toISOString();
         try {
-            const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/status`;
+            const rawUrl = (process.env.WA_SERVICE_URL || '').trim();
+            if (!rawUrl) return;
+            const baseUrl = (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) ? rawUrl : `https://${rawUrl}`;
+            const url = `${baseUrl.replace(/\/+$/, '')}/status`;
+
             const response = await axios.get(url, {
                 headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
                 timeout: 5000
             });
-            connectionStatus = response.data.connected ? 'CONNECTED' : 'DISCONNECTED';
+            
+            const isConnected = response.data.status === 'CONNECTED' || response.data.connected === true;
+            connectionStatus = isConnected ? 'CONNECTED' : 'DISCONNECTED';
             qrCodeImage = response.data.qr || null;
+            botEnabled = response.data.bot_enabled !== undefined ? response.data.bot_enabled : botEnabled;
             lastPollError = null; // Clear on success
         } catch (err) {
             const errorMsg = err.response ? `${err.response.status} ${JSON.stringify(err.response.data)}` : err.message;
