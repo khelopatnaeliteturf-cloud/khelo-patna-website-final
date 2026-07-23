@@ -1872,6 +1872,7 @@ export default function AdminDashboard() {
     };
 
     // 6. Bookings Log
+    const bookingsLogRef = React.useRef([]);
     const loadBookingsLog = async () => {
         setLoading(true);
         try {
@@ -1895,7 +1896,37 @@ export default function AdminDashboard() {
             const query = new URLSearchParams(params).toString();
             const res = await fetch(`${BACKEND_URL}/api/reports/bookings?${query}`, { headers: getHeaders() });
             const data = await res.json();
-            if (res.ok) setBookingsLog(data);
+            if (res.ok && Array.isArray(data)) {
+                if (bookingsLogRef.current && bookingsLogRef.current.length > 0 && data.length > bookingsLogRef.current.length) {
+                    const newCount = data.length - bookingsLogRef.current.length;
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        if (AudioContext) {
+                            const ctx = new AudioContext();
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+                            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.start();
+                            osc.stop(ctx.currentTime + 0.3);
+                        }
+                    } catch (err) {}
+
+                    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                        new Notification('⚽ New Turf Booking Received!', {
+                            body: `${newCount} new booking(s) registered. Check live control room!`,
+                            icon: '/icon.png'
+                        });
+                    }
+                }
+                bookingsLogRef.current = data;
+                setBookingsLog(data);
+            }
         } catch (e) {
             setErrorMessage('Failed to fetch bookings list.');
         } finally {

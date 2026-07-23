@@ -807,6 +807,16 @@ export default function BookPage() {
                                         <span>📍 Get Directions on Google Maps</span>
                                     </a>
                                     
+                                    <a 
+                                        href={`${BACKEND_URL}/api/payments/invoice/${paymentSuccessInfo._id}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="btn-premium" 
+                                        style={{ textDecoration: 'none', width: '100%', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#10B981', margin: '10px 0' }}
+                                    >
+                                        <span>📄 Download Tax Invoice PDF</span>
+                                    </a>
+
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                         <button 
                                             onClick={() => window.print()}

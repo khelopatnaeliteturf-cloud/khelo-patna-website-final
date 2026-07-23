@@ -154,6 +154,10 @@ const { authenticateToken, authorizeRoles } = require('./middlewares/auth');
 const { startBookingExpirySweep } = require('./services/expirePendingBookings');
 startBookingExpirySweep();
 
+// Automated 2-hour WhatsApp booking reminder cron
+const { startReminderCron } = require('./services/reminders');
+startReminderCron();
+
 // Import Routes
 const authRoutes = require('./routes/auth');
 const slotsRoutes = require('./routes/slots');

@@ -1688,6 +1688,141 @@ router.get('/admin/bookings-lookup', authenticateToken, async (req, res) => {
         console.error('Bookings lookup error:', err);
         res.status(500).json({ error: 'Server error looking up booking.' });
     }
+// GET /api/payments/invoice/:bookingId
+// Printable HTML / PDF Tax Invoice Route
+router.get('/payments/invoice/:bookingId', async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.bookingId);
+        if (!booking) {
+            return res.status(404).send('<h1>Booking Not Found</h1>');
+        }
+
+        const sportName = (booking.sport || 'turf').toUpperCase();
+        const formattedSlots = (booking.timeSlots || []).map(s => {
+            const parts = s.split('-');
+            const start = parseInt(parts[0], 10);
+            const end = parseInt(parts[1], 10);
+            const formatH = (h) => {
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                return `${String(h12).padStart(2, '0')}:00 ${ampm}`;
+            };
+            return `${formatH(start)} - ${formatH(end)}`;
+        }).join(', ');
+
+        const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tax Invoice - ${booking._id}</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; margin: 0; padding: 30px 15px; color: #0f172a; }
+        .invoice-card { max-width: 700px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #10b981; padding-bottom: 24px; margin-bottom: 30px; }
+        .brand { font-size: 24px; font-weight: 900; color: #059669; letter-spacing: -0.5px; }
+        .brand-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .invoice-title { text-align: right; }
+        .invoice-title h2 { margin: 0; font-size: 20px; color: #0f172a; font-weight: 800; text-transform: uppercase; }
+        .invoice-title p { margin: 4px 0 0 0; font-size: 13px; color: #64748b; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f0fdf4; padding: 20px; border-radius: 12px; border: 1px solid #bbf7d0; }
+        .detail-item label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: #047857; display: block; margin-bottom: 4px; }
+        .detail-item span { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .table th { background: #059669; color: #ffffff; text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .table td { padding: 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; }
+        .summary { width: 260px; margin-left: auto; margin-bottom: 30px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed #cbd5e1; }
+        .summary-row.total { font-size: 18px; font-weight: 900; color: #059669; border-bottom: 2px solid #059669; padding-top: 12px; }
+        .footer { text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 12px; color: #64748b; }
+        .btn-print { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; margin-bottom: 20px; }
+        @media print { .no-print { display: none; } body { padding: 0; background: #fff; } .invoice-card { border: none; box-shadow: none; padding: 0; } }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;" class="no-print">
+        <button onclick="window.print()" class="btn-print">🖨️ Print / Save PDF Invoice</button>
+    </div>
+    <div class="invoice-card">
+        <div class="header">
+            <div>
+                <div class="brand">KheloPatna Elite Turf</div>
+                <div class="brand-sub">S.D. Public School Campus, Kumhrar, Patna – 800007</div>
+                <div class="brand-sub">Phone: (+91) 970 970 1400 | Email: service@khelopatna.in</div>
+            </div>
+            <div class="invoice-title">
+                <h2>TAX INVOICE</h2>
+                <p># ${booking._id}</p>
+                <p>Date: ${booking.date}</p>
+            </div>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <label>Customer Name</label>
+                <span>${booking.customerName || 'Sports Fan'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Phone Number</label>
+                <span>${booking.customerPhone || 'N/A'}</span>
+            </div>
+            <div class="detail-item">
+                <label>Sport / Arena</label>
+                <span>${sportName} Turf</span>
+            </div>
+            <div class="detail-item">
+                <label>Payment Status</label>
+                <span style="color: #059669;">${booking.paymentStatus || 'COMPLETED'} (${(booking.paymentMethod || 'ONLINE').toUpperCase()})</span>
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Booking Date</th>
+                    <th>Time Slots</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${sportName} Turf Slot Reservation</td>
+                    <td>${booking.date}</td>
+                    <td>${formattedSlots || 'Standard Slot'}</td>
+                    <td style="text-align: right;">₹${booking.totalAmount || 0}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>₹${booking.totalAmount || 0}</span>
+            </div>
+            <div class="summary-row">
+                <span>Advance Paid:</span>
+                <span style="color: #059669;">₹${booking.paidAmount || booking.totalAmount || 0}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total Paid:</span>
+                <span>₹${booking.paidAmount || booking.totalAmount || 0}</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for choosing KheloPatna Elite Turf! Have a fantastic match.</p>
+            <p>© 2026 KheloPatna Elite Turf. Computer Generated Invoice.</p>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+        res.send(html);
+    } catch (err) {
+        console.error('Error serving printable invoice:', err);
+        res.status(500).send('<h1>Error generating invoice</h1>');
+    }
 });
 
 module.exports = router;
