@@ -32,11 +32,20 @@ const ALL_HOURLY_SLOTS = [
     { value: '23-24', text: '11:00 PM - 12:00 AM', startHour: 23 }
 ];
 
-// Helper to extract message text
+// Helper to extract message text from any Baileys message wrapper
 const getMessageText = (m) => {
-    return m.message?.conversation || 
-           m.message?.extendedTextMessage?.text || 
-           m.message?.imageMessage?.caption || 
+    if (!m || !m.message) return '';
+    const msg = m.message.ephemeralMessage?.message 
+             || m.message.viewOnceMessage?.message 
+             || m.message.viewOnceMessageV2?.message 
+             || m.message;
+
+    return msg.conversation || 
+           msg.extendedTextMessage?.text || 
+           msg.imageMessage?.caption || 
+           msg.videoMessage?.caption ||
+           msg.buttonsResponseMessage?.selectedButtonId ||
+           msg.listResponseMessage?.singleSelectReply?.selectedRowId ||
            '';
 };
 
