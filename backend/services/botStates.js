@@ -83,13 +83,32 @@ _Reply with *1*, *2*, or *3* to choose, or reply *Cancel* anytime._`;
     await sendWhatsAppMessage(phone, menuText);
 };
 
-// Send Turf Submenu
+// Send Turf Submenu with live rates
 const sendTurfSubmenu = async (phone) => {
-    const text = `🏟️ *KheloPatna Turf Bookings & Info*
+    let cricketRate = 1000;
+    let footballRate = 1000;
+    let netsRate = 100;
+    try {
+        const settings = await TurfSettings.findOne();
+        if (settings) {
+            cricketRate = settings.cricketBaseRate || 1000;
+            footballRate = settings.footballBaseRate || 1000;
+            netsRate = settings.weeklyRates?.nets?.[0] || settings.netsBaseRate || 100;
+        }
+    } catch (e) {
+        console.error('Error fetching turf settings for submenu:', e);
+    }
+
+    const text = `🏟️ *KheloPatna Turf Bookings & Rates*
+
+*Live Rates*:
+🏏 *Cricket*: ₹${cricketRate} / hr (Weekdays) | ₹1,200 / hr (Weekends)
+⚽ *Football*: ₹${footballRate} / hr (Weekdays) | ₹1,200 / hr (Weekends)
+🎯 *Nets*: ₹${netsRate} / hr per head
 
 Please choose an option:
 1️⃣ *Book Turf Slot Online* (Instant Reservation)
-2️⃣ *View Turf Rates & Timings*
+2️⃣ *View Rates & Operating Hours*
 3️⃣ *Arena Location & Directions*
 4️⃣ 🔙 *Return to Main Menu*
 
@@ -186,8 +205,15 @@ async function handleIncomingMessage(sock, m) {
                     `🏏⚽ *Select Sport to Reserve*:\n\n1️⃣ *Cricket Turf*\n2️⃣ *Football Turf*\n\nReply with *1* or *2*.`
                 );
             } else if (text === '2' || lowerText.includes('rate') || lowerText.includes('price')) {
+                let settings = await TurfSettings.findOne();
+                let cricketRate = settings?.cricketBaseRate || 1000;
+                let footballRate = settings?.footballBaseRate || 1000;
+                let netsRate = settings?.weeklyRates?.nets?.[0] || settings?.netsBaseRate || 100;
+                let cricketWknd = settings?.weeklyRates?.cricket?.[0] || 1200;
+                let footballWknd = settings?.weeklyRates?.football?.[0] || 1200;
+
                 await sendWhatsAppMessage(phone, 
-                    `💰 *KheloPatna Turf Rates & Details*:\n\n🏏 *Cricket Turf*: ₹2,000 / hour\n⚽ *Football Turf*: ₹2,500 / hour\n🎯 *Batting Nets*: ₹100 / hour per head\n\n⏰ *Operating Hours*: 6:00 AM – 11:00 PM (365 Days Open)\n🌐 *Book Online*: https://khelopatna.in/book\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
+                    `💰 *KheloPatna Official Turf Rates (Live API)*:\n\n🏏 *Cricket Turf*: ₹${cricketRate} / hr (Weekdays) | ₹${cricketWknd} / hr (Weekends)\n⚽ *Football Turf*: ₹${footballRate} / hr (Weekdays) | ₹${footballWknd} / hr (Weekends)\n🎯 *Batting Nets*: ₹${netsRate} / hr per head\n\n⏰ *Operating Hours*: 6:00 AM – 11:00 PM (365 Days Open)\n🌐 *Book Online*: https://khelopatna.in/book\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
                 );
             } else if (text === '3' || lowerText.includes('location') || lowerText.includes('direction') || lowerText.includes('map')) {
                 await sendWhatsAppMessage(phone, 
@@ -327,7 +353,16 @@ async function handleIncomingMessage(sock, m) {
                     ]
                 });
 
-                const hourlyRate = session.bookingData.sport === 'cricket' ? settings.cricketBaseRate : settings.footballBaseRate;
+                let hourlyRate = session.bookingData.sport === 'nets'
+                    ? (settings?.netsBaseRate || 100)
+                    : (session.bookingData.sport === 'cricket' ? (settings?.cricketBaseRate || 1000) : (settings?.footballBaseRate || 1000));
+
+                if (settings?.weeklyRates?.[session.bookingData.sport] && Array.isArray(settings.weeklyRates[session.bookingData.sport])) {
+                    const dayRate = settings.weeklyRates[session.bookingData.sport][dayOfWeek];
+                    if (dayRate !== undefined && dayRate !== null && dayRate > 0) {
+                        hourlyRate = dayRate;
+                    }
+                }
                 let availableList = [];
                 let slotIndex = 1;
                 const indexToSlotValueMap = {};
@@ -390,9 +425,8 @@ async function handleIncomingMessage(sock, m) {
             const chosenSlotValues = selections.map(s => slotMap[s]);
 
             try {
-                let settings = await TurfSettings.findOne();
-                const rate = session.bookingData.sport === 'cricket' ? (settings?.cricketBaseRate || 2000) : (settings?.footballBaseRate || 2500);
-                const totalAmount = rate * chosenSlotValues.length;
+                const perSlotRate = session.bookingData.totalAmount || 1000;
+                const totalAmount = perSlotRate * chosenSlotValues.length;
 
                 session.bookingData.slots = chosenSlotValues;
                 session.bookingData.totalAmount = totalAmount;
