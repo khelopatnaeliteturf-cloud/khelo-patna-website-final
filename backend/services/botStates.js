@@ -48,6 +48,86 @@ const formatDateStr = (date) => {
     return date.toISOString().split('T')[0];
 };
 
+// Compute dynamic time-based greeting for IST (UTC+5:30)
+const getTimeBasedGreeting = () => {
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + istOffset);
+    const hour = istDate.getHours();
+
+    if (hour >= 5 && hour < 12) {
+        return 'Good Morning ☀️';
+    } else if (hour >= 12 && hour < 17) {
+        return 'Good Afternoon 🌤️';
+    } else {
+        return 'Good Evening 🌙';
+    }
+};
+
+// Send Main Interactive Menu
+const sendMainMenu = async (phone) => {
+    const greeting = getTimeBasedGreeting();
+    const menuText = `Hello! 👋 *${greeting}*
+
+Welcome to *KheloPatna Elite Turf* 🏆
+Patna's premier indoor sports arena & academy.
+
+How may I help you today? Please reply with a number:
+
+1️⃣ *Turf Slot Booking & Rates* 🏟️
+2️⃣ *Training Academy (Cricket & Football)* 🎓
+3️⃣ *Talk to Human Agent / Support* 📞
+
+_Reply with *1*, *2*, or *3* to choose, or reply *Cancel* anytime._`;
+
+    await sendWhatsAppMessage(phone, menuText);
+};
+
+// Send Turf Submenu
+const sendTurfSubmenu = async (phone) => {
+    const text = `🏟️ *KheloPatna Turf Bookings & Info*
+
+Please choose an option:
+1️⃣ *Book Turf Slot Online* (Instant Reservation)
+2️⃣ *View Turf Rates & Timings*
+3️⃣ *Arena Location & Directions*
+4️⃣ 🔙 *Return to Main Menu*
+
+_Reply with *1*, *2*, *3*, or *4*._`;
+    await sendWhatsAppMessage(phone, text);
+};
+
+// Send Academy Submenu
+const sendAcademySubmenu = async (phone) => {
+    const text = `🎓 *KheloPatna Training Academy*
+
+Please choose an option:
+1️⃣ *Coaching Batches & Programs*
+2️⃣ *Pay Academy Fees Online*
+3️⃣ *Submit Admission Enquiry*
+4️⃣ 🔙 *Return to Main Menu*
+
+_Reply with *1*, *2*, *3*, or *4*._`;
+    await sendWhatsAppMessage(phone, text);
+};
+
+// Send Support / Human Agent Details
+const sendSupportInfo = async (phone) => {
+    const text = `📞 *KheloPatna Customer Support*
+
+Our staff and reception desk are available daily from *6:00 AM to 11:00 PM*.
+
+📱 *Phone Hotline*: (+91) 970 970 1400
+✉️ *Email Support*: service@khelopatna.in
+📍 *Location*: Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007
+🌐 *Website*: https://khelopatna.in
+
+Our reception desk has been notified. A team member will assist you shortly!
+
+_Reply *Menu* to return to the main menu._`;
+    await sendWhatsAppMessage(phone, text);
+};
+
 /**
  * Main incoming message handler for WhatsApp Booking Bot.
  */
@@ -67,25 +147,92 @@ async function handleIncomingMessage(sock, m) {
 
     const lowerText = text.toLowerCase();
 
-    // Global 'Cancel' trigger
-    if (lowerText === 'cancel') {
-        session.state = 'IDLE';
+    // Global 'Cancel' or 'Menu' trigger
+    if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home') {
+        session.state = 'MAIN_MENU';
         session.bookingData = {};
         await session.save();
-        await sendWhatsAppMessage(phone, '❌ Booking session cancelled. Send *Book* to start a new booking!');
+        await sendMainMenu(phone);
         return;
     }
 
     switch (session.state) {
         case 'IDLE':
-            if (['hi', 'hello', 'hey', 'book', 'booking', 'turf', 'khelo', 'play'].some(k => lowerText.includes(k))) {
+        case 'MAIN_MENU':
+            if (text === '1' || lowerText.includes('turf') || lowerText.includes('book') || lowerText.includes('slot')) {
+                session.state = 'TURF_SUBMENU';
+                await session.save();
+                await sendTurfSubmenu(phone);
+            } else if (text === '2' || lowerText.includes('academy') || lowerText.includes('coach')) {
+                session.state = 'ACADEMY_SUBMENU';
+                await session.save();
+                await sendAcademySubmenu(phone);
+            } else if (text === '3' || lowerText.includes('agent') || lowerText.includes('support') || lowerText.includes('help') || lowerText.includes('call')) {
+                session.state = 'AGENT_SUPPORT';
+                await session.save();
+                await sendSupportInfo(phone);
+            } else {
+                session.state = 'MAIN_MENU';
+                await session.save();
+                await sendMainMenu(phone);
+            }
+            break;
+
+        case 'TURF_SUBMENU':
+            if (text === '1' || lowerText.includes('book') || lowerText.includes('reserve')) {
                 session.state = 'SELECTING_SPORT';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `👋 Welcome to *KheloPatna Elite Turf*! 🏏⚽\n\nPatna's premier smart indoor sports arena.\n\nPlease choose a sport to book:\n1️⃣ *Cricket*\n2️⃣ *Football*\n\nReply with *1* or *2* to choose.`
+                    `🏏⚽ *Select Sport to Reserve*:\n\n1️⃣ *Cricket Turf*\n2️⃣ *Football Turf*\n\nReply with *1* or *2*.`
                 );
+            } else if (text === '2' || lowerText.includes('rate') || lowerText.includes('price')) {
+                await sendWhatsAppMessage(phone, 
+                    `💰 *KheloPatna Turf Rates & Details*:\n\n🏏 *Cricket Turf*: ₹2,000 / hour\n⚽ *Football Turf*: ₹2,500 / hour\n🎯 *Batting Nets*: ₹100 / hour per head\n\n⏰ *Operating Hours*: 6:00 AM – 11:00 PM (365 Days Open)\n🌐 *Book Online*: https://khelopatna.in/book\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
+                );
+            } else if (text === '3' || lowerText.includes('location') || lowerText.includes('direction') || lowerText.includes('map')) {
+                await sendWhatsAppMessage(phone, 
+                    `📍 *KheloPatna Elite Turf Location*:\n\nNear ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007\n\n🗺️ *Google Maps Link*:\nhttps://maps.app.goo.gl/iF1kcgi6seEnsRfaA\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
+                );
+            } else if (text === '4' || lowerText === 'back') {
+                session.state = 'MAIN_MENU';
+                await session.save();
+                await sendMainMenu(phone);
             } else {
-                await sendWhatsAppMessage(phone, `Hello! Welcome to *KheloPatna Elite Turf*. Reply with *Book* to start reserving a slot!`);
+                await sendWhatsAppMessage(phone, `Please reply with *1* (Book Slot), *2* (Rates), *3* (Location), or *4* (Main Menu).`);
+            }
+            break;
+
+        case 'ACADEMY_SUBMENU':
+            if (text === '1' || lowerText.includes('program') || lowerText.includes('batch')) {
+                await sendWhatsAppMessage(phone, 
+                    `🎓 *KheloPatna Training Academy*\n\nProfessional Cricket & Football Coaching in Patna:\n\n🌅 *Morning Batch*: 06:00 AM – 08:00 AM\n🌤️ *Afternoon Batch*: 03:00 PM – 05:00 PM\n🌆 *Evening Batch*: 05:00 PM – 07:00 PM\n\n✓ Certified Expert Coaches\n✓ Indoor Turf Facilities\n✓ Regular Assessments & Tournaments\n\n_Reply *2* to Pay Fees, *3* to Enquire, or *Menu* for main menu._`
+                );
+            } else if (text === '2' || lowerText.includes('pay') || lowerText.includes('fee')) {
+                await sendWhatsAppMessage(phone, 
+                    `💳 *Pay Academy Monthly Fees Online*:\n\nYou can securely pay tuition fees for Cricket or Football coaching online using UPI, Cards, or Netbanking:\n\n🔗 *Pay Fees*: https://khelopatna.in/academy/pay-fees\n\n_Reply *Menu* to return to the main menu._`
+                );
+            } else if (text === '3' || lowerText.includes('enquiry') || lowerText.includes('join')) {
+                await sendWhatsAppMessage(phone, 
+                    `📝 *Academy Admission Enquiry*:\n\nTo enroll or book a trial class, please fill out our quick online enquiry form:\n\n🔗 *Enquiry Form*: https://khelopatna.in/enquiry\n\nOr call our academy coordinator directly at: *(+91) 970 970 1400*\n\n_Reply *Menu* to return to the main menu._`
+                );
+            } else if (text === '4' || lowerText === 'back') {
+                session.state = 'MAIN_MENU';
+                await session.save();
+                await sendMainMenu(phone);
+            } else {
+                await sendWhatsAppMessage(phone, `Please reply with *1* (Programs), *2* (Pay Fees), *3* (Enquiry), or *4* (Main Menu).`);
+            }
+            break;
+
+        case 'AGENT_SUPPORT':
+            if (lowerText === 'menu' || lowerText === 'back') {
+                session.state = 'MAIN_MENU';
+                await session.save();
+                await sendMainMenu(phone);
+            } else {
+                await sendWhatsAppMessage(phone, 
+                    `📞 *KheloPatna Support*\n\nOur team is reviewing your message. For urgent enquiries, please call us at *(+91) 970 970 1400*.\n\n_Reply *Menu* to return to the main menu._`
+                );
             }
             break;
 
@@ -95,14 +242,14 @@ async function handleIncomingMessage(sock, m) {
                 session.state = 'SELECTING_DATE';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `🏏 You selected *Cricket Turf*.\n\nPlease enter the booking date in *DD-MM-YYYY* format (e.g. 25-06-2026), or reply with *today* or *tomorrow*.`
+                    `🏏 You selected *Cricket Turf*.\n\nPlease enter the booking date in *DD-MM-YYYY* format (e.g. 25-07-2026), or reply with *today* or *tomorrow*.`
                 );
             } else if (text === '2' || lowerText.includes('football')) {
                 session.bookingData = { sport: 'football' };
                 session.state = 'SELECTING_DATE';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `⚽ You selected *Football Turf*.\n\nPlease enter the booking date in *DD-MM-YYYY* format (e.g. 25-06-2026), or reply with *today* or *tomorrow*.`
+                    `⚽ You selected *Football Turf*.\n\nPlease enter the booking date in *DD-MM-YYYY* format (e.g. 25-07-2026), or reply with *today* or *tomorrow*.`
                 );
             } else {
                 await sendWhatsAppMessage(phone, `Invalid selection. Please reply with *1* for Cricket or *2* for Football.`);
@@ -147,19 +294,18 @@ async function handleIncomingMessage(sock, m) {
                 let settings = await TurfSettings.findOne();
                 if (!settings) {
                     settings = new TurfSettings({
-                        cricketBaseRate: 1200,
-                        footballBaseRate: 1500,
+                        cricketBaseRate: 2000,
+                        footballBaseRate: 2500,
                         netsBaseRate: 800,
                         blackoutHours: { start: 15, end: 18 }
                     });
                     await settings.save();
                 }
-                // Safely ensure properties exist
                 if (!settings.blackoutHours) {
                     settings.blackoutHours = { start: 15, end: 18 };
                 }
-                if (settings.cricketBaseRate === undefined || settings.cricketBaseRate === null) settings.cricketBaseRate = 1200;
-                if (settings.footballBaseRate === undefined || settings.footballBaseRate === null) settings.footballBaseRate = 1500;
+                if (settings.cricketBaseRate === undefined || settings.cricketBaseRate === null) settings.cricketBaseRate = 2000;
+                if (settings.footballBaseRate === undefined || settings.footballBaseRate === null) settings.footballBaseRate = 2500;
 
                 const bookings = await Booking.find({
                     date: targetDateStr,
@@ -184,8 +330,6 @@ async function handleIncomingMessage(sock, m) {
                 const hourlyRate = session.bookingData.sport === 'cricket' ? settings.cricketBaseRate : settings.footballBaseRate;
                 let availableList = [];
                 let slotIndex = 1;
-
-                // Temporary cache in session to store index mapping
                 const indexToSlotValueMap = {};
 
                 ALL_HOURLY_SLOTS.forEach(slot => {
@@ -213,20 +357,19 @@ async function handleIncomingMessage(sock, m) {
                 });
 
                 if (availableList.length === 0) {
-                    await sendWhatsAppMessage(phone, `😔 Sorry, no slots are available for *${session.bookingData.sport.toUpperCase()}* on *${targetDateStr}*. Please try another date.`);
+                    await sendWhatsAppMessage(phone, `😔 Sorry, no slots are available for *${session.bookingData.sport.toUpperCase()}* on *${targetDateStr}*. Please try another date, or reply *Menu* for main menu.`);
                     return;
                 }
 
                 // Save state data
                 session.bookingData.date = targetDateStr;
-                session.bookingData.totalAmount = hourlyRate; // temporary base rate placeholder
+                session.bookingData.totalAmount = hourlyRate;
                 session.state = 'SELECTING_SLOTS';
-                // Store maps in session. Use mixed type schema support
                 session.set('slotMap', indexToSlotValueMap);
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
-                    `📅 Available slots for *${session.bookingData.sport.toUpperCase()}* on *${targetDateStr}*:\n\n${availableList.join('\n')}\n\nReply with the slot number(s) you wish to book.\n*Note*: If booking multiple slots, separate them with commas (e.g. *1,2*).`
+                    `📅 Available slots for *${session.bookingData.sport.toUpperCase()}* on *${targetDateStr}*:\n\n${availableList.join('\n')}\n\nReply with slot number(s) to book (e.g. *1* or *1,2*).`
                 );
 
             } catch (err) {
@@ -240,16 +383,15 @@ async function handleIncomingMessage(sock, m) {
             const slotMap = session.get('slotMap');
 
             if (!slotMap || selections.some(s => !slotMap[s])) {
-                await sendWhatsAppMessage(phone, `⚠️ Invalid selection. Please reply with the numbers of the slots you want to book (e.g. *1* or *1,2*).`);
+                await sendWhatsAppMessage(phone, `⚠️ Invalid selection. Please reply with slot number(s) (e.g. *1* or *1,2*).`);
                 return;
             }
 
             const chosenSlotValues = selections.map(s => slotMap[s]);
 
-            // Save slots and calculate total price
             try {
                 let settings = await TurfSettings.findOne();
-                const rate = session.bookingData.sport === 'cricket' ? settings.cricketBaseRate : settings.footballBaseRate;
+                const rate = session.bookingData.sport === 'cricket' ? (settings?.cricketBaseRate || 2000) : (settings?.footballBaseRate || 2500);
                 const totalAmount = rate * chosenSlotValues.length;
 
                 session.bookingData.slots = chosenSlotValues;
@@ -258,7 +400,7 @@ async function handleIncomingMessage(sock, m) {
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
-                    `✅ Selected slots: *${chosenSlotValues.join(', ')}*\n💰 Total Price: *₹${totalAmount}*.\n\nPlease reply with your *Full Name* to register this booking.`
+                    `✅ Selected slots: *${chosenSlotValues.join(', ')}*\n💰 Total Price: *₹${totalAmount}*.\n\nPlease reply with your *Full Name* to proceed with this booking.`
                 );
             } catch (err) {
                 console.error('Error saving slots selection:', err);
@@ -285,7 +427,6 @@ async function handleIncomingMessage(sock, m) {
             session.bookingData.orderId = orderId;
 
             try {
-                // Generate Cashfree payment link
                 const paymentLink = await createPaymentLink({
                     linkId: orderId,
                     amount: session.bookingData.totalAmount,
@@ -299,7 +440,7 @@ async function handleIncomingMessage(sock, m) {
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
-                    `🎟️ * KheloPatna Booking Invoice* 🎟️\n\n*Customer*: ${session.bookingData.name}\n*Sport*: ${session.bookingData.sport.toUpperCase()}\n*Date*: ${session.bookingData.date}\n*Slots*: ${session.bookingData.slots.join(', ')}\n*Total Price*: ₹${session.bookingData.totalAmount}\n\nPlease pay using this secure link:\n🔗 ${paymentLink}\n\n*Note*: Once paid, your slots will lock and booking is confirmed automatically here on WhatsApp!`
+                    `🎟️ *KheloPatna Booking Invoice* 🎟️\n\n*Customer*: ${session.bookingData.name}\n*Sport*: ${session.bookingData.sport.toUpperCase()}\n*Date*: ${session.bookingData.date}\n*Slots*: ${session.bookingData.slots.join(', ')}\n*Total Price*: ₹${session.bookingData.totalAmount}\n\nPlease pay using this secure link:\n🔗 ${paymentLink}\n\n*Note*: Once paid, your booking is automatically confirmed here on WhatsApp!`
                 );
 
             } catch (err) {
@@ -318,7 +459,7 @@ async function handleIncomingMessage(sock, m) {
                     customerEmail: session.bookingData.email
                 });
                 await sendWhatsAppMessage(phone, 
-                    `Awaiting online payment of *₹${session.bookingData.totalAmount}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start a new booking, type *Cancel*.`
+                    `Awaiting online payment of *₹${session.bookingData.totalAmount}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start over, type *Cancel*.`
                 );
             } catch (err) {
                 console.error('Error regenerating payment link:', err);
@@ -328,7 +469,7 @@ async function handleIncomingMessage(sock, m) {
     }
 }
 
-// Register as the listener for WhatsApp messageupsert events
+// Register as the listener for WhatsApp message upsert events
 registerBotListener(handleIncomingMessage);
 
 module.exports = {
