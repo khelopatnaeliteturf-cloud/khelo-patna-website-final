@@ -58,7 +58,15 @@ function mapRow(row) {
     if (!row) return null;
     const res = {};
     for (const k of Object.keys(row)) {
-        res[toCamel(k)] = row[k];
+        let val = row[k];
+        if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+            try {
+                val = JSON.parse(val);
+            } catch (e) {
+                // Keep as string if parsing fails
+            }
+        }
+        res[toCamel(k)] = val;
     }
     if (row.id) {
         res._id = row.id;

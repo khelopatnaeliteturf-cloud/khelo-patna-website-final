@@ -595,7 +595,19 @@ router.post('/auth/passkey/login-verify', authLimiter, async (req, res) => {
         
         if (!staff) {
             const allStaff = await Staff.find({});
-            staff = allStaff.find(s => (s.passkeys || []).some(p => p.id === credential.id));
+            staff = allStaff.find(s => {
+                let passkeysArr = [];
+                if (Array.isArray(s.passkeys)) {
+                    passkeysArr = s.passkeys;
+                } else if (typeof s.passkeys === 'string') {
+                    try {
+                        passkeysArr = JSON.parse(s.passkeys);
+                    } catch (e) {
+                        passkeysArr = [];
+                    }
+                }
+                return Array.isArray(passkeysArr) && passkeysArr.some(p => p && p.id === credential.id);
+            });
         }
 
         if (!staff) {
