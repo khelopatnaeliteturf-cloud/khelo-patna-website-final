@@ -962,6 +962,36 @@ export default function BookPage() {
                             </div>
                         )}
 
+                        {/* Patna Weather Forecast & Rain Policy Banner */}
+                        <div className="glass-panel animate-fade-in" style={{
+                            padding: '16px 20px',
+                            marginBottom: '28px',
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%)',
+                            border: '1px solid rgba(59, 130, 246, 0.35)',
+                            borderRadius: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '14px',
+                            boxShadow: '0 8px 25px rgba(59, 130, 246, 0.1)'
+                        }}>
+                            <div style={{
+                                width: '38px', height: '38px', borderRadius: '50%',
+                                background: 'rgba(59, 130, 246, 0.2)', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                            }}>
+                                <span style={{ fontSize: '1.3rem' }}>🌤️</span>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#60A5FA', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <span>Patna Weather Forecast & Rain Protection Policy</span>
+                                    <span style={{ fontSize: '0.72rem', background: 'rgba(59, 130, 246, 0.25)', color: '#93C5FD', padding: '2px 8px', borderRadius: '10px' }}>32°C Clear</span>
+                                </div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.5 }}>
+                                    Great playing weather! If unexpected monsoon rain affects your reserved slot, admin guarantees <strong>1-click free slot rescheduling</strong> to any future open date.
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Error Alert */}
                         {errorMessage && (
                             <div className="glass-panel animate-fade-in" style={{

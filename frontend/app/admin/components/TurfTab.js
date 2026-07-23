@@ -156,14 +156,15 @@ export default function TurfTab(props) {
                                 <span className="material-icons-outlined" style={{ fontSize: '16px' }}>analytics</span> Report
                             </button>
                             <button onClick={() => {
+                                const listToExport = Array.isArray(bookingsLog) ? bookingsLog : [];
                                 const headers = ['Booking ID', 'Customer Name', 'Phone', 'Sport', 'Date', 'Slots', 'Total Amount', 'Paid Amount', 'Status', 'Payment Method'];
-                                const rows = filteredBookings.map(b => [
+                                const rows = listToExport.map(b => [
                                     b._id,
                                     b.customerName || '',
                                     b.customerPhone || '',
                                     b.sport || 'turf',
                                     b.date || '',
-                                    (b.timeSlots || []).join('; '),
+                                    (b.timeSlots || []).map(s => String(s)).join('; '),
                                     b.totalAmount || 0,
                                     b.paidAmount || 0,
                                     b.paymentStatus || 'PENDING',
