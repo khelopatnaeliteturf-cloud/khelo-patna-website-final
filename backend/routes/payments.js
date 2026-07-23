@@ -1688,6 +1688,8 @@ router.get('/admin/bookings-lookup', authenticateToken, async (req, res) => {
         console.error('Bookings lookup error:', err);
         res.status(500).json({ error: 'Server error looking up booking.' });
     }
+});
+
 // GET /api/payments/invoice/:bookingId
 // Printable HTML / PDF Tax Invoice Route
 router.get('/payments/invoice/:bookingId', async (req, res) => {
