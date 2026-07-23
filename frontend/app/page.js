@@ -1230,7 +1230,7 @@ export default function HomePage() {
                                             <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>location_on</span>
                                         </div>
                                         <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                                            Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007
+                                            Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006
                                         </span>
                                     </div>
                                 </div>

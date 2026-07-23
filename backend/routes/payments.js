@@ -1747,7 +1747,7 @@ router.get('/payments/invoice/:bookingId', async (req, res) => {
         <div class="header">
             <div>
                 <div class="brand">KheloPatna Elite Turf</div>
-                <div class="brand-sub">S.D. Public School Campus, Kumhrar, Patna – 800007</div>
+                <div class="brand-sub">S.D. Public School Campus, Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006</div>
                 <div class="brand-sub">Phone: (+91) 970 970 1400 | Email: service@khelopatna.in</div>
             </div>
             <div class="invoice-title">

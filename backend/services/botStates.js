@@ -154,7 +154,7 @@ Our staff and reception desk are available daily from *6:00 AM to 11:00 PM*.
 
 📱 *Phone Hotline*: (+91) 970 970 1400
 ✉️ *Email Support*: service@khelopatna.in
-📍 *Location*: Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007
+📍 *Location*: Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006
 🌐 *Website*: https://khelopatna.in
 
 Our reception desk has been notified. A team member will assist you shortly!
@@ -402,7 +402,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 );
             } else if (text === '3' || lowerText.includes('location') || lowerText.includes('direction') || lowerText.includes('map')) {
                 await sendWhatsAppMessage(phone, 
-                    `📍 *KheloPatna Elite Turf Location*:\n\nNear ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007\n\n🗺️ *Google Maps Link*:\nhttps://maps.app.goo.gl/iF1kcgi6seEnsRfaA\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
+                    `📍 *KheloPatna Elite Turf Location*:\n\nNear ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006\n\n🗺️ *Google Maps Link*:\nhttps://maps.app.goo.gl/iF1kcgi6seEnsRfaA\n\n_Reply *1* to book a slot now, or *Menu* for main menu._`
                 );
             } else if (text === '4' || lowerText === 'back') {
                 session.state = 'MAIN_MENU';

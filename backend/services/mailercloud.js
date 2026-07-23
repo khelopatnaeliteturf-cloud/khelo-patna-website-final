@@ -407,7 +407,7 @@ async function sendBookingInvoiceEmail(booking) {
       <!-- Footer Info -->
       <div style="border-top: 1px solid #E5E7EB; padding-top: 18px; text-align: center; font-size: 12px; color: #4B5563; line-height: 1.6;">
         <div style="font-weight: 800; color: #111827; margin-bottom: 4px; font-size: 13px;">Khelo Patna Elite Turf</div>
-        <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007</div>
+        <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006</div>
         <div>Helpline: <a href="tel:+919709701400" style="color: #059669; text-decoration: none; font-weight: 800;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #059669; text-decoration: none; font-weight: 700;">service@khelopatna.in</a></div>
         <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
       </div>
@@ -491,7 +491,7 @@ async function sendFeeInvoiceEmail(student, feeRecord) {
       <!-- Footer Info -->
       <div style="border-top: 1px solid #E5E7EB; padding-top: 18px; text-align: center; font-size: 12px; color: #4B5563; line-height: 1.6;">
         <div style="font-weight: 800; color: #111827; margin-bottom: 4px; font-size: 13px;">Khelo Patna Training Academy</div>
-        <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007</div>
+        <div>Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006</div>
         <div>Helpline: <a href="tel:+919709701400" style="color: #059669; text-decoration: none; font-weight: 800;">(+91) 970 970 1400</a> | <a href="mailto:service@khelopatna.in" style="color: #059669; text-decoration: none; font-weight: 700;">service@khelopatna.in</a></div>
         <div style="margin-top: 10px; font-size: 11px; color: #6B7280;">&copy; 2026 Khelo Patna Elite Turf. All Rights Reserved.</div>
       </div>

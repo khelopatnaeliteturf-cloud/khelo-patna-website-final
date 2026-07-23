@@ -91,7 +91,7 @@ export default function RootLayout({ children }) {
                     "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
                     "addressLocality": "Patna",
                     "addressRegion": "Bihar",
-                    "postalCode": "800007",
+                    "postalCode": "800006",
                     "addressCountry": "IN"
                   },
                   "geo": {
@@ -130,7 +130,7 @@ export default function RootLayout({ children }) {
                     "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
                     "addressLocality": "Patna",
                     "addressRegion": "Bihar",
-                    "postalCode": "800007",
+                    "postalCode": "800006",
                     "addressCountry": "IN"
                   }
                 }
