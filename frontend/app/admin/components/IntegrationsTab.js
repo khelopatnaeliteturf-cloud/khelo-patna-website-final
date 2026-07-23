@@ -122,15 +122,22 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                             <div key={idx} className="col-md-6 col-lg-4">
                                 <div className="rounded p-4 d-flex flex-column justify-content-between h-100" 
                                      style={{ 
-                                         minHeight: '165px',
+                                         minHeight: '180px',
                                          backgroundColor: 'var(--bg-color)',
                                          border: '1px solid var(--border-color)',
                                          boxShadow: 'var(--shadow-sm)'
                                      }}>
                                     <div>
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <strong style={{ fontSize: '0.98rem', color: 'var(--text-main)', fontWeight: 700 }}>{item.name}</strong>
-                                            <span className="badge-pill" style={{ background: badgeBg, color: badgeColor, fontSize: '0.68rem', fontWeight: 700 }}>
+                                        <div className="d-flex justify-content-between align-items-center mb-2 gap-2">
+                                            <strong style={{ fontSize: '0.94rem', color: 'var(--text-main)', fontWeight: 700 }}>{item.name}</strong>
+                                            <span className="badge-pill" style={{ 
+                                                background: badgeBg, 
+                                                color: badgeColor, 
+                                                fontSize: '0.68rem', 
+                                                fontWeight: 700,
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0
+                                            }}>
                                                 {isWhatsApp ? waStatus : item.status}
                                             </span>
                                         </div>
@@ -146,12 +153,12 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
 
                                     {/* Action footer inside card */}
                                     {isWhatsApp && (
-                                        <div className="mt-3 pt-3 border-top d-flex gap-2" style={{ borderColor: 'var(--border-color)' }}>
+                                        <div className="mt-3 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
                                             <button 
                                                 disabled={waLoading}
                                                 onClick={handleReconnectWhatsApp} 
                                                 className="btn-secondary-stripe btn-sm w-100"
-                                                style={{ fontSize: '0.72rem', padding: '6px 12px' }}
+                                                style={{ fontSize: '0.74rem', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                                             >
                                                 <span className="material-icons-outlined" style={{ fontSize: '15px' }}>refresh</span>
                                                 {waLoading ? 'Reconnecting Socket...' : 'Reconnect Microservice'}
@@ -167,24 +174,27 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                     <div className="col-md-6 col-lg-4">
                         <div className="rounded p-4 d-flex flex-column justify-content-between h-100" 
                              style={{ 
-                                 minHeight: '165px',
+                                 minHeight: '180px',
                                  backgroundColor: 'var(--bg-color)',
-                                 border: botEnabled ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--border-color)',
+                                 border: '1px solid var(--border-color)',
                                  boxShadow: 'var(--shadow-sm)'
                              }}>
                             <div>
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <strong style={{ fontSize: '0.98rem', color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '18px' }}>smart_toy</span>
-                                        AI WhatsApp Auto-Reply Bot
+                                <div className="d-flex justify-content-between align-items-center mb-2 gap-2">
+                                    <strong style={{ fontSize: '0.94rem', color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '18px', flexShrink: 0 }}>smart_toy</span>
+                                        <span>AI WhatsApp Auto-Reply</span>
                                     </strong>
                                     <span className="badge-pill" style={{ 
                                         background: botEnabled ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
                                         color: botEnabled ? 'var(--success)' : 'var(--danger)', 
-                                        fontSize: '0.68rem', 
-                                        fontWeight: 700 
+                                        fontSize: '0.66rem', 
+                                        fontWeight: 700,
+                                        whiteSpace: 'nowrap',
+                                        flexShrink: 0,
+                                        padding: '4px 8px'
                                     }}>
-                                        {botEnabled ? 'BOT ACTIVE (AUTO-REPLY)' : 'PAUSED (MANUAL HUMAN CHAT)'}
+                                        {botEnabled ? 'BOT ACTIVE' : 'PAUSED'}
                                     </span>
                                 </div>
                                 <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', opacity: 0.78, margin: '8px 0 0 0', lineHeight: 1.45 }}>
@@ -205,16 +215,13 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                                         display: 'inline-flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '6px',
-                                        background: botEnabled ? 'rgba(239, 68, 68, 0.12)' : 'var(--success)',
-                                        color: botEnabled ? 'var(--danger)' : '#ffffff',
-                                        border: botEnabled ? '1px solid rgba(239, 68, 68, 0.3)' : 'none'
+                                        gap: '6px'
                                     }}
                                 >
                                     <span className="material-icons-outlined" style={{ fontSize: '16px' }}>
                                         {botEnabled ? 'pause_circle_outline' : 'play_circle_outline'}
                                     </span>
-                                    {botEnabled ? 'Turn OFF AI Auto-Reply Bot' : 'Turn ON AI Auto-Reply Bot'}
+                                    {botEnabled ? 'Turn OFF AI Auto-Reply' : 'Turn ON AI Auto-Reply'}
                                 </button>
                             </div>
                         </div>
