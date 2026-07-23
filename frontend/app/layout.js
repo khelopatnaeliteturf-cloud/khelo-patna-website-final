@@ -1,6 +1,10 @@
 import "./globals.css";
 import { poppins, montserrat, spaceGrotesk } from "./fonts";
 
+export const viewport = {
+  themeColor: "#10B981",
+};
+
 export const metadata = {
   title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
   description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling. Play Elite, Play Patna.",
@@ -8,6 +12,7 @@ export const metadata = {
   authors: [{ name: "KheloPatna" }],
   creator: "KheloPatna",
   publisher: "KheloPatna Elite Turf",
+  manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

@@ -1,0 +1,23 @@
+{
+  "name": "KheloPatna Elite Turf & Academy",
+  "short_name": "KheloPatna",
+  "description": "Book indoor cricket & football turf slots online at KheloPatna Elite Turf, Patna.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#040609",
+  "theme_color": "#10B981",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

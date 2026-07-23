@@ -155,6 +155,36 @@ export default function TurfTab(props) {
                             >
                                 <span className="material-icons-outlined" style={{ fontSize: '16px' }}>analytics</span> Report
                             </button>
+                            <button onClick={() => {
+                                const headers = ['Booking ID', 'Customer Name', 'Phone', 'Sport', 'Date', 'Slots', 'Total Amount', 'Paid Amount', 'Status', 'Payment Method'];
+                                const rows = filteredBookings.map(b => [
+                                    b._id,
+                                    b.customerName || '',
+                                    b.customerPhone || '',
+                                    b.sport || 'turf',
+                                    b.date || '',
+                                    (b.timeSlots || []).join('; '),
+                                    b.totalAmount || 0,
+                                    b.paidAmount || 0,
+                                    b.paymentStatus || 'PENDING',
+                                    b.paymentMethod || 'ONLINE'
+                                ]);
+                                const blob = new Blob(['\uFEFF' + [headers.join(','), ...rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))].join('\n')], { type: 'text/csv;charset=utf-8;' });
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.setAttribute('href', url);
+                                link.setAttribute('download', `khelo_patna_bookings_${new Date().toISOString().split('T')[0]}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }} style={{
+                                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                                background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '10px',
+                                cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 600,
+                                transition: 'all 0.2s'
+                            }}>
+                                <span className="material-icons-outlined" style={{ fontSize: '16px' }}>file_download</span> Export CSV
+                            </button>
                         </div>
                     </div>
 
