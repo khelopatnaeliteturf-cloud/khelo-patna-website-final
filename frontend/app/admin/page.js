@@ -2475,39 +2475,14 @@ export default function AdminDashboard() {
         localStorage.removeItem('user_role');
         localStorage.removeItem('username');
         document.cookie = 'kp_session=; path=/; max-age=0';
+        document.cookie = 'token=; path=/; max-age=0';
         setToken('');
         setRole('');
         setUsername('');
         setAuthenticated(false);
-        router.push('/login');
+        window.location.href = '/login';
     };
-
-    const [academySubTab, setAcademySubTab] = useState('students');
-    const [paymentsSubTab, setPaymentsSubTab] = useState('collect');
-    const [customerSearchQuery, setCustomerSearchQuery] = useState('');
-    const [selectedCrmStudent, setSelectedCrmStudent] = useState(null);
-    const [posCart, setPosCart] = useState([]);
-    const [attendanceList, setAttendanceList] = useState([]);
-
-    // Format helper
-    const formatINR = (amount) => {
-        return '₹' + (amount || 0).toLocaleString('en-IN');
-    };
-
-    // Generate unique customer ID from name + phone
-    const generateCustomerId = (name, phone) => {
-        const str = `${(name || 'WI').substring(0, 2).toUpperCase()}${(phone || '0000').slice(-4)}`;
-        const hash = Array.from(str).reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        return `KP-${str.substring(0, 2)}${String(hash).padStart(4, '0').slice(-4)}`;
-    };
-
-    // Theme toggle
-    const toggleTheme = () => {
-        const nextTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(nextTheme);
-        localStorage.setItem('erp_theme', nextTheme);
-        localStorage.setItem('erp_theme_manual', 'true');
-    };
+    const handleLogout = handleSignOut;
 
     // Calendar helper variables
     const monthName = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
