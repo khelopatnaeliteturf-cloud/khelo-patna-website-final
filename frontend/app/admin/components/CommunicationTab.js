@@ -49,9 +49,9 @@ export default function CommunicationTab(props) {
     const [totalPages, setTotalPages] = React.useState(1);
     const [selectedLog, setSelectedLog] = React.useState(null); // For modal details
 
-    const fetchLogs = React.useCallback(async () => {
+    const fetchLogs = React.useCallback(async (isSilent = false) => {
         if (!backendUrl) return;
-        setLoading(true);
+        if (!isSilent) setLoading(true);
         try {
             const queryParams = new URLSearchParams({
                 page,
@@ -71,13 +71,18 @@ export default function CommunicationTab(props) {
         } catch (err) {
             console.error('Error fetching communication logs:', err);
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
     }, [backendUrl, getHeaders, page, search, filterType, filterStatus]);
 
     React.useEffect(() => {
         if (commType === 'logs') {
-            fetchLogs();
+            fetchLogs(false);
+            // Polling logs silently every 10 seconds without showing loading spinner or reloading page
+            const interval = setInterval(() => {
+                fetchLogs(true);
+            }, 10000);
+            return () => clearInterval(interval);
         }
     }, [commType, fetchLogs]);
 
@@ -94,7 +99,7 @@ export default function CommunicationTab(props) {
                 </h3>
             </div>
 
-            <div className="d-flex gap-3 mb-4 border-bottom pb-2 flex-wrap">
+            <div className="d-flex gap-2 mb-4 border-bottom pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                 {[
                     { id: 'single', label: 'Single Member' },
                     { id: 'broadcast', label: 'Bulk Broadcast' },
@@ -106,6 +111,7 @@ export default function CommunicationTab(props) {
                         key={t.id} 
                         className={`sub-tab-link ${commType === t.id ? 'active' : ''}`} 
                         onClick={() => setCommType(t.id)}
+                        style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
                     >
                         {t.label}
                     </button>
@@ -413,12 +419,12 @@ export default function CommunicationTab(props) {
             {selectedLog && (
                 <div className="modal-backdrop-premium fade show d-flex align-items-center justify-content-center" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh',
-                    background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(10px)', zIndex: 999999
+                    background: 'rgba(3, 8, 6, 0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999999
                 }}>
                     <div className="card-premium animate-scale-up" style={{
-                        width: '90%', maxWidth: '750px', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-                        background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '24px',
-                        overflow: 'hidden', padding: 0, boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
+                        width: '92%', maxWidth: '750px', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+                        background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '24px',
+                        overflow: 'hidden', padding: 0, boxShadow: '0 25px 60px rgba(0,0,0,0.6)'
                     }}>
                         <div className="p-4 border-bottom d-flex justify-content-between align-items-center">
                             <div>
