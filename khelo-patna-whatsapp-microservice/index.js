@@ -168,13 +168,21 @@ async function initWhatsApp() {
         const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307], isLatest: false }));
         console.log(`Using WhatsApp Web Version: ${Array.isArray(version) ? version.join('.') : version} (isLatest: ${isLatest})`);
 
+        const msgStore = new Map();
+
         sock = makeWASocket({
             version,
             logger: pino({ level: 'silent' }),
             printQRInTerminal: false,
             auth: state,
             browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146'],
-            syncFullHistory: false
+            syncFullHistory: false,
+            getMessage: async (key) => {
+                if (key?.id && msgStore.has(key.id)) {
+                    return msgStore.get(key.id)?.message;
+                }
+                return { conversation: 'Hello' };
+            }
         });
 
         sock.ev.on('connection.update', async (update) => {
@@ -224,6 +232,14 @@ async function initWhatsApp() {
             if (!botEnabled || m.type !== 'notify') return;
 
             for (const message of m.messages) {
+                if (message.key?.id && message.message) {
+                    msgStore.set(message.key.id, message);
+                    if (msgStore.size > 1000) {
+                        const firstKey = msgStore.keys().next().value;
+                        msgStore.delete(firstKey);
+                    }
+                }
+
                 if (message.key.fromMe) continue;
 
                 const rawJid = message.key.remoteJid;

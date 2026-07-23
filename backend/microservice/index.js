@@ -151,10 +151,13 @@ async function initWhatsApp() {
         const baileys = await import('@whiskeysockets/baileys');
         const makeWASocket = baileys.default;
         const DisconnectReason = baileys.DisconnectReason;
+        const { Boom } = await import('@hapi/boom');
         const Browsers = baileys.Browsers || baileys.default?.Browsers;
 
         const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307], isLatest: false }));
         console.log(`Using WhatsApp Web Version: ${Array.isArray(version) ? version.join('.') : version} (isLatest: ${isLatest})`);
+
+        const msgStore = new Map();
 
         sock = makeWASocket({
             version,
@@ -162,33 +165,29 @@ async function initWhatsApp() {
             printQRInTerminal: false,
             auth: state,
             browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146'],
-            syncFullHistory: false
+            syncFullHistory: false,
+            getMessage: async (key) => {
+                if (key?.id && msgStore.has(key.id)) {
+                    return msgStore.get(key.id)?.message;
+                }
+                return { conversation: 'Hello' };
+            }
         });
 
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect, qr } = update;
 
             if (qr) {
-                try {
-                    qrCodeImage = await qrcode.toDataURL(qr);
-                    connectionStatus = 'DISCONNECTED';
-                    console.log('📱 New WhatsApp QR Code generated.');
-                } catch (e) {
-                    console.error('Failed to render QR Code:', e);
-                }
-            }
-
-            if (connection === 'open') {
-                connectionStatus = 'CONNECTED';
-                qrCodeImage = null;
-                console.log('✅ WhatsApp Baileys connected successfully and listening!');
+                console.log('📱 New WhatsApp QR Code generated for scanning.');
+                qrCodeImage = await qrcode.toDataURL(qr);
+                connectionStatus = 'QR_READY';
             }
 
             if (connection === 'close') {
-                const statusCode = lastDisconnect?.error?.output?.statusCode;
-                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403 || statusCode === 405 || statusCode === 408;
-
-                console.warn(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${isLoggedOut}`);
+                const statusCode = (lastDisconnect?.error instanceof Boom) ? lastDisconnect.error.output?.statusCode : lastDisconnect?.error?.output?.statusCode;
+                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                
+                console.log(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${!shouldReconnect}`);
                 connectionStatus = 'DISCONNECTED';
 
                 if (isLoggedOut || statusCode === 405) {
