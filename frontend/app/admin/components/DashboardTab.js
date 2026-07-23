@@ -2,7 +2,20 @@ import React from 'react';
 import AnimatedNumber from './AnimatedNumber';
 
 export default function DashboardTab(props) {
-    const { revenueAnalytics, bookingsLog, formatINR, stats, allStudents, username, setActiveTab, setActiveSidebarKey, setShowOfflineBookingModal, pendingFeesAmount, formatSlotTo12Hr, formatMultipleSlots } = props;
+    const { 
+        revenueAnalytics = [], 
+        bookingsLog = [], 
+        formatINR = (amount) => '₹' + (amount || 0).toLocaleString('en-IN'), 
+        stats = {}, 
+        allStudents = [], 
+        username = 'Admin', 
+        setActiveTab = () => {}, 
+        setActiveSidebarKey = () => {}, 
+        setShowOfflineBookingModal = () => {}, 
+        pendingFeesAmount = 0, 
+        formatSlotTo12Hr = (s) => s, 
+        formatMultipleSlots = (s) => s 
+    } = props || {};
     
     const [newBookings, setNewBookings] = React.useState([]);
     const [showNotification, setShowNotification] = React.useState(false);
@@ -839,7 +852,7 @@ export default function DashboardTab(props) {
                             })}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', padding: '0 4px' }}>
-                            {revenueAnalytics.map((item, i) => (
+                            {(revenueAnalytics || []).map((item, i) => (
                                 <span key={i} style={{ fontSize: '0.62rem', color: hoveredBar === i ? 'var(--primary)' : 'var(--text-muted)', fontWeight: hoveredBar === i ? 800 : 400, textTransform: 'uppercase', transition: 'all 0.2s' }}>
                                     {item.month ? item.month.split(' ')[0].slice(0, 3) : ''}
                                 </span>
