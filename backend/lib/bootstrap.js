@@ -197,14 +197,15 @@ async function ensureDefaultTenant() {
         console.log('  Bootstrap: communication_logs table checked/created');
  
         // ── Bookings Table Columns Migration ─────────────────────────────
-        console.log('  Bootstrap: ensuring bookings table has coupon columns...');
+        console.log('  Bootstrap: ensuring bookings table has coupon & booked_by columns...');
         await client.query(`
             ALTER TABLE bookings 
             ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50) DEFAULT NULL,
             ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00,
-            ADD COLUMN IF NOT EXISTS payment_link TEXT DEFAULT NULL;
+            ADD COLUMN IF NOT EXISTS payment_link TEXT DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS booked_by VARCHAR(255) DEFAULT 'Online / WhatsApp Bot';
         `);
-        console.log('  Bootstrap: bookings table coupon columns checked/added');
+        console.log('  Bootstrap: bookings table columns checked/added');
 
         // ── Turf Settings Table Columns Migration ────────────────────────
         console.log('  Bootstrap: ensuring turf_settings table has advance_percentage column...');
