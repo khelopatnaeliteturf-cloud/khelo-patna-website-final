@@ -479,28 +479,36 @@ async function handleIncomingMessage(sockOrPayload, m) {
                         hourlyRate = dayRate;
                     }
                 }
+                // Calculate IST (UTC+5:30) current date and hour for accurate past slot filtering
+                const nowUtc = new Date();
+                const istDate = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+                const istTodayStr = istDate.toISOString().split('T')[0];
+                const istCurrentHour = istDate.getUTCHours();
+                const isTodayDate = (targetDateStr === istTodayStr);
+
                 let availableList = [];
                 let slotIndex = 1;
                 const indexToSlotValueMap = {};
 
                 ALL_HOURLY_SLOTS.forEach(slot => {
+                    const isPast = isTodayDate && (slot.startHour <= istCurrentHour);
                     const isBooked = bookedSlots.has(slot.value) || (slot.value === '23-24' && bookedSlots.has('23-00'));
                     const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-                    const isBlackout = isWeekday && slot.startHour >= settings.blackoutHours.start && slot.startHour < settings.blackoutHours.end;
+                    const isBlackout = isWeekday && slot.startHour >= (settings?.blackoutHours?.start ?? 18) && slot.startHour < (settings?.blackoutHours?.end ?? 20);
                     
                     let isCustomClosure = false;
                     closures.forEach(c => {
                         if (c.recurringDay === dayOfWeek) {
                             isCustomClosure = true;
                         } else {
-                            const slotStart = new Date(targetDateStr + `T${slot.value.split('-')[0]}:00:00`);
+                            const slotStart = new Date(targetDateStr + `T${String(slot.startHour).padStart(2, '0')}:00:00`);
                             if (slotStart >= c.startDate && slotStart < c.endDate) {
                                 isCustomClosure = true;
                             }
                         }
                     });
 
-                    if (!isBooked && !isBlackout && !isCustomClosure) {
+                    if (!isPast && !isBooked && !isBlackout && !isCustomClosure) {
                         availableList.push(`*${slotIndex}*. ${slot.text} (₹${hourlyRate})`);
                         indexToSlotValueMap[slotIndex] = slot.value;
                         slotIndex++;
