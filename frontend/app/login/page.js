@@ -227,8 +227,58 @@ export default function LoginPage() {
     };
 
     const handleBiometricLogin = async () => {
-        if (typeof window !== 'undefined' && navigator.credentials && navigator.credentials.get) {
-            try {
+        setLoading(true);
+        setErrorMessage('');
+        try {
+            // 1. Try WebAuthn Passkey FIDO2 login options from backend
+            const optRes = await fetch(`${BACKEND_URL}/api/auth/passkey/login-options`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (optRes.ok) {
+                const optData = await optRes.json();
+                if (optData.options && navigator.credentials && navigator.credentials.get) {
+                    const challengeBuffer = Uint8Array.from(atob(optData.options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                    
+                    const credential = await navigator.credentials.get({
+                        publicKey: {
+                            challenge: challengeBuffer,
+                            userVerification: optData.options.userVerification || 'preferred',
+                            timeout: optData.options.timeout || 60000
+                        }
+                    });
+
+                    if (credential) {
+                        const rawId = credential.id;
+                        const verifyRes = await fetch(`${BACKEND_URL}/api/auth/passkey/login-verify`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                credential: { id: rawId },
+                                loginToken: optData.loginToken,
+                                username: username || undefined
+                            })
+                        });
+
+                        const verifyData = await parseJsonSafe(verifyRes);
+                        if (verifyRes.ok && verifyData.user) {
+                            localStorage.setItem('user_role', verifyData.user.role);
+                            localStorage.setItem('username', verifyData.user.username);
+                            setSessionMarker();
+                            router.push(getRedirectUrl());
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (passkeyErr) {
+            console.log('WebAuthn Passkey login skipped or unsupported:', passkeyErr.message);
+        }
+
+        // 2. Fallback to PasswordCredential Manager autofill
+        try {
+            if (typeof window !== 'undefined' && navigator.credentials && navigator.credentials.get) {
                 const cred = await navigator.credentials.get({
                     password: true,
                     mediation: 'optional'
@@ -236,12 +286,15 @@ export default function LoginPage() {
                 if (cred && cred.id && cred.password) {
                     setUsername(cred.id);
                     setPassword(cred.password);
+                    setLoading(false);
                     return;
                 }
-            } catch (e) {
-                console.log('Biometric credential retrieval skipped:', e);
             }
+        } catch (e) {
+            console.log('Password credential retrieval skipped:', e);
         }
+
+        setLoading(false);
         const userElem = document.getElementById('staff-username');
         if (userElem) userElem.focus();
     };

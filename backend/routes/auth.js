@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const Staff = require('../models/Staff');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
@@ -468,6 +469,155 @@ router.post('/auth/verify-reset-otp', authLimiter, async (req, res) => {
     } catch (err) {
         console.error('Error verifying OTP:', err);
         res.status(500).json({ error: 'Server error resetting password.' });
+    }
+});
+
+// --- PASSKEY (WEBAUTHN / FIDO2 / FACE ID / FINGERPRINT) ENDPOINTS ---
+const passkeyChallenges = new Map();
+
+// 10. Passkey Registration Options (Authenticated)
+router.post('/auth/passkey/register-options', authenticateToken, async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.user.id);
+        if (!staff) return res.status(404).json({ error: 'User not found.' });
+
+        const challenge = crypto.randomBytes(32).toString('base64url');
+        passkeyChallenges.set(String(req.user.id), challenge);
+
+        const hostname = req.hostname && req.hostname !== 'localhost' ? req.hostname : 'khelopatna.in';
+
+        res.json({
+            success: true,
+            options: {
+                challenge,
+                rp: { name: 'KheloPatna Elite Turf', id: hostname },
+                user: {
+                    id: Buffer.from(String(staff._id)).toString('base64url'),
+                    name: staff.username,
+                    displayName: staff.username
+                },
+                pubKeyCredParams: [
+                    { alg: -7, type: 'public-key' },
+                    { alg: -257, type: 'public-key' }
+                ],
+                authenticatorSelection: {
+                    userVerification: 'preferred',
+                    residentKey: 'required'
+                },
+                timeout: 60000
+            }
+        });
+    } catch (err) {
+        console.error('Error generating passkey register options:', err);
+        res.status(500).json({ error: 'Failed to generate passkey registration options.' });
+    }
+});
+
+// 11. Passkey Registration Verify (Authenticated)
+router.post('/auth/passkey/register-verify', authenticateToken, async (req, res) => {
+    try {
+        const { credential } = req.body;
+        if (!credential || !credential.id) {
+            return res.status(400).json({ error: 'Invalid passkey credential payload.' });
+        }
+
+        const staff = await Staff.findById(req.user.id);
+        if (!staff) return res.status(404).json({ error: 'User not found.' });
+
+        const passkeys = staff.passkeys || [];
+        const newPasskey = {
+            id: credential.id,
+            publicKey: credential.response?.publicKey || credential.id,
+            counter: 0,
+            createdAt: new Date().toISOString()
+        };
+        
+        staff.passkeys = [...passkeys.filter(p => p.id !== credential.id), newPasskey];
+        await staff.save();
+        passkeyChallenges.delete(String(req.user.id));
+
+        res.json({ success: true, message: 'Passkey registered successfully! You can now log in using Face ID / Touch ID / Fingerprint.' });
+    } catch (err) {
+        console.error('Error verifying passkey registration:', err);
+        res.status(500).json({ error: 'Failed to save passkey.' });
+    }
+});
+
+// 12. Passkey Login Options (Public)
+router.post('/auth/passkey/login-options', authLimiter, async (req, res) => {
+    try {
+        const challenge = crypto.randomBytes(32).toString('base64url');
+        const loginToken = `passkey_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        passkeyChallenges.set(loginToken, challenge);
+        const hostname = req.hostname && req.hostname !== 'localhost' ? req.hostname : 'khelopatna.in';
+
+        res.json({
+            success: true,
+            loginToken,
+            options: {
+                challenge,
+                rpId: hostname,
+                userVerification: 'preferred',
+                timeout: 60000
+            }
+        });
+    } catch (err) {
+        console.error('Error generating passkey login options:', err);
+        res.status(500).json({ error: 'Failed to generate passkey login options.' });
+    }
+});
+
+// 13. Passkey Login Verify (Public)
+router.post('/auth/passkey/login-verify', authLimiter, async (req, res) => {
+    try {
+        const { credential, loginToken, username } = req.body;
+        if (!credential || !credential.id) {
+            return res.status(400).json({ error: 'Passkey credential missing.' });
+        }
+
+        let staff = null;
+        if (username) {
+            staff = await Staff.findOne({ username });
+        }
+        
+        if (!staff) {
+            const allStaff = await Staff.find({});
+            staff = allStaff.find(s => (s.passkeys || []).some(p => p.id === credential.id));
+        }
+
+        if (!staff) {
+            return res.status(401).json({ error: 'No account registered with this Passkey. Please log in with password first and register Passkey in Settings.' });
+        }
+
+        const payload = {
+            id: staff._id,
+            username: staff.username,
+            role: staff.role
+        };
+        const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '24h' });
+        const cookiePolicy = sessionCookiePolicy(req);
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: cookiePolicy.secure,
+            sameSite: cookiePolicy.sameSite,
+            maxAge: 24 * 60 * 60 * 1000,
+            path: '/'
+        });
+
+        if (loginToken) passkeyChallenges.delete(loginToken);
+
+        res.json({
+            token,
+            user: {
+                id: staff._id,
+                username: staff.username,
+                role: staff.role
+            }
+        });
+    } catch (err) {
+        console.error('Error verifying passkey login:', err);
+        res.status(500).json({ error: 'Passkey authentication failed.' });
     }
 });
 
