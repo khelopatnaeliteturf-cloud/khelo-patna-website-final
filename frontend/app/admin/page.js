@@ -1545,7 +1545,9 @@ export default function AdminDashboard() {
                 if (!res.ok) throw new Error('Failed to load slots');
                 const data = await res.json();
                 if (active) {
-                    setOfflineAvailableSlots(data.slots || []);
+                    const rawSlots = data.slots || [];
+                    const filtered = rawSlots.filter(s => !s.isPast);
+                    setOfflineAvailableSlots(filtered);
                 }
             } catch (err) {
                 console.error('Error fetching offline available slots:', err);

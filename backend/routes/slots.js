@@ -200,8 +200,8 @@ router.get('/available-slots', async (req, res) => {
         });
 
         let filteredSlotsResponse = slotsResponse;
-        if (!isAdmin && date === todayISTStr) {
-            // Filter out past ended slots for online users so past hours do not clog grid
+        if (date === todayISTStr && req.query.include_past_override !== 'true') {
+            // Filter out past ended slots for today's date so past hours never clog slot selection grid
             filteredSlotsResponse = slotsResponse.filter(slot => !slot.isPast);
         }
 
