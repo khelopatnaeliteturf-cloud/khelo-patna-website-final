@@ -141,21 +141,40 @@ router.post('/auth/register', authLimiter, async (req, res) => {
 
         if (staffCount > 0) {
             const authHeader = req.headers['authorization'];
-            const token = authHeader && authHeader.split(' ')[1];
+            let token = authHeader && authHeader.split(' ')[1];
+
+            // Cookie fallback for sessions authenticated via HTTP-only cookies
+            if (!token && req.headers.cookie) {
+                const list = {};
+                req.headers.cookie.split(';').forEach(c => {
+                    const parts = c.split('=');
+                    if (parts.length >= 2) list[parts.shift().trim()] = decodeURIComponent(parts.join('='));
+                });
+                token = list.kp_session || list.token;
+            }
+
             if (!token) {
                 return res.status(401).json({ error: 'Unauthorized. Admin credentials required to add user.' });
             }
 
-            const decoded = jwt.verify(token, getJwtSecret());
+            let decoded;
+            try {
+                decoded = jwt.verify(token, getJwtSecret());
+            } catch (jwtErr) {
+                console.error('JWT Verification Error during staff registration:', jwtErr.message);
+                return res.status(401).json({ error: 'Unauthorized. Session expired or invalid admin credentials.' });
+            }
+
             if (!STAFF_REGISTER_ROLES.includes(decoded.role)) {
                 return res.status(403).json({ error: 'Unauthorized. Admin credentials required to add user.' });
             }
 
-            // Enforce role-assignment hierarchy: a registrar can only create
-            // accounts with roles at or below their own privilege level.
-            const allowedRoles = ASSIGNABLE_ROLES[decoded.role] || [];
-            if (!allowedRoles.includes(role)) {
-                return res.status(403).json({ error: `Your role (${decoded.role}) is not permitted to create accounts with the ${role} role.` });
+            // Enforce role-assignment hierarchy: Super Admins & Owners can create any role.
+            if (decoded.role !== 'SUPER_ADMIN' && decoded.role !== 'ACADEMY_OWNER') {
+                const allowedRoles = ASSIGNABLE_ROLES[decoded.role] || [];
+                if (!allowedRoles.includes(role)) {
+                    return res.status(403).json({ error: `Your role (${decoded.role}) is not permitted to create accounts with the ${role} role.` });
+                }
             }
 
             tenantId = decoded.tenantId;
