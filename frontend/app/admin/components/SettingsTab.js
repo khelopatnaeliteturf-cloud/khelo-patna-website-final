@@ -99,6 +99,69 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
     const [newUser, setNewUser] = useState({ username: '', password: '', role: 'SUPER_ADMIN', name: '', phone: '' });
     const [creatingUser, setCreatingUser] = useState(false);
 
+    // Edit User Details state
+    const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+    const [editingUserDetail, setEditingUserDetail] = useState({
+        id: '',
+        username: '',
+        name: '',
+        phone: '',
+        role: '',
+        status: 'ACTIVE',
+        newPassword: ''
+    });
+    const [savingUserDetail, setSavingUserDetail] = useState(false);
+
+    const handleOpenUserDetailModal = (user) => {
+        setEditingUserDetail({
+            id: user._id || user.id,
+            username: user.username || '',
+            name: user.name || '',
+            phone: user.phone || '',
+            role: user.role || 'RECEPTIONIST',
+            status: user.status || 'ACTIVE',
+            newPassword: ''
+        });
+        setShowUserDetailModal(true);
+    };
+
+    const handleSaveUserDetail = async (e) => {
+        e.preventDefault();
+        setSavingUserDetail(true);
+        try {
+            const payload = {
+                name: editingUserDetail.name,
+                phone: editingUserDetail.phone,
+                username: editingUserDetail.username,
+                role: editingUserDetail.role,
+                status: editingUserDetail.status
+            };
+            if (editingUserDetail.newPassword) {
+                payload.newPassword = editingUserDetail.newPassword;
+            }
+
+            const res = await fetch(`${backendUrl}/api/auth/staff/${editingUserDetail.id}`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                notifySuccess(`User ${editingUserDetail.username} updated successfully.`);
+                setShowUserDetailModal(false);
+                await loadStaff();
+            } else {
+                notifyError(data.error || 'Failed to update user account.');
+            }
+        } catch (err) {
+            console.error('Error updating user:', err);
+            notifyError('Network error updating user account.');
+        } finally {
+            setSavingUserDetail(false);
+        }
+    };
+
     useEffect(() => {
         loadStaff();
     }, []);
@@ -498,6 +561,27 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                     </span>
                                                 </td>
                                                 <td>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => handleOpenUserDetailModal(user)}
+                                                        className="btn-primary-stripe"
+                                                        style={{ 
+                                                            background: 'rgba(59, 130, 246, 0.15)', 
+                                                            color: '#3B82F6', 
+                                                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                                                            borderRadius: '6px', 
+                                                            fontSize: '0.74rem', 
+                                                            padding: '4px 10px', 
+                                                            fontWeight: 600,
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
+                                                            marginRight: '6px'
+                                                        }}
+                                                    >
+                                                        <span className="material-icons-outlined" style={{ fontSize: '15px' }}>edit</span>
+                                                        Edit User
+                                                    </button>
                                                     <button 
                                                         type="button"
                                                         onClick={() => handleOpenEdit(user)}
@@ -973,6 +1057,119 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
                                 >
                                     {creatingUser ? 'Creating...' : 'Register User'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Dialog for Editing User Account Details */}
+            {showUserDetailModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 8, 6, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div style={{ background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', width: '95%', maxWidth: '540px', boxShadow: 'var(--shadow-lg)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="material-icons-outlined">manage_accounts</span>
+                                Edit User Account
+                            </h4>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowUserDetailModal(false)} style={{ filter: 'var(--invert-icon)', opacity: 0.8 }}></button>
+                        </div>
+
+                        <form onSubmit={handleSaveUserDetail} className="d-flex flex-column gap-3">
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Full Name</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. Rahul Sharma" 
+                                        className="input-premium w-100" 
+                                        value={editingUserDetail.name} 
+                                        onChange={(e) => setEditingUserDetail({...editingUserDetail, name: e.target.value})} 
+                                    />
+                                </div>
+                                <div className="col-6">
+                                    <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Phone Contact</label>
+                                    <input 
+                                        type="tel" 
+                                        placeholder="e.g. 9876543210" 
+                                        className="input-premium w-100" 
+                                        value={editingUserDetail.phone} 
+                                        onChange={(e) => setEditingUserDetail({...editingUserDetail, phone: e.target.value})} 
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Username *</label>
+                                <input 
+                                    type="text" 
+                                    required 
+                                    disabled={editingUserDetail.username === 'owner'}
+                                    className="input-premium w-100" 
+                                    value={editingUserDetail.username} 
+                                    onChange={(e) => setEditingUserDetail({...editingUserDetail, username: e.target.value})} 
+                                />
+                            </div>
+
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Assigned Role *</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        disabled={editingUserDetail.username === 'owner'}
+                                        value={editingUserDetail.role} 
+                                        onChange={(e) => setEditingUserDetail({...editingUserDetail, role: e.target.value})}
+                                    >
+                                        {ROLES.map(r => (
+                                            <option key={r.value} value={r.value}>{r.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="col-6">
+                                    <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>Status *</label>
+                                    <select 
+                                        className="input-premium w-100" 
+                                        disabled={editingUserDetail.username === 'owner'}
+                                        value={editingUserDetail.status} 
+                                        onChange={(e) => setEditingUserDetail({...editingUserDetail, status: e.target.value})}
+                                    >
+                                        <option value="ACTIVE">ACTIVE (Allowed login)</option>
+                                        <option value="INACTIVE">INACTIVE (Block login)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style={{ background: 'var(--input-bg, rgba(16,185,129,0.05))', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                                <label className="d-block mb-1" style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--emerald)' }}>Reset / Change User Password</label>
+                                <input 
+                                    type="password" 
+                                    placeholder="Leave blank to keep existing password" 
+                                    className="input-premium w-100" 
+                                    value={editingUserDetail.newPassword} 
+                                    onChange={(e) => setEditingUserDetail({...editingUserDetail, newPassword: e.target.value})} 
+                                />
+                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                    Enter a new password (min 8 chars) to reset credentials for this staff member.
+                                </div>
+                            </div>
+
+                            <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2" style={{ borderColor: 'var(--border-color)' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowUserDetailModal(false)} 
+                                    className="btn btn-secondary py-2 px-3" 
+                                    style={{ fontSize: '0.8rem', borderRadius: '8px' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={savingUserDetail}
+                                    className="btn-primary-stripe text-white py-2 px-4" 
+                                    style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                >
+                                    {savingUserDetail ? 'Saving...' : 'Save User Changes'}
                                 </button>
                             </div>
                         </form>

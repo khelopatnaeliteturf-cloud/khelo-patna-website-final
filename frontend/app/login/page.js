@@ -53,6 +53,39 @@ export default function LoginPage() {
     const [errorMessage, setErrorMessage] = useState('');
     const [firstTimeBootstrap, setFirstTimeBootstrap] = useState(false);
     const [bootstrapRole, setBootstrapRole] = useState('SUPER_ADMIN');
+
+    // Forgot Password States
+    const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+    const [forgotUsername, setForgotUsername] = useState('');
+    const [forgotLoading, setForgotLoading] = useState(false);
+    const [forgotSuccessMsg, setForgotSuccessMsg] = useState('');
+    const [forgotErrorMsg, setForgotErrorMsg] = useState('');
+
+    const handleForgotPasswordSubmit = async (e) => {
+        e.preventDefault();
+        setForgotLoading(true);
+        setForgotSuccessMsg('');
+        setForgotErrorMsg('');
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: forgotUsername })
+            });
+            const data = await parseJsonSafe(res);
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to submit password reset request.');
+            }
+
+            setForgotSuccessMsg(data.message || 'Password reset request registered successfully.');
+        } catch (err) {
+            setForgotErrorMsg(err.message || 'Error processing request.');
+        } finally {
+            setForgotLoading(false);
+        }
+    };
     
     // Ask the backend whether the very first admin still needs to be created.
     // Auto-opens bootstrap mode on a fresh database, and forces normal login
@@ -375,6 +408,15 @@ export default function LoginPage() {
                                     boxSizing: 'border-box',
                                 }}
                             />
+                            <div style={{ textAlign: 'right', marginTop: '6px' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => { setForgotSuccessMsg(''); setForgotErrorMsg(''); setShowForgotPasswordModal(true); }}
+                                    style={{ background: 'transparent', border: 'none', color: '#39ff14', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif" }}
+                                >
+                                    Forgot Password?
+                                </button>
+                            </div>
                         </div>
 
                         <button type="submit" className="btn-premium" disabled={loading} style={{
@@ -595,6 +637,60 @@ export default function LoginPage() {
             </div>
 
             {/* Inline keyframes */}
+            {/* Forgot Password Modal */}
+            {showForgotPasswordModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2, 4, 5, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '16px' }}>
+                    <div style={{ background: '#070D09', border: '1px solid rgba(57, 255, 20, 0.25)', borderRadius: '20px', padding: '28px', maxWidth: '420px', width: '100%', boxShadow: '0 0 40px rgba(0, 0, 0, 0.8)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#39ff14', fontFamily: "'Space Grotesk', sans-serif" }}>
+                                Reset Password
+                            </h3>
+                            <button type="button" onClick={() => setShowForgotPasswordModal(false)} style={{ background: 'transparent', border: 'none', color: '#8E959D', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+                        </div>
+
+                        {forgotSuccessMsg ? (
+                            <div style={{ background: 'rgba(57, 255, 20, 0.1)', border: '1px solid rgba(57, 255, 20, 0.3)', color: '#39ff14', padding: '14px', borderRadius: '12px', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '16px' }}>
+                                {forgotSuccessMsg}
+                            </div>
+                        ) : (
+                            <form onSubmit={handleForgotPasswordSubmit}>
+                                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', lineHeight: 1.5 }}>
+                                    Enter your account username or phone contact below to request a password reset from the Super Administrator.
+                                </p>
+
+                                {forgotErrorMsg && (
+                                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', marginBottom: '14px' }}>
+                                        {forgotErrorMsg}
+                                    </div>
+                                )}
+
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Username or Phone *</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        placeholder="e.g. owner or 9709701400" 
+                                        className="glass-input" 
+                                        value={forgotUsername} 
+                                        onChange={(e) => setForgotUsername(e.target.value)} 
+                                        style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                    <button type="button" onClick={() => setShowForgotPasswordModal(false)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '10px 16px', borderRadius: '10px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" disabled={forgotLoading} className="btn-premium" style={{ padding: '10px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(57,255,20,0.2), rgba(16,185,129,0.15))', border: '1px solid rgba(57,255,20,0.3)', color: '#39ff14', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                                        {forgotLoading ? 'Submitting...' : 'Submit Reset Request'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <style jsx>{`
                 @keyframes fadeInUp {
                     from {

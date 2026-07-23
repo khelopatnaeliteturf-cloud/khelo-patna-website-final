@@ -251,10 +251,10 @@ router.get('/auth/me', authenticateToken, async (req, res) => {
     }
 });
 
-// 5. Update staff permissions, role, and status (Protected)
+// 5. Update staff details, permissions, role, status, and reset password (Protected)
 router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'HR_MANAGER'), async (req, res) => {
     try {
-        const { role, permissions, status } = req.body;
+        const { name, phone, username, role, permissions, status, newPassword } = req.body;
         const staff = await Staff.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
         if (!staff) {
             return res.status(404).json({ error: 'Staff member not found.' });
@@ -270,9 +270,19 @@ router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', '
             }
         }
 
+        if (name !== undefined) staff.name = name;
+        if (phone !== undefined) staff.phone = phone;
+        if (username && username !== staff.username) {
+            const existing = await Staff.findOne({ tenantId: req.user.tenantId, username });
+            if (existing && String(existing._id) !== String(staff._id)) {
+                return res.status(400).json({ error: 'Username already in use by another account.' });
+            }
+            staff.username = username;
+        }
+
         if (role) {
             const allowedRoles = ASSIGNABLE_ROLES[req.user.role] || [];
-            if (!allowedRoles.includes(role) && req.user.role !== 'SUPER_ADMIN') {
+            if (!allowedRoles.includes(role) && req.user.role !== 'SUPER_ADMIN' && req.user.role !== 'ACADEMY_OWNER') {
                 return res.status(403).json({ error: `Your role (${req.user.role}) is not permitted to assign the ${role} role.` });
             }
             staff.role = role;
@@ -286,11 +296,18 @@ router.put('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN', '
             staff.status = status;
         }
 
+        if (newPassword) {
+            if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+                return res.status(400).json({ error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters long.` });
+            }
+            staff.password = newPassword;
+        }
+
         await staff.save();
-        res.json({ message: 'Staff member access controls updated successfully.', staff });
+        res.json({ message: 'User account details updated successfully.', staff });
     } catch (err) {
-        console.error('Error updating staff access control:', err);
-        res.status(500).json({ error: 'Server error updating staff permissions.' });
+        console.error('Error updating staff details:', err);
+        res.status(500).json({ error: 'Server error updating staff account.' });
     }
 });
 
@@ -317,6 +334,72 @@ router.delete('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN'
     } catch (err) {
         console.error('Error deleting staff member:', err);
         res.status(500).json({ error: 'Server error deleting staff member.' });
+    }
+});
+
+// 7. Change Own Password (Protected — Any authenticated user)
+router.post('/auth/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required.' });
+        }
+
+        if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+            return res.status(400).json({ error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters long.` });
+        }
+
+        const staff = await Staff.findById(req.user.id);
+        if (!staff) {
+            return res.status(404).json({ error: 'User profile not found.' });
+        }
+
+        const isMatch = await staff.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Incorrect current password.' });
+        }
+
+        staff.password = newPassword;
+        await staff.save();
+
+        res.json({ success: true, message: 'Password updated successfully.' });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({ error: 'Server error updating password.' });
+    }
+});
+
+// 8. Forgot Password Request (Public)
+router.post('/auth/forgot-password', authLimiter, async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) {
+            return res.status(400).json({ error: 'Username or phone contact is required.' });
+        }
+
+        const staff = await Staff.findOne({
+            $or: [
+                { username: username.trim() },
+                { phone: username.trim() }
+            ]
+        });
+
+        if (!staff) {
+            // Generic message for security
+            return res.json({ 
+                success: true, 
+                message: 'Password reset request recorded. If an account matches your details, please contact your Super Admin to receive reset credentials.' 
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Password reset request registered for user ${staff.username}. Please contact Super Admin 'owner' to complete credential reset.`,
+            username: staff.username
+        });
+    } catch (err) {
+        console.error('Error in forgot-password request:', err);
+        res.status(500).json({ error: 'Server error processing password reset request.' });
     }
 });
 

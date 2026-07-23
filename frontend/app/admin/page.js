@@ -150,13 +150,56 @@ export default function AdminDashboard() {
         bookingId: ''
     });
 
-    // Staff Accounts
+    // Staff Accounts & Change Password
     const [newStaff, setNewStaff] = useState({
         username: '',
         password: '',
         role: 'RECEPTIONIST'
     });
     const [staffList, setStaffList] = useState([]);
+    
+    // User Profile Menu & Change Password Modal
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [changePasswordForm, setChangePasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [changingPassword, setChangingPassword] = useState(false);
+
+    const handleChangePasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (changePasswordForm.newPassword !== changePasswordForm.confirmPassword) {
+            setErrorMessage('New password and confirm password do not match.');
+            return;
+        }
+
+        setChangingPassword(true);
+        setErrorMessage('');
+        setSuccessMessage('');
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+                method: 'POST',
+                headers: getHeaders(),
+                credentials: 'include',
+                body: JSON.stringify({
+                    currentPassword: changePasswordForm.currentPassword,
+                    newPassword: changePasswordForm.newPassword
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setSuccessMessage('Your password has been updated successfully.');
+                setShowChangePasswordModal(false);
+                setChangePasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            } else {
+                setErrorMessage(data.error || 'Failed to change password.');
+            }
+        } catch (err) {
+            console.error('Error changing password:', err);
+            setErrorMessage('Network error changing password.');
+        } finally {
+            setChangingPassword(false);
+        }
+    };
 
     // Bookings
     const [bookingsLog, setBookingsLog] = useState([]);
@@ -6092,7 +6135,11 @@ export default function AdminDashboard() {
                             </span>
                         </button>
 
-                        <div className="user-profile-pill">
+                        <div 
+                            className="user-profile-pill" 
+                            style={{ cursor: 'pointer', position: 'relative' }} 
+                            onClick={() => setShowUserMenu(!showUserMenu)}
+                        >
                             <div className="user-avatar">
                                 {username ? username.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'AD'}
                             </div>
@@ -6101,6 +6148,40 @@ export default function AdminDashboard() {
                                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{ROLE_LABELS[role] || role || 'Staff'}</div>
                             </div>
                             <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--text-muted)' }}>expand_more</span>
+
+                            {showUserMenu && (
+                                <div 
+                                    style={{ 
+                                        position: 'absolute', 
+                                        top: 'calc(100% + 8px)', 
+                                        right: 0, 
+                                        background: 'var(--card-bg, #0A1510)', 
+                                        border: '1px solid var(--border-color)', 
+                                        borderRadius: '12px', 
+                                        padding: '6px', 
+                                        boxShadow: 'var(--shadow-lg)', 
+                                        zIndex: 1000, 
+                                        minWidth: '190px' 
+                                    }}
+                                >
+                                    <button 
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setShowChangePasswordModal(true); setShowUserMenu(false); }}
+                                        style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-main)', padding: '10px 12px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }}
+                                    >
+                                        <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>vpn_key</span>
+                                        Change Password
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                                        style={{ width: '100%', background: 'transparent', border: 'none', color: '#EF4444', padding: '10px 12px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }}
+                                    >
+                                        <span className="material-icons-outlined" style={{ fontSize: '18px' }}>logout</span>
+                                        Sign Out
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -6328,6 +6409,78 @@ export default function AdminDashboard() {
 
             {/* Offline Turf Booking Modal */}
             {showOfflineBookingModal && renderOfflineBookingModal()}
+
+            {/* Change Password Modal */}
+            {showChangePasswordModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 8, 6, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                    <div style={{ background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', width: '95%', maxWidth: '450px', boxShadow: 'var(--shadow-lg)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span className="material-icons-outlined">vpn_key</span>
+                                Change My Password
+                            </h4>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowChangePasswordModal(false)} style={{ filter: 'var(--invert-icon)', opacity: 0.8 }}></button>
+                        </div>
+
+                        <form onSubmit={handleChangePasswordSubmit} className="d-flex flex-column gap-3">
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>Current Password *</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    placeholder="Enter your current password" 
+                                    className="input-premium w-100" 
+                                    value={changePasswordForm.currentPassword} 
+                                    onChange={(e) => setChangePasswordForm({...changePasswordForm, currentPassword: e.target.value})} 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>New Password *</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    placeholder="Enter new password (min 8 chars)" 
+                                    className="input-premium w-100" 
+                                    value={changePasswordForm.newPassword} 
+                                    onChange={(e) => setChangePasswordForm({...changePasswordForm, newPassword: e.target.value})} 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="d-block mb-1" style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>Confirm New Password *</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    placeholder="Re-enter new password" 
+                                    className="input-premium w-100" 
+                                    value={changePasswordForm.confirmPassword} 
+                                    onChange={(e) => setChangePasswordForm({...changePasswordForm, confirmPassword: e.target.value})} 
+                                />
+                            </div>
+
+                            <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2" style={{ borderColor: 'var(--border-color)' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowChangePasswordModal(false)} 
+                                    className="btn btn-secondary py-2 px-3" 
+                                    style={{ fontSize: '0.8rem', borderRadius: '8px' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={changingPassword}
+                                    className="btn-primary-stripe text-white py-2 px-4" 
+                                    style={{ background: 'var(--success)', border: '1px solid var(--success)', fontSize: '0.8rem', borderRadius: '8px', fontWeight: 700 }}
+                                >
+                                    {changingPassword ? 'Updating...' : 'Update Password'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* GungunERP Inspired Launcher Command Center */}
             <Launcher 
