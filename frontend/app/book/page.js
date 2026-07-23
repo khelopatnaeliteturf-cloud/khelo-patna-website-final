@@ -45,6 +45,25 @@ export default function BookPage() {
     const [payAdvanceOnly, setPayAdvanceOnly] = useState(false);
     const [paymentGateway, setPaymentGateway] = useState('cashfree'); // 'cashfree' | 'phonepe'
     const [paymentFailedInfo, setPaymentFailedInfo] = useState(null);
+    const [liveWeatherData, setLiveWeatherData] = useState(null);
+
+    // Fetch Live Real-Time Open-Meteo Weather for Kumhrar, Sandalpur, Patna (Lat: 25.60, Long: 85.18)
+    useEffect(() => {
+        const fetchPatnaWeather = async () => {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.60&longitude=85.18&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FKolkata');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.current) {
+                        setLiveWeatherData(data.current);
+                    }
+                }
+            } catch (err) {
+                console.log('Error fetching live Open-Meteo weather:', err);
+            }
+        };
+        fetchPatnaWeather();
+    }, []);
 
     // Trigger slot fetch on sport/date change and handle URL query params on initial mount
     useEffect(() => {
@@ -180,50 +199,71 @@ export default function BookPage() {
         const firstSlot = selectedSlotValues[0];
         const hour = parseInt(String(firstSlot).split(':')[0], 10) || 19;
 
+        const temp = liveWeatherData ? `${Math.round(liveWeatherData.temperature_2m)}°C` : '27°C';
+        const feelsLike = liveWeatherData ? `${Math.round(liveWeatherData.apparent_temperature)}°C` : '33°C';
+        const humidity = liveWeatherData ? `${liveWeatherData.relative_humidity_2m}%` : '65%';
+        const wind = liveWeatherData ? `${Math.round(liveWeatherData.wind_speed_10m)} km/h` : '9 km/h';
+
+        const wCode = liveWeatherData ? liveWeatherData.weather_code : 0;
+        let cond = 'Clear Playing Conditions';
+        let icon = '☀️';
+
+        if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(wCode)) {
+            cond = 'Rainy Conditions · Free Reschedule Active';
+            icon = '🌧️';
+        } else if ([95, 96, 99].includes(wCode)) {
+            cond = 'Thunderstorm Alert · Covered Arena Active';
+            icon = '⛈️';
+        } else if ([1, 2, 3].includes(wCode)) {
+            cond = 'Partly Cloudy · Great Turf Conditions';
+            icon = '🌤️';
+        }
+
         if (hour >= 19 || hour <= 4) {
+            if (icon === '☀️') icon = '🌙';
             return {
-                icon: '🌙',
-                temp: '28°C',
-                feelsLike: '29°C',
-                humidity: '64%',
-                wind: '7 km/h',
-                condition: 'Cool Night Air · LED Floodlights Active',
-                bg: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%)',
+                icon,
+                temp,
+                feelsLike,
+                humidity,
+                wind,
+                condition: cond.replace('Clear Playing Conditions', 'Cool Night Air · LED Floodlights On'),
+                bg: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
                 border: 'rgba(99, 102, 241, 0.4)',
                 accent: '#818CF8'
             };
         } else if (hour >= 5 && hour <= 11) {
             return {
-                icon: '🌅',
-                temp: '26°C',
-                feelsLike: '27°C',
-                humidity: '70%',
-                wind: '10 km/h',
-                condition: 'Fresh Morning Breeze · Crisp Turf Surface',
+                icon: icon === '☀️' ? '🌅' : icon,
+                temp,
+                feelsLike,
+                humidity,
+                wind,
+                condition: cond.replace('Clear Playing Conditions', 'Fresh Morning Breeze · Crisp Bounce'),
                 bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 78, 59, 0.3) 100%)',
                 border: 'rgba(16, 185, 129, 0.4)',
                 accent: '#34D399'
             };
         } else if (hour >= 12 && hour <= 16) {
             return {
-                icon: '☀️',
-                temp: '34°C',
-                feelsLike: '37°C',
-                humidity: '48%',
-                wind: '12 km/h',
-                condition: 'Sunny Afternoon · Shade Canopy Available',
+                icon,
+                temp,
+                feelsLike,
+                humidity,
+                wind,
+                condition: cond,
                 bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(180, 83, 9, 0.3) 100%)',
                 border: 'rgba(245, 158, 11, 0.4)',
                 accent: '#FBBF24'
             };
         } else {
             return {
-                icon: '🌆',
-                temp: '30°C',
-                feelsLike: '32°C',
-                humidity: '55%',
-                wind: '9 km/h',
-                condition: 'Pleasant Sunset · Perfect Turf Bounce',
+                icon: icon === '☀️' ? '🌆' : icon,
+                temp,
+                feelsLike,
+                humidity,
+                wind,
+                condition: cond.replace('Clear Playing Conditions', 'Pleasant Sunset · Ideal Turf Climate'),
                 bg: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(157, 23, 77, 0.3) 100%)',
                 border: 'rgba(236, 72, 153, 0.4)',
                 accent: '#F472B6'
