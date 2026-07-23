@@ -237,15 +237,21 @@ async function initWhatsApp() {
 
                 console.log(`[Baileys Microservice] Incoming chat from ${phone}: "${text}". Forwarding to main site webhook...`);
                 try {
-                    const targetWebhook = `${MAIN_BACKEND_URL.replace(/\/+$/, '')}/api/reports/whatsapp/webhook`;
-                    await axios.post(targetWebhook, {
-                        phone,
-                        text,
-                        secret: WA_API_SECRET
-                    }, {
-                        headers: { 'X-WA-Secret': WA_API_SECRET },
-                        timeout: 10000
-                    });
+                    const baseUrl = MAIN_BACKEND_URL.replace(/\/+$/, '');
+                    const primaryWebhook = `${baseUrl}/api/whatsapp/webhook`;
+                    const payload = { phone, text, secret: WA_API_SECRET };
+                    const config = { headers: { 'X-WA-Secret': WA_API_SECRET }, timeout: 10000 };
+
+                    try {
+                        await axios.post(primaryWebhook, payload, config);
+                    } catch (primaryErr) {
+                        if (primaryErr.response?.status === 404) {
+                            const fallbackWebhook = `${baseUrl}/api/reports/whatsapp/webhook`;
+                            await axios.post(fallbackWebhook, payload, config);
+                        } else {
+                            throw primaryErr;
+                        }
+                    }
                 } catch (err) {
                     console.error('Error forwarding incoming chat webhook:', err.message);
                 }

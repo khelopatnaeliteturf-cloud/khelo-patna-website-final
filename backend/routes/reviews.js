@@ -309,63 +309,86 @@ router.get('/admin/maps-reviews', authenticateToken, authorizeRoles('SUPER_ADMIN
 // GET /api/admin/maps-reviews/stats (Fetch aggregated statistics)
 router.get('/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), async (req, res) => {
     try {
-        const total = await MapsReviewUsed.countDocuments();
+        let total = 0;
+        try {
+            total = await MapsReviewUsed.countDocuments();
+        } catch (e) {
+            console.warn('MapsReviewUsed count error:', e.message);
+        }
         
-        // Aggregate Rating distribution
-        const ratingsRes = await MapsReviewUsed.aggregate([
-            { $group: { _id: "$rating", count: { $sum: 1 } } }
-        ]);
         const ratings = { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 };
-        ratingsRes.forEach(r => {
-            if (r._id) ratings[String(r._id)] = r.count;
-        });
+        try {
+            const ratingsRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$rating", count: { $sum: 1 } } }
+            ]);
+            ratingsRes.forEach(r => {
+                if (r._id) ratings[String(r._id)] = r.count;
+            });
+        } catch (e) {
+            console.warn('Ratings aggregate warning:', e.message);
+        }
 
-        // Aggregate Device distribution
-        const devicesRes = await MapsReviewUsed.aggregate([
-            { $group: { _id: "$device", count: { $sum: 1 } } }
-        ]);
         const devices = { "Desktop": 0, "Mobile": 0, "Tablet": 0 };
-        devicesRes.forEach(d => {
-            if (d._id) devices[d._id] = d.count;
-        });
+        try {
+            const devicesRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$device", count: { $sum: 1 } } }
+            ]);
+            devicesRes.forEach(d => {
+                if (d._id) devices[d._id] = d.count;
+            });
+        } catch (e) {
+            console.warn('Devices aggregate warning:', e.message);
+        }
 
-        // Aggregate OS distribution
-        const osRes = await MapsReviewUsed.aggregate([
-            { $group: { _id: "$os", count: { $sum: 1 } } }
-        ]);
         const os = {};
-        osRes.forEach(o => {
-            if (o._id) os[o._id] = o.count;
-        });
+        try {
+            const osRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$os", count: { $sum: 1 } } }
+            ]);
+            osRes.forEach(o => {
+                if (o._id) os[o._id] = o.count;
+            });
+        } catch (e) {
+            console.warn('OS aggregate warning:', e.message);
+        }
 
-        // Aggregate Browser distribution
-        const browserRes = await MapsReviewUsed.aggregate([
-            { $group: { _id: "$browser", count: { $sum: 1 } } }
-        ]);
         const browser = {};
-        browserRes.forEach(b => {
-            if (b._id) browser[b._id] = b.count;
-        });
+        try {
+            const browserRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$browser", count: { $sum: 1 } } }
+            ]);
+            browserRes.forEach(b => {
+                if (b._id) browser[b._id] = b.count;
+            });
+        } catch (e) {
+            console.warn('Browser aggregate warning:', e.message);
+        }
 
-        // Top Reviewer IPs
-        const ipsRes = await MapsReviewUsed.aggregate([
-            { $group: { _id: "$ip", count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-            { $limit: 10 }
-        ]);
-        const top_ips = ipsRes.map(ip => ({ ip: ip._id, count: ip.count }));
+        const topIps = [];
+        try {
+            const ipsRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$ip", count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 5 }
+            ]);
+            ipsRes.forEach(item => {
+                if (item._id) topIps.push({ ip: item._id, count: item.count });
+            });
+        } catch (e) {
+            console.warn('IP aggregate warning:', e.message);
+        }
 
         res.json({
-            total,
+            totalReviews: total,
             ratings,
             devices,
             os,
             browser,
-            top_ips
+            topIps
         });
     } catch (err) {
         console.error('Error computing maps reviews stats:', err);
-        res.status(500).json({ error: 'Server error compiling stats.' });
+        res.status(500).json({ error: 'Server error calculating review statistics.' });
     }
 });
 
