@@ -545,6 +545,15 @@ export default function AdminDashboard() {
         return (currentHour >= 18 || currentHour < 6) ? 'dark' : 'light';
     };
 
+    const toggleTheme = () => {
+        setTheme(prev => {
+            const nextTheme = prev === 'light' ? 'dark' : 'light';
+            localStorage.setItem('erp_theme', nextTheme);
+            localStorage.setItem('erp_theme_manual', 'true');
+            return nextTheme;
+        });
+    };
+
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedRole = localStorage.getItem('user_role');
