@@ -1756,3 +1756,47 @@ section[data-animate] {
     }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN DASHBOARD MOBILE RESPONSIVE LAYOUT FIXES
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .dashboard-kpi-grid,
+    .admin-stat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .dashboard-bento-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .card-premium {
+        padding: 14px !important;
+    }
+
+    .card-premium div[style*="font-size: 1.35rem"] {
+        font-size: 1.15rem !important;
+    }
+
+    .table-container,
+    div[style*="overflowX: 'auto'"],
+    div[style*="overflow-x: auto"] {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-topbar-styled {
+        padding: 10px 12px !important;
+        gap: 8px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-kpi-grid,
+    .admin-stat-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+

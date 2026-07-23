@@ -190,7 +190,7 @@ export default function TurfTab(props) {
                     </div>
 
                     {/* Stats Cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+                    <div className="admin-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
                         {[
                             { label: 'Total Revenue', value: formatINR(totalRevenue), icon: 'account_balance_wallet', gradient: 'var(--gradient-1)', sub: `From ${totalBookingsCount} bookings` },
                             { label: 'Total Bookings', value: totalBookingsCount, icon: 'calendar_month', gradient: 'var(--gradient-4)', sub: `${paidCount} paid · ${pendingCount} pending` },
@@ -203,9 +203,9 @@ export default function TurfTab(props) {
                                     <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: s.gradient, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                                         <span className="material-icons-outlined" style={{ fontSize: '19px' }}>{s.icon}</span>
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>{s.label}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</div>
                                 </div>
-                                <div style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '2px' }}>{s.value}</div>
+                                <div style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '2px', wordBreak: 'break-word' }}>{s.value}</div>
                                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{s.sub}</div>
                             </div>
                         ))}
