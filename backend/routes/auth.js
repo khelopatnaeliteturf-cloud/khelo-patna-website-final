@@ -484,25 +484,30 @@ router.post('/auth/passkey/register-options', authenticateToken, async (req, res
         const challenge = crypto.randomBytes(32).toString('base64url');
         passkeyChallenges.set(String(req.user.id), challenge);
 
-        const hostname = req.hostname && req.hostname !== 'localhost' ? req.hostname : 'khelopatna.in';
+        const hostHeader = req.get('x-forwarded-host') || req.get('host') || req.hostname || '';
+        let rpId = 'khelopatna.in';
+        if (hostHeader.includes('localhost')) {
+            rpId = 'localhost';
+        } else if (hostHeader.includes('onrender.com')) {
+            rpId = hostHeader.split(':')[0];
+        }
 
         res.json({
             success: true,
             options: {
                 challenge,
-                rp: { name: 'KheloPatna Elite Turf', id: hostname },
+                rp: { name: 'KheloPatna Elite Turf', id: rpId },
                 user: {
                     id: Buffer.from(String(staff._id)).toString('base64url'),
                     name: staff.username,
-                    displayName: staff.username
+                    displayName: staff.name || staff.username
                 },
                 pubKeyCredParams: [
                     { alg: -7, type: 'public-key' },
                     { alg: -257, type: 'public-key' }
                 ],
                 authenticatorSelection: {
-                    userVerification: 'preferred',
-                    residentKey: 'required'
+                    userVerification: 'preferred'
                 },
                 timeout: 60000
             }

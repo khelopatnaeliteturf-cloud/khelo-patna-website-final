@@ -441,12 +441,19 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                     const data = await res.json();
                                     if (!res.ok) throw new Error(data.error || 'Failed to initialize Passkey');
 
-                                    const challengeBuffer = Uint8Array.from(atob(data.options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-                                    const userIdBuffer = Uint8Array.from(data.options.user.id, c => c.charCodeAt(0));
+                                    const rawChallenge = data.options.challenge.replace(/-/g, '+').replace(/_/g, '/');
+                                    const pad = (4 - (rawChallenge.length % 4)) % 4;
+                                    const base64Challenge = rawChallenge + '='.repeat(pad);
+                                    const challengeBuffer = Uint8Array.from(atob(base64Challenge), c => c.charCodeAt(0));
+                                    const userIdBuffer = new TextEncoder().encode(data.options.user.name || 'admin');
 
                                     const credential = await navigator.credentials.create({
                                         publicKey: {
                                             ...data.options,
+                                            rp: {
+                                                ...data.options.rp,
+                                                id: window.location.hostname.includes('localhost') ? 'localhost' : window.location.hostname.replace(/^www\./, '')
+                                            },
                                             challenge: challengeBuffer,
                                             user: {
                                                 ...data.options.user,
