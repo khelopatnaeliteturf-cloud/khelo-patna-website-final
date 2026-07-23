@@ -1105,25 +1105,6 @@ export default function BookPage() {
                             </div>
                         )}
 
-                        {/* Error Alert */}
-                        {errorMessage && (
-                            <div className="glass-panel animate-fade-in" style={{
-                                padding: '16px 20px', marginBottom: '24px',
-                                background: 'rgba(239, 68, 68, 0.08)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
-                                display: 'flex', alignItems: 'center', gap: '12px'
-                            }}>
-                                <div style={{
-                                    width: '32px', height: '32px', borderRadius: '50%',
-                                    background: 'rgba(239, 68, 68, 0.15)', display: 'flex',
-                                    alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                                }}>
-                                    <span style={{ color: '#fca5a5', fontSize: '1rem' }}>✕</span>
-                                </div>
-                                <span style={{ color: '#fca5a5', fontFamily: 'Inter', fontSize: '0.88rem' }}>{errorMessage}</span>
-                            </div>
-                        )}
-
                         {/* Controls Row: Sport + Date */}
                         <div className="controls-grid animate-fade-in-delay-1">
                             {/* Sport Selection */}
@@ -1182,40 +1163,6 @@ export default function BookPage() {
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Inline Slot Error Alert */}
-                            {errorMessage && (
-                                <div className="glass-panel animate-fade-in" style={{
-                                    padding: '14px 18px',
-                                    marginBottom: '20px',
-                                    background: 'rgba(239, 68, 68, 0.12)',
-                                    border: '1px solid rgba(239, 68, 68, 0.4)',
-                                    borderRadius: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justify: 'space-between',
-                                    gap: '12px'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                                        <span style={{ color: '#FCA5A5', fontSize: '0.86rem', fontWeight: 600, lineHeight: 1.4 }}>
-                                            {errorMessage}
-                                        </span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setErrorMessage('')}
-                                        style={{
-                                            background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
-                                            width: '24px', height: '24px', borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer', fontSize: '0.75rem', flexShrink: 0
-                                        }}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            )}
 
                             {loading ? (
                                 <div className="logo-loader-wrapper" style={{ padding: '36px 0' }}>
