@@ -168,23 +168,19 @@ _Reply *Menu* to return to the main menu._`;
  * Supports both local Baileys socket events and external microservice webhooks.
  */
 async function handleIncomingMessage(sockOrPayload, m) {
-    if (!getBotEnabled()) {
-        console.log('🤖 [WhatsApp Bot] Bot is currently DISABLED by Admin toggle. Skipping auto-reply.');
-        return;
-    }
-
     let phone = '';
     let text = '';
 
     if (sockOrPayload && typeof sockOrPayload === 'object' && sockOrPayload.phone && sockOrPayload.text) {
-        // External microservice webhook payload
-        phone = String(sockOrPayload.phone).replace(/\D/g, '');
+        // External microservice webhook payload — preserve full JID if present, or clean phone number
+        const rawPhone = String(sockOrPayload.phone).trim();
+        phone = rawPhone.includes('@') ? rawPhone : rawPhone.replace(/\D/g, '');
         text = String(sockOrPayload.text).trim();
     } else if (m && m.key) {
         // Local Baileys socket message
         const phoneJid = m.key.remoteJid;
         if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') return;
-        phone = phoneJid.split('@')[0];
+        phone = phoneJid; // Keep full JID (e.g. 197753057391@lid or 917366963737@s.whatsapp.net)
         text = getMessageText(m).trim();
     }
 
@@ -228,9 +224,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
         };
     }
 
-    const lowerText = text.toLowerCase();
-
-    // Dot Commands (. / .. / ...) for Staff Chat Control
+    // Dot Commands (. / .. / ...) for Staff Chat Control — ALWAYS active even if global bot toggle is paused
     if (text === '.') {
         const pauseUntil = Date.now() + (24 * 60 * 60 * 1000); // 24 Hours
         session.bookingData = session.bookingData || {};
@@ -258,6 +252,14 @@ async function handleIncomingMessage(sockOrPayload, m) {
         await sendWhatsAppMessage(phone, '▶️ *AI Bot Access Retained & Re-enabled* for this chat!');
         return;
     }
+
+    // Check if global AI Bot toggle is turned off from Admin Dashboard
+    if (!getBotEnabled()) {
+        console.log('🤖 [WhatsApp Bot] Bot is currently DISABLED by Admin toggle. Skipping auto-reply.');
+        return;
+    }
+
+    const lowerText = text.toLowerCase();
 
     // Check if bot auto-reply is currently paused for this individual chat
     if (session.bookingData?.botPausedUntil && Date.now() < session.bookingData.botPausedUntil) {

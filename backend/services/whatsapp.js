@@ -453,16 +453,18 @@ async function sendWhatsAppMessage(toPhone, text) {
             errMessage = `Client not connected (Status: ${connectionStatus})`;
         } else {
             try {
-                // Sanitize phone number: remove non-digits
-                let cleanPhone = toPhone.replace(/\D/g, '');
-                // If it doesn't start with country code (e.g. starts with 10 digits in India), append country code "91"
-                if (cleanPhone.length === 10) {
-                    cleanPhone = '91' + cleanPhone;
+                // Support full JIDs (@lid or @s.whatsapp.net) and raw 10-digit Indian numbers
+                let jid = toPhone.trim();
+                if (!jid.includes('@')) {
+                    let cleanPhone = toPhone.replace(/\D/g, '');
+                    if (cleanPhone.length === 10) {
+                        cleanPhone = '91' + cleanPhone;
+                    }
+                    jid = `${cleanPhone}@s.whatsapp.net`;
                 }
 
-                const jid = `${cleanPhone}@s.whatsapp.net`;
                 await sock.sendMessage(jid, { text: text });
-                console.log(`WhatsApp message successfully sent to ${cleanPhone}`);
+                console.log(`WhatsApp message successfully sent to JID ${jid}`);
                 success = true;
             } catch (err) {
                 console.error(`Failed to send WhatsApp message to ${toPhone}:`, err);
