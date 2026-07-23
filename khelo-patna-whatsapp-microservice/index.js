@@ -154,11 +154,16 @@ async function initWhatsApp() {
         const DisconnectReason = baileys.DisconnectReason;
         const Browsers = baileys.Browsers || baileys.default?.Browsers;
 
+        const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307], isLatest: false }));
+        console.log(`Using WhatsApp Web Version: ${Array.isArray(version) ? version.join('.') : version} (isLatest: ${isLatest})`);
+
         sock = makeWASocket({
+            version,
             logger: pino({ level: 'silent' }),
             printQRInTerminal: false,
             auth: state,
-            browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146']
+            browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146'],
+            syncFullHistory: false
         });
 
         sock.ev.on('connection.update', async (update) => {
