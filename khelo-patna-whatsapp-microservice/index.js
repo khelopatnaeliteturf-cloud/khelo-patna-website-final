@@ -226,10 +226,10 @@ async function initWhatsApp() {
             for (const message of m.messages) {
                 if (message.key.fromMe) continue;
 
-                const phoneJid = message.key.remoteJid;
-                if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') continue;
+                const rawJid = message.key.remoteJid;
+                if (!rawJid || rawJid.endsWith('@g.us') || rawJid === 'status@broadcast') continue;
 
-                const phone = phoneJid.split('@')[0];
+                const phone = rawJid; // Keep full JID for accurate routing (handles @lid and @s.whatsapp.net)
                 const msg = message.message?.ephemeralMessage?.message || message.message?.viewOnceMessage?.message || message.message;
                 const text = msg.conversation || msg.extendedTextMessage?.text || msg.imageMessage?.caption || '';
 
@@ -259,13 +259,11 @@ async function initWhatsApp() {
         });
 
     } catch (err) {
-        console.error('Fatal Baileys Error:', err.message);
-        connectionStatus = 'DISCONNECTED';
-        setTimeout(initWhatsApp, 10000);
+        console.error('Error in WhatsApp initialization:', err);
     }
 }
 
-// Middleware: Verify secret header for endpoint security
+// Middleware to authenticate microservice API requests
 function authSecret(req, res, next) {
     if (!WA_API_SECRET) return next();
     const providedSecret = req.headers['x-wa-secret'] || req.body.secret || req.query.secret;
@@ -298,13 +296,23 @@ app.post('/send-text', authSecret, async (req, res) => {
     }
 
     try {
-        let cleanPhone = phone.replace(/\D/g, '');
-        if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
-        const jid = `${cleanPhone}@s.whatsapp.net`;
+        let jid;
+        if (String(phone).includes('@')) {
+            jid = String(phone).trim();
+        } else {
+            let cleanPhone = String(phone).replace(/\D/g, '');
+            if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+            
+            if (cleanPhone.length >= 11 && cleanPhone.startsWith('19')) {
+                jid = `${cleanPhone}@lid`;
+            } else {
+                jid = `${cleanPhone}@s.whatsapp.net`;
+            }
+        }
 
         await sock.sendMessage(jid, { text: message });
-        console.log(`[Baileys Microservice] Sent text to ${cleanPhone}`);
-        res.json({ success: true, recipient: cleanPhone });
+        console.log(`[Baileys Microservice] Sent text to ${jid}`);
+        res.json({ success: true, recipient: jid });
     } catch (err) {
         console.error('Error sending message:', err);
         res.status(500).json({ error: err.message || 'Failed to send WhatsApp message' });

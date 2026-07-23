@@ -420,16 +420,18 @@ async function sendWhatsAppMessage(toPhone, text) {
 
     if (process.env.WA_SERVICE_URL) {
         try {
-            // Sanitize phone number: remove non-digits
-            let cleanPhone = toPhone.replace(/\D/g, '');
-            if (cleanPhone.length === 10) {
-                cleanPhone = '91' + cleanPhone;
+            // Preserve raw JID (e.g. 197753057391@lid or 917366963737@s.whatsapp.net) for exact Baileys routing
+            let targetPhone = String(toPhone).trim();
+            if (!targetPhone.includes('@')) {
+                let clean = targetPhone.replace(/\D/g, '');
+                if (clean.length === 10) clean = '91' + clean;
+                targetPhone = clean;
             }
 
-            console.log(`[WhatsApp Service] Sending message to ${cleanPhone} via microservice...`);
+            console.log(`[WhatsApp Service] Sending message to ${targetPhone} via microservice...`);
             const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/send-text`;
             const response = await axios.post(url, {
-                phone: cleanPhone,
+                phone: targetPhone,
                 message: text
             }, {
                 headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
