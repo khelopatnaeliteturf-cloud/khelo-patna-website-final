@@ -107,14 +107,12 @@ async function sendBookingNotifications(booking) {
     const advancePaid = Number(booking.paidAmount || 0);
     const balanceDue = Math.max(0, totalAmount - discountAmount - advancePaid);
     const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
-    const bookedByText = booking.bookedBy || (booking.paymentMethod === 'offline' ? 'Admin Staff' : `${booking.customerName} (Online)`);
 
     const waText = `⚽ *Booking Confirmation* ⚽
 
 Dear ${booking.customerName}, your turf booking is confirmed!
 
 *Booking Summary*:
-*   Booked By: ${bookedByText}
 *   Sport: ${booking.sport.toUpperCase()}
 *   Date: ${booking.date}
 *   Timing: ${formattedTiming}
@@ -1223,7 +1221,6 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
 Dear ${customerName}, your turf booking has been initiated.
 
 *Booking Summary*:
-*   Booked By: Staff (${staffUser})
 *   Sport: ${sport.toUpperCase()}
 *   Date: ${date}
 *   Timing: ${formattedTiming}
