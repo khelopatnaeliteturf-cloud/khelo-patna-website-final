@@ -369,7 +369,10 @@ router.post('/auth/change-password', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Forgot Password Request (Public)
+const { sendWhatsAppMessage } = require('../services/whatsapp');
+const otpStore = new Map(); // In-memory store: username -> { otp, expiresAt, phone }
+
+// 8. Forgot Password OTP Request via WhatsApp (Public)
 router.post('/auth/forgot-password', authLimiter, async (req, res) => {
     try {
         const { username } = req.body;
@@ -377,29 +380,94 @@ router.post('/auth/forgot-password', authLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Username or phone contact is required.' });
         }
 
+        const cleanInput = username.trim();
         const staff = await Staff.findOne({
             $or: [
-                { username: username.trim() },
-                { phone: username.trim() }
+                { username: cleanInput },
+                { phone: cleanInput }
             ]
         });
 
         if (!staff) {
-            // Generic message for security
-            return res.json({ 
-                success: true, 
-                message: 'Password reset request recorded. If an account matches your details, please contact your Super Admin to receive reset credentials.' 
-            });
+            return res.status(404).json({ error: 'No account found matching this username or phone number.' });
         }
+
+        const targetPhone = staff.phone || (cleanInput.match(/^\d{10}$/) ? cleanInput : null);
+        if (!targetPhone) {
+            return res.status(400).json({ error: `User account '${staff.username}' has no phone contact saved. Please contact Super Admin 'owner'.` });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 mins
+
+        otpStore.set(staff.username, { otp, expiresAt, phone: targetPhone });
+
+        // Send via WhatsApp
+        const waMsg = `🔑 *KheloPatna Security Alert*\n\nYour Admin Password Reset OTP is: *${otp}*\n\nThis OTP is valid for 10 minutes. Please do not share it with anyone.`;
+        const sent = await sendWhatsAppMessage(targetPhone, waMsg);
+
+        // Mask phone for privacy (e.g. 97******00)
+        const maskedPhone = targetPhone.length >= 10 
+            ? targetPhone.slice(0, 2) + '******' + targetPhone.slice(-2) 
+            : targetPhone;
 
         res.json({
             success: true,
-            message: `Password reset request registered for user ${staff.username}. Please contact Super Admin 'owner' to complete credential reset.`,
-            username: staff.username
+            otpSent: true,
+            username: staff.username,
+            maskedPhone,
+            message: sent 
+                ? `6-digit OTP sent to WhatsApp number (${maskedPhone}).` 
+                : `OTP generated for ${staff.username}. Check WhatsApp or contact Super Admin.`
         });
     } catch (err) {
         console.error('Error in forgot-password request:', err);
-        res.status(500).json({ error: 'Server error processing password reset request.' });
+        res.status(500).json({ error: 'Server error processing OTP request.' });
+    }
+});
+
+// 9. Verify WhatsApp OTP & Reset Password (Public)
+router.post('/auth/verify-reset-otp', authLimiter, async (req, res) => {
+    try {
+        const { username, otp, newPassword } = req.body;
+        if (!username || !otp || !newPassword) {
+            return res.status(400).json({ error: 'Username, OTP, and new password are required.' });
+        }
+
+        if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+            return res.status(400).json({ error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters long.` });
+        }
+
+        const record = otpStore.get(username);
+        if (!record) {
+            return res.status(400).json({ error: 'No active OTP request found for this account. Please request a new OTP.' });
+        }
+
+        if (Date.now() > record.expiresAt) {
+            otpStore.delete(username);
+            return res.status(400).json({ error: 'OTP has expired. Please request a new OTP.' });
+        }
+
+        if (record.otp !== String(otp).trim()) {
+            return res.status(400).json({ error: 'Invalid 6-digit OTP code. Please check your WhatsApp.' });
+        }
+
+        const staff = await Staff.findOne({ username });
+        if (!staff) {
+            return res.status(404).json({ error: 'Staff account not found.' });
+        }
+
+        staff.password = newPassword;
+        await staff.save();
+
+        // Clear OTP after successful use
+        otpStore.delete(username);
+
+        res.json({ success: true, message: 'Password reset successfully! You can now log in.' });
+    } catch (err) {
+        console.error('Error verifying OTP:', err);
+        res.status(500).json({ error: 'Server error resetting password.' });
     }
 });
 

@@ -54,14 +54,20 @@ export default function LoginPage() {
     const [firstTimeBootstrap, setFirstTimeBootstrap] = useState(false);
     const [bootstrapRole, setBootstrapRole] = useState('SUPER_ADMIN');
 
-    // Forgot Password States
+    // Forgot Password & WhatsApp OTP States
     const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+    const [forgotStep, setForgotStep] = useState(1); // 1 = Request OTP, 2 = Verify OTP & Reset Password
     const [forgotUsername, setForgotUsername] = useState('');
+    const [targetUsername, setTargetUsername] = useState('');
+    const [maskedPhone, setMaskedPhone] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [forgotNewPassword, setForgotNewPassword] = useState('');
+    const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
     const [forgotLoading, setForgotLoading] = useState(false);
     const [forgotSuccessMsg, setForgotSuccessMsg] = useState('');
     const [forgotErrorMsg, setForgotErrorMsg] = useState('');
 
-    const handleForgotPasswordSubmit = async (e) => {
+    const handleRequestOtpSubmit = async (e) => {
         e.preventDefault();
         setForgotLoading(true);
         setForgotSuccessMsg('');
@@ -76,12 +82,57 @@ export default function LoginPage() {
             const data = await parseJsonSafe(res);
 
             if (!res.ok) {
-                throw new Error(data.error || 'Failed to submit password reset request.');
+                throw new Error(data.error || 'Failed to submit OTP request.');
             }
 
-            setForgotSuccessMsg(data.message || 'Password reset request registered successfully.');
+            setTargetUsername(data.username || forgotUsername);
+            setMaskedPhone(data.maskedPhone || '');
+            setForgotStep(2);
+            setForgotSuccessMsg(data.message || 'OTP sent successfully to your WhatsApp!');
         } catch (err) {
-            setForgotErrorMsg(err.message || 'Error processing request.');
+            setForgotErrorMsg(err.message || 'Error requesting OTP.');
+        } finally {
+            setForgotLoading(false);
+        }
+    };
+
+    const handleVerifyOtpSubmit = async (e) => {
+        e.preventDefault();
+        if (forgotNewPassword !== forgotConfirmPassword) {
+            setForgotErrorMsg('New password and confirm password do not match.');
+            return;
+        }
+
+        setForgotLoading(true);
+        setForgotSuccessMsg('');
+        setForgotErrorMsg('');
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/auth/verify-reset-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: targetUsername || forgotUsername,
+                    otp: otpCode,
+                    newPassword: forgotNewPassword
+                })
+            });
+            const data = await parseJsonSafe(res);
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to verify OTP.');
+            }
+
+            setForgotSuccessMsg(data.message || 'Password reset successfully! You can now log in.');
+            setTimeout(() => {
+                setShowForgotPasswordModal(false);
+                setForgotStep(1);
+                setOtpCode('');
+                setForgotNewPassword('');
+                setForgotConfirmPassword('');
+            }, 2500);
+        } catch (err) {
+            setForgotErrorMsg(err.message || 'Error verifying OTP.');
         } finally {
             setForgotLoading(false);
         }
@@ -637,32 +688,35 @@ export default function LoginPage() {
             </div>
 
             {/* Inline keyframes */}
-            {/* Forgot Password Modal */}
+            {/* Forgot Password WhatsApp OTP Modal */}
             {showForgotPasswordModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2, 4, 5, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '16px' }}>
-                    <div style={{ background: '#070D09', border: '1px solid rgba(57, 255, 20, 0.25)', borderRadius: '20px', padding: '28px', maxWidth: '420px', width: '100%', boxShadow: '0 0 40px rgba(0, 0, 0, 0.8)' }}>
+                    <div style={{ background: '#070D09', border: '1px solid rgba(57, 255, 20, 0.25)', borderRadius: '20px', padding: '28px', maxWidth: '440px', width: '100%', boxShadow: '0 0 40px rgba(0, 0, 0, 0.8)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#39ff14', fontFamily: "'Space Grotesk', sans-serif" }}>
-                                Reset Password
+                                {forgotStep === 1 ? '🔐 Reset Password via WhatsApp OTP' : '🔑 Enter WhatsApp OTP Code'}
                             </h3>
-                            <button type="button" onClick={() => setShowForgotPasswordModal(false)} style={{ background: 'transparent', border: 'none', color: '#8E959D', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+                            <button type="button" onClick={() => { setShowForgotPasswordModal(false); setForgotStep(1); }} style={{ background: 'transparent', border: 'none', color: '#8E959D', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
                         </div>
 
-                        {forgotSuccessMsg ? (
-                            <div style={{ background: 'rgba(57, 255, 20, 0.1)', border: '1px solid rgba(57, 255, 20, 0.3)', color: '#39ff14', padding: '14px', borderRadius: '12px', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '16px' }}>
+                        {forgotSuccessMsg && (
+                            <div style={{ background: 'rgba(57, 255, 20, 0.1)', border: '1px solid rgba(57, 255, 20, 0.3)', color: '#39ff14', padding: '12px', borderRadius: '12px', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '16px' }}>
                                 {forgotSuccessMsg}
                             </div>
-                        ) : (
-                            <form onSubmit={handleForgotPasswordSubmit}>
-                                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', lineHeight: 1.5 }}>
-                                    Enter your account username or phone contact below to request a password reset from the Super Administrator.
-                                </p>
+                        )}
 
-                                {forgotErrorMsg && (
-                                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', marginBottom: '14px' }}>
-                                        {forgotErrorMsg}
-                                    </div>
-                                )}
+                        {forgotErrorMsg && (
+                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#EF4444', padding: '10px', borderRadius: '10px', fontSize: '0.8rem', marginBottom: '14px' }}>
+                                {forgotErrorMsg}
+                            </div>
+                        )}
+
+                        {forgotStep === 1 ? (
+                            /* Step 1: Request OTP */
+                            <form onSubmit={handleRequestOtpSubmit}>
+                                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', marginBottom: '16px', lineHeight: 1.5 }}>
+                                    Enter your account username or registered phone contact. A 6-digit security OTP will be dispatched to your WhatsApp.
+                                </p>
 
                                 <div style={{ marginBottom: '20px' }}>
                                     <label style={{ display: 'block', fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Username or Phone *</label>
@@ -682,7 +736,59 @@ export default function LoginPage() {
                                         Cancel
                                     </button>
                                     <button type="submit" disabled={forgotLoading} className="btn-premium" style={{ padding: '10px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(57,255,20,0.2), rgba(16,185,129,0.15))', border: '1px solid rgba(57,255,20,0.3)', color: '#39ff14', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
-                                        {forgotLoading ? 'Submitting...' : 'Submit Reset Request'}
+                                        {forgotLoading ? 'Sending OTP...' : 'Send WhatsApp OTP'}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            /* Step 2: Verify OTP & Set New Password */
+                            <form onSubmit={handleVerifyOtpSubmit} className="d-flex flex-column gap-3">
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>6-Digit WhatsApp OTP Code *</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        maxLength={6}
+                                        placeholder="e.g. 482910" 
+                                        className="glass-input" 
+                                        value={otpCode} 
+                                        onChange={(e) => setOtpCode(e.target.value)} 
+                                        style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(57, 255, 20, 0.4)', color: '#39ff14', fontSize: '1.2rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 800 }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>New Password *</label>
+                                    <input 
+                                        type="password" 
+                                        required 
+                                        placeholder="Enter new password (min 8 chars)" 
+                                        className="glass-input" 
+                                        value={forgotNewPassword} 
+                                        onChange={(e) => setForgotNewPassword(e.target.value)} 
+                                        style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.76rem', color: 'rgba(255,255,255,0.6)', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>Confirm New Password *</label>
+                                    <input 
+                                        type="password" 
+                                        required 
+                                        placeholder="Re-enter new password" 
+                                        className="glass-input" 
+                                        value={forgotConfirmPassword} 
+                                        onChange={(e) => setForgotConfirmPassword(e.target.value)} 
+                                        style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                                    <button type="button" onClick={() => setForgotStep(1)} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '10px 16px', borderRadius: '10px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                                        Back
+                                    </button>
+                                    <button type="submit" disabled={forgotLoading} className="btn-premium" style={{ padding: '10px 20px', borderRadius: '10px', background: 'linear-gradient(135deg, rgba(57,255,20,0.25), rgba(16,185,129,0.2))', border: '1px solid rgba(57,255,20,0.4)', color: '#39ff14', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}>
+                                        {forgotLoading ? 'Verifying...' : 'Reset Password & Log In'}
                                     </button>
                                 </div>
                             </form>
