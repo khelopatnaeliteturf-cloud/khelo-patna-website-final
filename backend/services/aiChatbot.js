@@ -58,14 +58,17 @@ async function processAIChat({ userMessage, history = [] }) {
         };
     }
 
-    // Check for explicit human agent keywords
+    // Check for explicit human agent keywords (English & Hinglish)
     const lower = sanitizedMsg.toLowerCase();
-    const humanKeywords = ['agent', 'human', 'support', 'owner', 'manager', 'call me', 'complaint', 'refund', 'talk to person'];
+    const humanKeywords = [
+        'agent', 'human', 'support', 'owner', 'manager', 'call me', 'complaint', 'refund', 'talk to person',
+        'baat karni hai', 'baat karwao', 'call karo', 'owner se baat', 'manager se baat', 'insan se baat'
+    ];
     if (humanKeywords.some(kw => lower.includes(kw))) {
         return {
-            detectedLanguage: 'English',
+            detectedLanguage: 'Hinglish',
             intent: 'HUMAN_AGENT',
-            reply: 'I am connecting you to our human support team right away. You can also call us directly at (+91) 970 970 1400. 📞',
+            reply: 'Aapko humare human support team manager se connect kar rahe hain. Aap humein directly call bhi kar sakte hain: (+91) 970 970 1400 📞',
             requiresHuman: true
         };
     }
