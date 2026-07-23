@@ -711,6 +711,13 @@ export default function AdminDashboard() {
         }
     }, [activeTab, bookingsFilter, bookingsDateRange, bookingsCustomStartDate, bookingsCustomEndDate, attendanceSport, attendanceDate]);
 
+    // Automatic live polling for WhatsApp status to keep top bar pill synchronized instantly
+    useEffect(() => {
+        loadWhatsappStatus();
+        const interval = setInterval(loadWhatsappStatus, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     // Global keyboard listener for Launcher overlay toggles
     useEffect(() => {
         const handleKeyDown = (e) => {
