@@ -1756,9 +1756,22 @@ section[data-animate] {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ADMIN DASHBOARD MOBILE RESPONSIVE LAYOUT FIXES
-   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 992px) {
+    .admin-grid-12 {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .admin-grid-col-7,
+    .admin-grid-col-5,
+    div[style*="gridColumn: 'span 7'"],
+    div[style*="gridColumn: 'span 5'"] {
+        grid-column: span 12 !important;
+        width: 100% !important;
+    }
+}
+
 @media (max-width: 768px) {
     .dashboard-kpi-grid,
     .admin-stat-grid {

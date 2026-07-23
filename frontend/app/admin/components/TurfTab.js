@@ -417,10 +417,10 @@ export default function TurfTab(props) {
                     ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
+                <div className="admin-grid-12" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
                     
                     {/* Column 1: Daily Blackouts & Pricing */}
-                    <div style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="admin-grid-col-7" style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {turfSettings ? (
                             <div className="card-premium" style={{ display: 'flex', flexDirection: 'column', gap: '22px', padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
@@ -659,7 +659,7 @@ export default function TurfTab(props) {
                     </div>
 
                     {/* Column 2: Closures */}
-                    <div style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="admin-grid-col-5" style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         
                         {/* Add Closure Card */}
                         <div className="card-premium" style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '24px' }}>
