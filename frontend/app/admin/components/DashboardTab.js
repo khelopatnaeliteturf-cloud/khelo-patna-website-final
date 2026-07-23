@@ -15,6 +15,7 @@ export default function DashboardTab(props) {
     const [hoveredAdmission, setHoveredAdmission] = React.useState(null);
     const [hoveredInventory, setHoveredInventory] = React.useState(null);
     const [hoveredBar, setHoveredBar] = React.useState(null);
+    const [bookingSubTab, setBookingSubTab] = React.useState('upcoming');
 
     React.useEffect(() => {
         if (!bookingsLog || bookingsLog.length === 0) return;
@@ -401,76 +402,151 @@ export default function DashboardTab(props) {
                         </div>
                     </div>
 
-                    {/* Today's Schedule with Hover Data */}
+                    {/* Upcoming / Past Bookings with Sub-tabs */}
                     <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '380px', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
-                            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Today's Schedule</h3>
-                            <button onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View All</button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Bookings</h3>
+                                {/* Small Sub-tabs: Upcoming vs Past */}
+                                <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.06)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                    <button 
+                                        onClick={() => setBookingSubTab('upcoming')}
+                                        style={{
+                                            padding: '3px 10px',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 700,
+                                            borderRadius: '6px',
+                                            border: 'none',
+                                            background: bookingSubTab === 'upcoming' ? 'var(--primary)' : 'transparent',
+                                            color: bookingSubTab === 'upcoming' ? '#fff' : 'var(--text-muted)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Upcoming
+                                    </button>
+                                    <button 
+                                        onClick={() => setBookingSubTab('past')}
+                                        style={{
+                                            padding: '3px 10px',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 700,
+                                            borderRadius: '6px',
+                                            border: 'none',
+                                            background: bookingSubTab === 'past' ? 'var(--primary)' : 'transparent',
+                                            color: bookingSubTab === 'past' ? '#fff' : 'var(--text-muted)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        Past
+                                    </button>
+                                </div>
+                            </div>
+                            <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>View All</span>
                         </div>
                         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
-                            {todaySchedule.length === 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>calendar_today</span>
-                                    <span style={{ fontSize: '0.85rem' }}>No bookings scheduled today</span>
-                                </div>
-                            ) : (
-                                todaySchedule.slice(0, 10).map((s, i) => {
-                                    const matchingBooking = todayBookings[i];
-                                    const isHovered = hoveredSchedule === i;
+                            {(() => {
+                                const nowHour = new Date().getHours();
+                                const filtered = (bookingsLog || []).filter(b => {
+                                    if (b.paymentStatus === 'CANCELLED' || b.paymentStatus === 'FAILED') return false;
+                                    
+                                    const isFuture = b.date > todayStr;
+                                    const isToday = b.date === todayStr;
+                                    const isPastDate = b.date < todayStr;
+
+                                    if (bookingSubTab === 'upcoming') {
+                                        if (isFuture) return true;
+                                        if (isToday) {
+                                            if (!b.timeSlots || b.timeSlots.length === 0) return true;
+                                            return b.timeSlots.some(s => {
+                                                const parts = String(s).split('-');
+                                                const endH = parseInt(parts[1], 10);
+                                                return isNaN(endH) ? true : endH > nowHour;
+                                            });
+                                        }
+                                        return false;
+                                    } else { // 'past' tab
+                                        if (isPastDate) return true;
+                                        if (isToday) {
+                                            if (!b.timeSlots || b.timeSlots.length === 0) return false;
+                                            return b.timeSlots.every(s => {
+                                                const parts = String(s).split('-');
+                                                const endH = parseInt(parts[1], 10);
+                                                return isNaN(endH) ? false : endH <= nowHour;
+                                            });
+                                        }
+                                        return false;
+                                    }
+                                });
+
+                                if (filtered.length === 0) {
+                                    return (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>event_busy</span>
+                                            <span style={{ fontSize: '0.85rem' }}>No {bookingSubTab} bookings</span>
+                                        </div>
+                                    );
+                                }
+
+                                return filtered.slice(0, 15).map((b, i) => {
+                                    const d = new Date(b.date + 'T00:00:00');
+                                    const isHovered = hoveredBooking === i;
                                     return (
                                         <div 
-                                            key={i} 
+                                            key={b._id || i} 
                                             style={{ 
                                                 display: 'flex', 
-                                                gap: '12px', 
-                                                alignItems: 'flex-start',
-                                                padding: '8px 10px',
-                                                borderRadius: '10px',
+                                                gap: '10px', 
+                                                alignItems: 'center',
+                                                padding: '6px 8px',
+                                                borderRadius: '8px',
                                                 background: isHovered ? 'var(--primary-light)' : 'transparent',
                                                 cursor: 'pointer',
                                                 transition: 'all 0.2s',
                                                 position: 'relative'
                                             }}
-                                            onMouseEnter={() => setHoveredSchedule(i)}
-                                            onMouseLeave={() => setHoveredSchedule(null)}
+                                            onMouseEnter={() => setHoveredBooking(i)}
+                                            onMouseLeave={() => setHoveredBooking(null)}
                                         >
-                                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', minWidth: '65px', paddingTop: '2px' }}>{s.time}</div>
-                                            <div style={{ width: '3px', borderRadius: '3px', background: statusColor(s.status), alignSelf: 'stretch', flexShrink: 0 }}></div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{s.title}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.subtitle}</div>
+                                            <div style={{ width: '40px', height: '44px', borderRadius: '8px', background: 'var(--primary-light)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}>{d.getDate()}</span>
+                                                <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>{d.toLocaleDateString('en-US', { month: 'short' })}</span>
                                             </div>
-                                            <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: statusBg(s.status), color: statusColor(s.status), whiteSpace: 'nowrap', alignSelf: 'center' }}>{s.status}</span>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: '0.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.sport?.charAt(0).toUpperCase() + b.sport?.slice(1)} Turf</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {formatMultipleSlots ? formatMultipleSlots(b.timeSlots) : (b.timeSlots || []).map(formatSlotTo12Hr).join(', ')} · {b.customerName || 'Walk-in'}
+                                                </div>
+                                            </div>
+                                            <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)', color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : 'var(--warning)', whiteSpace: 'nowrap' }}>
+                                                {b.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : 'PENDING'}
+                                            </span>
 
-                                            {/* Hover Popover Details */}
-                                            {isHovered && matchingBooking && (
+                                            {/* Hover Popover */}
+                                            {isHovered && (
                                                 <div className="animate-fade-in" style={{
                                                     position: 'absolute',
                                                     top: '100%',
-                                                    left: '20px',
-                                                    right: '20px',
+                                                    left: '0',
+                                                    right: '0',
                                                     zIndex: 100,
                                                     background: 'var(--card-bg, #070D1A)',
                                                     border: '1px solid var(--primary)',
-                                                    borderRadius: '12px',
-                                                    padding: '12px',
+                                                    borderRadius: '10px',
+                                                    padding: '10px',
                                                     boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
                                                     pointerEvents: 'none'
                                                 }}>
-                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>
-                                                        {matchingBooking.customerName || 'Walk-in Guest'}
-                                                    </div>
-                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                                        <span>📞 Phone: {matchingBooking.customerPhone || 'N/A'}</span>
-                                                        <span>⚽ Sport Arena: {(matchingBooking.sport || 'Turf').toUpperCase()}</span>
-                                                        <span>💰 Paid: {formatINR(matchingBooking.paidAmount || 0)} ({matchingBooking.paymentMode || 'Online'})</span>
-                                                    </div>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)' }}>{b.customerName || 'Walk-in'}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>📞 {b.customerPhone || 'No Phone'}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-main)', marginTop: '2px', fontWeight: 600 }}>Amount: {formatINR(b.paidAmount || 0)} Paid</div>
                                                 </div>
                                             )}
                                         </div>
                                     );
-                                })
-                            )}
+                                });
+                            })()}
                         </div>
                     </div>
 
@@ -542,73 +618,8 @@ export default function DashboardTab(props) {
                     </div>
                 </div>
 
-                {/* Bottom Section: 4 cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'stretch' }}>
-                    {/* Upcoming Bookings with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '350px', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
-                            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Upcoming Bookings</h3>
-                            <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
-                        </div>
-                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
-                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').slice(0, 10).map((b, i) => {
-                                const d = new Date(b.date + 'T00:00:00');
-                                const isHovered = hoveredBooking === i;
-                                return (
-                                    <div 
-                                        key={i} 
-                                        style={{ 
-                                            display: 'flex', 
-                                            gap: '10px', 
-                                            alignItems: 'center',
-                                            padding: '6px 8px',
-                                            borderRadius: '8px',
-                                            background: isHovered ? 'var(--primary-light)' : 'transparent',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            position: 'relative'
-                                        }}
-                                        onMouseEnter={() => setHoveredBooking(i)}
-                                        onMouseLeave={() => setHoveredBooking(null)}
-                                    >
-                                        <div style={{ width: '40px', height: '44px', borderRadius: '8px', background: 'var(--primary-light)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}>{d.getDate()}</span>
-                                            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>{d.toLocaleDateString('en-US', { month: 'short' })}</span>
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: '0.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.sport?.charAt(0).toUpperCase() + b.sport?.slice(1)} Turf</div>
-                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {formatMultipleSlots ? formatMultipleSlots(b.timeSlots) : (b.timeSlots || []).map(formatSlotTo12Hr).join(', ')} · {b.customerName || 'Walk-in'}
-                                            </div>
-                                        </div>
-                                        <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)', color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : 'var(--warning)', whiteSpace: 'nowrap' }}>{b.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : 'UPCOMING'}</span>
-
-                                        {/* Hover Popover */}
-                                        {isHovered && (
-                                            <div className="animate-fade-in" style={{
-                                                position: 'absolute',
-                                                top: '100%',
-                                                left: '0',
-                                                right: '0',
-                                                zIndex: 100,
-                                                background: 'var(--card-bg, #070D1A)',
-                                                border: '1px solid var(--primary)',
-                                                borderRadius: '10px',
-                                                padding: '10px',
-                                                boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
-                                                pointerEvents: 'none'
-                                            }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)' }}>{b.customerName || 'Walk-in'}</div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>📞 {b.customerPhone || 'No Phone'}</div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-main)', marginTop: '2px', fontWeight: 600 }}>Amount: {formatINR(b.paidAmount || 0)} Paid</div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', padding: '20px 0' }}>No upcoming bookings</div>}
-                        </div>
-                    </div>
+                {/* Bottom Section: 3 cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', alignItems: 'stretch' }}>
 
                     {/* Recent Admissions with Hover Data */}
                     <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '350px', display: 'flex', flexDirection: 'column' }}>
