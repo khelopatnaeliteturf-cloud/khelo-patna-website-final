@@ -224,33 +224,39 @@ async function handleIncomingMessage(sockOrPayload, m) {
         };
     }
 
-    // Dot Commands (. / .. / ...) for Staff Chat Control — ALWAYS active even if global bot toggle is paused
-    if (text === '.') {
-        const pauseUntil = Date.now() + (24 * 60 * 60 * 1000); // 24 Hours
-        session.bookingData = session.bookingData || {};
-        session.bookingData.botPausedUntil = pauseUntil;
-        session.state = 'PAUSED';
-        await session.save();
-        await sendWhatsAppMessage(phone, '⏸️ *AI Bot Paused for 24 Hours* for this chat. Human staff has taken over control.');
-        return;
-    }
+    // Check if message is sent by Admin / Staff (9709701400 or out-bound fromMe)
+    const isFromMe = Boolean(sockOrPayload?.fromMe || (m && m.key && m.key.fromMe));
+    const isAdminStaff = isFromMe || phone.includes('9709701400');
 
-    if (text === '..') {
-        const pauseUntil = Date.now() + (365 * 24 * 60 * 60 * 1000); // Indefinite (1 year)
-        session.bookingData = session.bookingData || {};
-        session.bookingData.botPausedUntil = pauseUntil;
-        session.state = 'PAUSED';
-        await session.save();
-        await sendWhatsAppMessage(phone, '🛑 *AI Bot Paused Indefinitely* for this chat. Human staff has full control.');
-        return;
-    }
+    // Dot Commands (. / .. / ...) ONLY for Admin / Staff Chat Control
+    if (isAdminStaff && (text === '.' || text === '..' || text === '...')) {
+        if (text === '.') {
+            const pauseUntil = Date.now() + (24 * 60 * 60 * 1000); // 24 Hours
+            session.bookingData = session.bookingData || {};
+            session.bookingData.botPausedUntil = pauseUntil;
+            session.state = 'PAUSED';
+            await session.save();
+            await sendWhatsAppMessage(phone, '⏸️ *AI Bot Paused for 24 Hours* for this chat. Human staff has taken over control.');
+            return;
+        }
 
-    if (text === '...') {
-        session.bookingData = {};
-        session.state = 'IDLE';
-        await session.save();
-        await sendWhatsAppMessage(phone, '▶️ *AI Bot Access Retained & Re-enabled* for this chat!');
-        return;
+        if (text === '..') {
+            const pauseUntil = Date.now() + (365 * 24 * 60 * 60 * 1000); // Indefinite (1 year)
+            session.bookingData = session.bookingData || {};
+            session.bookingData.botPausedUntil = pauseUntil;
+            session.state = 'PAUSED';
+            await session.save();
+            await sendWhatsAppMessage(phone, '🛑 *AI Bot Paused Indefinitely* for this chat. Human staff has full control.');
+            return;
+        }
+
+        if (text === '...') {
+            session.bookingData = {};
+            session.state = 'IDLE';
+            await session.save();
+            await sendWhatsAppMessage(phone, '▶️ *AI Bot Access Retained & Re-enabled* for this chat!');
+            return;
+        }
     }
 
     // Check if global AI Bot toggle is turned off from Admin Dashboard

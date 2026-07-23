@@ -229,7 +229,7 @@ async function initWhatsApp() {
                 try {
                     const baseUrl = MAIN_BACKEND_URL.replace(/\/+$/, '');
                     const primaryWebhook = `${baseUrl}/api/whatsapp/webhook`;
-                    const payload = { phone, text, secret: WA_API_SECRET };
+                    const payload = { phone, text, secret: WA_API_SECRET, fromMe: Boolean(message.key?.fromMe) };
                     const config = { headers: { 'X-WA-Secret': WA_API_SECRET }, timeout: 30000 };
 
                     try {
