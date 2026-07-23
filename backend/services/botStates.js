@@ -5,41 +5,11 @@ const TurfSettings = require('../models/TurfSettings');
 const TurfClosure = require('../models/TurfClosure');
 const { sendWhatsAppMessage, registerBotListener } = require('./whatsapp');
 const { createPaymentLink } = require('./cashfree');
+const { processAIChat } = require('./aiChatbot');
 
 // Groq / Grok / Gemini AI NLU Intent Parser for WhatsApp Auto-Booking
 async function getAIBotIntent(userMessage) {
-    const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY || process.env.GEMINI_API_KEY;
-    if (!apiKey || !userMessage || userMessage.trim().length < 3) return null;
-
-    try {
-        const prompt = `You are KheloPatna AI Assistant, an expert auto-booking assistant for KheloPatna Elite Turf, Patna.
-Analyze the customer's WhatsApp message and determine their intent.
-
-User Message: "${userMessage}"
-
-Return ONLY a JSON object (no markdown, no backticks) in this exact format:
-{
-  "intent": "BOOK_CRICKET" | "BOOK_FOOTBALL" | "INQUIRE_RATES" | "INQUIRE_LOCATION" | "NONE",
-  "friendlyReply": "Short friendly sentence"
-}`;
-
-        if (process.env.GROQ_API_KEY) {
-            const res = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-                model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: prompt }],
-                temperature: 0.1,
-                response_format: { type: 'json_object' }
-            }, {
-                headers: { 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-                timeout: 4000
-            });
-            const textContent = res.data.choices[0]?.message?.content;
-            return JSON.parse(textContent);
-        }
-    } catch (err) {
-        // Silent fallback to local state machine
-    }
-    return null;
+    return await processAIChat({ userMessage });
 }
 
 const ALL_HOURLY_SLOTS = [
