@@ -499,7 +499,7 @@ export default function AdminDashboard() {
                 setRole(verifiedRole);
                 setUsername(verifiedUsername);
                 setPermissions(verifiedPermissions);
-                localStorage.removeItem('token');
+                if (storedToken) localStorage.setItem('token', storedToken);
                 localStorage.setItem('user_role', verifiedRole);
                 localStorage.setItem('username', verifiedUsername);
                 setAuthenticated(true);
@@ -1018,9 +1018,18 @@ export default function AdminDashboard() {
         }
 
         try {
+            const currentHeaders = getHeaders();
+            if (!currentHeaders.Authorization) {
+                const storedToken = token || (typeof window !== 'undefined' ? (localStorage.getItem('token') || localStorage.getItem('adminToken') || '') : '');
+                if (storedToken) {
+                    currentHeaders.Authorization = `Bearer ${storedToken}`;
+                }
+            }
+
             const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
                 method: 'POST',
-                headers: getHeaders(),
+                headers: currentHeaders,
+                credentials: 'include',
                 body: JSON.stringify(payload)
             });
             const data = await res.json();

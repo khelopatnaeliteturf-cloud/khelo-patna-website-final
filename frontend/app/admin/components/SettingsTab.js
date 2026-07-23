@@ -643,24 +643,24 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
 
                             <form onSubmit={handleSavePermissions} className="d-flex flex-column gap-3">
                                 {/* Role and status settings side-by-side */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', background: 'var(--surface-tint)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', background: 'rgba(15, 23, 42, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                     <div>
-                                        <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Operational Role *</label>
+                                        <label className="d-block mb-1" style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operational Role *</label>
                                         <select 
                                             className="input-premium w-100" 
                                             value={modalRole} 
                                             onChange={e => setModalRole(e.target.value)}
-                                            style={{ fontSize: '0.8rem', borderRadius: '8px' }}
+                                            style={{ fontSize: '0.82rem', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: '1px solid rgba(16,185,129,0.3)', padding: '8px 12px' }}
                                         >
                                             {ROLES.map(r => (
-                                                <option key={r.value} value={r.value}>{r.label}</option>
+                                                <option key={r.value} value={r.value} style={{ background: '#0F172A', color: '#FFFFFF' }}>{r.label}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="d-block mb-1" style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Operator Status *</label>
-                                        <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>
+                                        <label className="d-block mb-1" style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operator Status *</label>
+                                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700, color: '#FFFFFF' }}>
                                                 <input 
                                                     type="radio" 
                                                     name="status" 
@@ -671,7 +671,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 />
                                                 Active (Allowed login)
                                             </label>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, color: 'var(--danger)' }}>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700, color: '#EF4444' }}>
                                                 <input 
                                                     type="radio" 
                                                     name="status" 
