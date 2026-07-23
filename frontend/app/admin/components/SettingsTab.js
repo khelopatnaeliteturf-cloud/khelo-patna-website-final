@@ -627,15 +627,15 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                 });
 
                 return (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(5px)' }}>
-                        <div style={{ background: 'var(--bg-surface, var(--white))', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '24px', width: '95%', maxWidth: '850px', maxHeight: '92vh', overflowY: 'auto', boxShadow: 'var(--shadow-xl)' }}>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 8, 6, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                        <div style={{ background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', width: '95%', maxWidth: '850px', maxHeight: '92vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
                             <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
                                 <div>
-                                    <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: 'var(--success)' }}>
+                                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald)' }}>
                                         Access Control Manager
                                     </h4>
-                                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                                        Username: <strong>{selectedUser.username}</strong>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                        Username: <strong style={{ color: 'var(--text-main)' }}>{selectedUser.username}</strong>
                                     </div>
                                 </div>
                                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowEditModal(false)} style={{ filter: 'var(--invert-icon)', opacity: 0.8 }}></button>
@@ -643,35 +643,35 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
 
                             <form onSubmit={handleSavePermissions} className="d-flex flex-column gap-3">
                                 {/* Role and status settings side-by-side */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', background: 'rgba(15, 23, 42, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', background: 'var(--input-bg, rgba(16, 185, 129, 0.05))', padding: '16px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
                                     <div>
                                         <label className="d-block mb-1" style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operational Role *</label>
                                         <select 
                                             className="input-premium w-100" 
                                             value={modalRole} 
                                             onChange={e => setModalRole(e.target.value)}
-                                            style={{ fontSize: '0.82rem', borderRadius: '8px', background: '#0F172A', color: '#FFFFFF', border: '1px solid rgba(16,185,129,0.3)', padding: '8px 12px' }}
+                                            style={{ fontSize: '0.84rem', borderRadius: '10px' }}
                                         >
                                             {ROLES.map(r => (
-                                                <option key={r.value} value={r.value} style={{ background: '#0F172A', color: '#FFFFFF' }}>{r.label}</option>
+                                                <option key={r.value} value={r.value}>{r.label}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
                                         <label className="d-block mb-1" style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Operator Status *</label>
-                                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700, color: '#FFFFFF' }}>
+                                        <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700, color: 'var(--text-main)' }}>
                                                 <input 
                                                     type="radio" 
                                                     name="status" 
                                                     value="ACTIVE" 
                                                     checked={modalStatus === 'ACTIVE'} 
                                                     onChange={() => setModalStatus('ACTIVE')}
-                                                    style={{ accentColor: 'var(--success)' }}
+                                                    style={{ accentColor: 'var(--emerald)' }}
                                                 />
                                                 Active (Allowed login)
                                             </label>
-                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 700, color: '#EF4444' }}>
+                                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 700, color: '#EF4444' }}>
                                                 <input 
                                                     type="radio" 
                                                     name="status" 
