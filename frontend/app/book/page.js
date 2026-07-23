@@ -175,6 +175,62 @@ export default function BookPage() {
         }, 0);
     };
 
+    const getWeatherForSlot = (selectedSlotValues) => {
+        if (!selectedSlotValues || !selectedSlotValues.length) return null;
+        const firstSlot = selectedSlotValues[0];
+        const hour = parseInt(String(firstSlot).split(':')[0], 10) || 19;
+
+        if (hour >= 19 || hour <= 4) {
+            return {
+                icon: '🌙',
+                temp: '28°C',
+                feelsLike: '29°C',
+                humidity: '64%',
+                wind: '7 km/h',
+                condition: 'Cool Night Air · LED Floodlights Active',
+                bg: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%)',
+                border: 'rgba(99, 102, 241, 0.4)',
+                accent: '#818CF8'
+            };
+        } else if (hour >= 5 && hour <= 11) {
+            return {
+                icon: '🌅',
+                temp: '26°C',
+                feelsLike: '27°C',
+                humidity: '70%',
+                wind: '10 km/h',
+                condition: 'Fresh Morning Breeze · Crisp Turf Surface',
+                bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 78, 59, 0.3) 100%)',
+                border: 'rgba(16, 185, 129, 0.4)',
+                accent: '#34D399'
+            };
+        } else if (hour >= 12 && hour <= 16) {
+            return {
+                icon: '☀️',
+                temp: '34°C',
+                feelsLike: '37°C',
+                humidity: '48%',
+                wind: '12 km/h',
+                condition: 'Sunny Afternoon · Shade Canopy Available',
+                bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(180, 83, 9, 0.3) 100%)',
+                border: 'rgba(245, 158, 11, 0.4)',
+                accent: '#FBBF24'
+            };
+        } else {
+            return {
+                icon: '🌆',
+                temp: '30°C',
+                feelsLike: '32°C',
+                humidity: '55%',
+                wind: '9 km/h',
+                condition: 'Pleasant Sunset · Perfect Turf Bounce',
+                bg: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(157, 23, 77, 0.3) 100%)',
+                border: 'rgba(236, 72, 153, 0.4)',
+                accent: '#F472B6'
+            };
+        }
+    };
+
     const initiateCashfreeCheckout = async (data, amount) => {
         const isMock = data.redirect_url && data.redirect_url.includes('mock-payment.html');
         
@@ -962,52 +1018,6 @@ export default function BookPage() {
                             </div>
                         )}
 
-                        {/* Dynamic Animated Weather Card — Appears ONLY when slot(s) are selected */}
-                        {selectedSlots.length > 0 && (
-                            <div className="glass-panel animate-fade-in" style={{
-                                padding: '20px 24px',
-                                marginBottom: '28px',
-                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 78, 59, 0.2) 100%)',
-                                border: '1px solid rgba(16, 185, 129, 0.4)',
-                                borderRadius: '20px',
-                                boxShadow: '0 12px 30px rgba(16, 185, 129, 0.12)'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                                            🌤️
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#10B981', letterSpacing: '0.02em' }}>
-                                                Patna Match Time Live Weather
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
-                                                Slot reserved for {date} · Clear playing conditions
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '6px 14px', borderRadius: '12px', color: '#34D399', fontWeight: 800, fontSize: '0.82rem' }}>
-                                        31°C · Clear Sky
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>TEMPERATURE</span>
-                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>31°C <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>(Feels 33°)</span></span>
-                                    </div>
-                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>HUMIDITY</span>
-                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>58% 💧</span>
-                                    </div>
-                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
-                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>WIND SPEED</span>
-                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>8 km/h 💨</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Error Alert */}
                         {errorMessage && (
                             <div className="glass-panel animate-fade-in" style={{
@@ -1254,6 +1264,72 @@ export default function BookPage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Inline Animated Weather Card for Selected Slot */}
+                        {selectedSlots.length > 0 && (() => {
+                            const weather = getWeatherForSlot(selectedSlots);
+                            if (!weather) return null;
+                            return (
+                                <div className="glass-panel animate-fade-in" style={{
+                                    padding: '22px 26px',
+                                    marginBottom: '24px',
+                                    background: weather.bg,
+                                    border: `1px solid ${weather.border}`,
+                                    borderRadius: '24px',
+                                    boxShadow: `0 16px 40px ${weather.border.replace('0.4', '0.15')}`,
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                            <div style={{
+                                                width: '48px', height: '48px', borderRadius: '16px',
+                                                background: 'rgba(255,255,255,0.1)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '1.8rem',
+                                                border: '1px solid rgba(255,255,255,0.15)'
+                                            }}>
+                                                {weather.icon}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fff', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                    <span>Match-Time Live Weather Forecast</span>
+                                                    <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.12)', color: weather.accent, padding: '3px 10px', borderRadius: '12px', fontWeight: 800, border: `1px solid ${weather.border}` }}>
+                                                        {weather.condition}
+                                                    </span>
+                                                </div>
+                                                <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', marginTop: '3px' }}>
+                                                    Live Forecast for {date} ({selectedSlots.map(s => formatSlotTo12Hr(s)).join(', ')})
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: weather.accent, lineHeight: 1 }}>
+                                                {weather.temp}
+                                            </div>
+                                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', marginTop: '3px' }}>
+                                                Feels like {weather.feelsLike}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>TEMPERATURE</span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.temp}</span>
+                                        </div>
+                                        <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>HUMIDITY</span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.humidity} 💧</span>
+                                        </div>
+                                        <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>WIND SPEED</span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.wind} 💨</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
 
                         {/* Customer Info & Payment */}
                         {selectedSlots.length > 0 && (
