@@ -2,7 +2,7 @@ import React from 'react';
 import AnimatedNumber from './AnimatedNumber';
 
 export default function DashboardTab(props) {
-    const { revenueAnalytics, bookingsLog, formatINR, stats, allStudents, username, setActiveTab, setActiveSidebarKey, setShowOfflineBookingModal, pendingFeesAmount, formatSlotTo12Hr } = props;
+    const { revenueAnalytics, bookingsLog, formatINR, stats, allStudents, username, setActiveTab, setActiveSidebarKey, setShowOfflineBookingModal, pendingFeesAmount, formatSlotTo12Hr, formatMultipleSlots } = props;
     
     const [newBookings, setNewBookings] = React.useState([]);
     const [showNotification, setShowNotification] = React.useState(false);
@@ -577,7 +577,9 @@ export default function DashboardTab(props) {
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ fontSize: '0.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.sport?.charAt(0).toUpperCase() + b.sport?.slice(1)} Turf</div>
-                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(b.timeSlots || []).map(formatSlotTo12Hr).join(', ') || 'TBD'} · {b.customerName || 'Walk-in'}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {formatMultipleSlots ? formatMultipleSlots(b.timeSlots) : (b.timeSlots || []).map(formatSlotTo12Hr).join(', ')} · {b.customerName || 'Walk-in'}
+                                            </div>
                                         </div>
                                         <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: b.paymentStatus === 'SUCCESS' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)', color: b.paymentStatus === 'SUCCESS' ? 'var(--success)' : 'var(--warning)', whiteSpace: 'nowrap' }}>{b.paymentStatus === 'SUCCESS' ? 'CONFIRMED' : 'UPCOMING'}</span>
 

@@ -51,6 +51,41 @@ const formatSlotTo12Hr = (slotStr) => {
     return `${formatHour(parts[0])} - ${formatHour(parts[1])}`;
 };
 
+const formatMultipleSlots = (slotsArr) => {
+    if (!slotsArr || !Array.isArray(slotsArr) || slotsArr.length === 0) return 'TBD';
+    if (slotsArr.length === 1) return formatSlotTo12Hr(slotsArr[0]);
+
+    try {
+        const parsed = slotsArr.map(s => {
+            if (typeof s === 'string' && s.includes('-')) {
+                const parts = s.split('-');
+                return { start: parseInt(parts[0], 10), end: parseInt(parts[1], 10), raw: s };
+            }
+            return null;
+        }).filter(Boolean);
+
+        if (parsed.length === slotsArr.length) {
+            parsed.sort((a, b) => a.start - b.start);
+            let isConsecutive = true;
+            for (let i = 0; i < parsed.length - 1; i++) {
+                if (parsed[i].end !== parsed[i + 1].start) {
+                    isConsecutive = false;
+                    break;
+                }
+            }
+
+            if (isConsecutive) {
+                const startHour = parsed[0].start;
+                const endHour = parsed[parsed.length - 1].end;
+                const rangeStr = `${String(startHour).padStart(2, '0')}-${String(endHour).padStart(2, '0')}`;
+                return `${formatSlotTo12Hr(rangeStr)} (${slotsArr.length} hrs)`;
+            }
+        }
+    } catch (e) {}
+
+    return `${formatSlotTo12Hr(slotsArr[0])} (+${slotsArr.length - 1} more)`;
+};
+
 export default function AdminDashboard() {
     const router = useRouter();
 
@@ -6262,8 +6297,8 @@ export default function AdminDashboard() {
                         />
                     )}
                     {activeTab === 'academy-management' && <AcademyTab academySubTab={academySubTab} setAcademySubTab={setAcademySubTab} customerSearchQuery={customerSearchQuery} setCustomerSearchQuery={setCustomerSearchQuery} allStudents={allStudents} selectedCrmStudent={selectedCrmStudent} setSelectedCrmStudent={setSelectedCrmStudent} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setPaymentsSubTab={setPaymentsSubTab} setPaymentSearchId={setPaymentSearchId} setSelectedStudentForPayment={setSelectedStudentForPayment} setShowEnquiryModal={setShowEnquiryModal} enquirySearchQuery={enquirySearchQuery} setEnquirySearchQuery={setEnquirySearchQuery} enquiriesList={enquiriesList} handleConvertEnquiry={handleConvertEnquiry} handleSaveAttendance={handleSaveAttendance} attendanceSport={attendanceSport} setAttendanceSport={setAttendanceSport} studentsList={studentsList} attendanceGrid={attendanceGrid} toggleStudentAttendance={toggleStudentAttendance} />}
-                    {activeTab === 'dashboard' && <DashboardTab revenueAnalytics={revenueAnalytics} bookingsLog={bookingsLog} formatINR={formatINR} stats={stats} allStudents={allStudents} username={username} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setShowOfflineBookingModal={setShowOfflineBookingModal} pendingFeesAmount={pendingFeesAmount} formatSlotTo12Hr={formatSlotTo12Hr} />}
-                    {activeTab === 'turf-management' && <TurfTab activeSidebarKey={activeSidebarKey} bookingsLog={bookingsLog} selectedBooking={selectedBooking} generateCustomerId={generateCustomerId} bookingsFilter={bookingsFilter} setBookingsFilter={setBookingsFilter} bookingsDateRange={bookingsDateRange} setBookingsDateRange={setBookingsDateRange} bookingsCustomStartDate={bookingsCustomStartDate} setBookingsCustomStartDate={setBookingsCustomStartDate} bookingsCustomEndDate={bookingsCustomEndDate} setBookingsCustomEndDate={setBookingsCustomEndDate} setShowOfflineBookingModal={setShowOfflineBookingModal} setShowBookingsReportModal={setShowBookingsReportModal} formatINR={formatINR} formatSlotTo12Hr={formatSlotTo12Hr} setSelectedBookingState={setSelectedBookingState} turfSettings={turfSettings} closuresList={closuresList} handleSaveSettings={handleSaveSettings} setTurfSettings={setTurfSettings} handleCreateClosure={handleCreateClosure} newClosure={newClosure} setNewClosure={setNewClosure} handleDeleteClosure={handleDeleteClosure} />}
+                    {activeTab === 'dashboard' && <DashboardTab revenueAnalytics={revenueAnalytics} bookingsLog={bookingsLog} formatINR={formatINR} stats={stats} allStudents={allStudents} username={username} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setShowOfflineBookingModal={setShowOfflineBookingModal} pendingFeesAmount={pendingFeesAmount} formatSlotTo12Hr={formatSlotTo12Hr} formatMultipleSlots={formatMultipleSlots} />}
+                    {activeTab === 'turf-management' && <TurfTab activeSidebarKey={activeSidebarKey} bookingsLog={bookingsLog} selectedBooking={selectedBooking} generateCustomerId={generateCustomerId} bookingsFilter={bookingsFilter} setBookingsFilter={setBookingsFilter} bookingsDateRange={bookingsDateRange} setBookingsDateRange={setBookingsDateRange} bookingsCustomStartDate={bookingsCustomStartDate} setBookingsCustomStartDate={setBookingsCustomStartDate} bookingsCustomEndDate={bookingsCustomEndDate} setBookingsCustomEndDate={setBookingsCustomEndDate} setShowOfflineBookingModal={setShowOfflineBookingModal} setShowBookingsReportModal={setShowBookingsReportModal} formatINR={formatINR} formatSlotTo12Hr={formatSlotTo12Hr} formatMultipleSlots={formatMultipleSlots} setSelectedBookingState={setSelectedBookingState} turfSettings={turfSettings} closuresList={closuresList} handleSaveSettings={handleSaveSettings} setTurfSettings={setTurfSettings} handleCreateClosure={handleCreateClosure} newClosure={newClosure} setNewClosure={setNewClosure} handleDeleteClosure={handleDeleteClosure} />}
                     {activeTab === 'membership-management' && (
                         <MembershipTab 
                             allStudents={allStudents}
