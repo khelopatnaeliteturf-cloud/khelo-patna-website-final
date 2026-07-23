@@ -143,12 +143,12 @@ router.post('/auth/register', authLimiter, async (req, res) => {
             const authHeader = req.headers['authorization'];
             const token = authHeader && authHeader.split(' ')[1];
             if (!token) {
-                return res.status(401).json({ error: 'Unauthorized. Admin credentials required to add staff.' });
+                return res.status(401).json({ error: 'Unauthorized. Admin credentials required to add user.' });
             }
 
             const decoded = jwt.verify(token, getJwtSecret());
             if (!STAFF_REGISTER_ROLES.includes(decoded.role)) {
-                return res.status(403).json({ error: 'Only Super Admin, Academy Owner, or HR Manager can register staff.' });
+                return res.status(403).json({ error: 'Unauthorized. Admin credentials required to add user.' });
             }
 
             // Enforce role-assignment hierarchy: a registrar can only create
