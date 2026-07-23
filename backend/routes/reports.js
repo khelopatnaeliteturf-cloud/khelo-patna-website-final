@@ -32,52 +32,33 @@ router.get('/reports/dashboard', authenticateToken, authorizeRoles('RECEPTIONIST
         const { start: todayStart, end: todayEnd } = getTodayRange();
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // Today's Booking Count
-        const todayBookingsCount = await Booking.countDocuments({
-            tenantId,
-            date: todayStr,
-            paymentStatus: 'SUCCESS'
-        });
-
-        // Checked-in players today
-        const checkedInCount = await CheckInLog.countDocuments({
-            tenantId,
-            checkInTime: { $gte: todayStart, $lte: todayEnd }
-        });
-
-        // Active academy students (Members)
-        const activeStudentsCount = await Student.countDocuments({
-            tenantId,
-            status: 'ACTIVE'
-        });
-
-        // Critical stock alerts (Quantity <= 3)
-        const criticalItems = await InventoryItem.find({
-            tenantId,
-            availableQuantity: { $lte: 3 }
-        }).select('itemName availableQuantity');
-
-        // Current month's finance overview
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0,0,0,0);
-
-        // A. Sum of Bookings Revenue this month
-        const bookingsRevenue = await Booking.aggregate([
-            { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), createdAt: { $gte: startOfMonth }, paymentStatus: 'SUCCESS' } },
-            { $group: { _id: null, total: { $sum: '$paidAmount' } } }
-        ]);
-
-        // B. Sum of Academy Fees collected this month
-        const feesRevenue = await Fee.aggregate([
-            { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), paymentDate: { $gte: startOfMonth }, status: 'PAID' } },
-            { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-        ]);
-
-        // C. Sum of POS Sales this month
-        const posRevenue = await POSSale.aggregate([
-            { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), soldAt: { $gte: startOfMonth } } },
-            { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+        const [
+            todayBookingsCount,
+            checkedInCount,
+            activeStudentsCount,
+            criticalItems,
+            bookingsRevenue,
+            feesRevenue,
+            posRevenue,
+            todayBookings
+        ] = await Promise.all([
+            Booking.countDocuments({ tenantId, date: todayStr, paymentStatus: 'SUCCESS' }),
+            CheckInLog.countDocuments({ tenantId, checkInTime: { $gte: todayStart, $lte: todayEnd } }),
+            Student.countDocuments({ tenantId, status: 'ACTIVE' }),
+            InventoryItem.find({ tenantId, availableQuantity: { $lte: 3 } }).select('itemName availableQuantity'),
+            Booking.aggregate([
+                { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), createdAt: { $gte: startOfMonth }, paymentStatus: 'SUCCESS' } },
+                { $group: { _id: null, total: { $sum: '$paidAmount' } } }
+            ]),
+            Fee.aggregate([
+                { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), paymentDate: { $gte: startOfMonth }, status: 'PAID' } },
+                { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+            ]),
+            POSSale.aggregate([
+                { $match: { tenantId: new mongoose.Types.ObjectId(tenantId), soldAt: { $gte: startOfMonth } } },
+                { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+            ]),
+            Booking.find({ tenantId, date: todayStr, paymentStatus: 'SUCCESS' }).sort({ timeSlots: 1 })
         ]);
 
         const monthlyBookingTotal = bookingsRevenue[0]?.total || 0;

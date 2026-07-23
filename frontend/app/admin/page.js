@@ -777,14 +777,12 @@ export default function AdminDashboard() {
         setSuccessMessage('');
 
         if (activeTab === 'dashboard') {
-            loadAnalytics();
-            loadBookingsLog();
-            loadAllStudents();
-            loadInventory();
-            loadSessions();
-            loadCoaches();
-            loadBatches();
-            loadAuditLogs();
+            Promise.all([
+                loadAnalytics(),
+                loadBookingsLog(),
+                loadAllStudents(),
+                loadInventory()
+            ]);
         } else if (activeTab === 'turf-management') {
             loadBookingsLog();
             loadCheckins();
@@ -851,17 +849,20 @@ export default function AdminDashboard() {
     const loadAnalytics = async () => {
         setLoading(true);
         try {
-            const res1 = await fetch(`${BACKEND_URL}/api/reports/dashboard`, { headers: getHeaders() });
-            const data1 = await res1.json();
-            if (res1.ok) setStats(data1);
+            const [res1, res2, res3] = await Promise.all([
+                fetch(`${BACKEND_URL}/api/reports/dashboard`, { headers: getHeaders() }),
+                fetch(`${BACKEND_URL}/api/reports/revenue-analytics`, { headers: getHeaders() }),
+                fetch(`${BACKEND_URL}/api/reports/fees`, { headers: getHeaders() })
+            ]);
+            const [data1, data2, data3] = await Promise.all([
+                res1.ok ? res1.json() : null,
+                res2.ok ? res2.json() : null,
+                res3.ok ? res3.json() : null
+            ]);
 
-            const res2 = await fetch(`${BACKEND_URL}/api/reports/revenue-analytics`, { headers: getHeaders() });
-            const data2 = await res2.json();
-            if (res2.ok) setRevenueAnalytics(data2);
-
-            const res3 = await fetch(`${BACKEND_URL}/api/reports/fees`, { headers: getHeaders() });
-            const data3 = await res3.json();
-            if (res3.ok) setPendingFeesAmount(data3.totals?.due || 0);
+            if (data1) setStats(data1);
+            if (data2) setRevenueAnalytics(data2);
+            if (data3) setPendingFeesAmount(data3.totals?.due || 0);
         } catch (e) {
             setErrorMessage('Error loading reports.');
         } finally {
