@@ -2,7 +2,21 @@ import React from 'react';
 
 export default function TurfTab(props) {
     const { activeSidebarKey, bookingsLog, selectedBooking, generateCustomerId, bookingsFilter, setBookingsFilter, bookingsDateRange, setBookingsDateRange, bookingsCustomStartDate, setBookingsCustomStartDate, bookingsCustomEndDate, setBookingsCustomEndDate, setShowOfflineBookingModal, setShowBookingsReportModal, formatINR, formatSlotTo12Hr, setSelectedBookingState, turfSettings, closuresList, handleSaveSettings, setTurfSettings, handleCreateClosure, newClosure, setNewClosure, handleDeleteClosure } = props;
-        if (activeSidebarKey === 'bookings') {
+    
+    const getBookingSourceLabel = (b) => {
+        if (!b) return 'Online / Self';
+        if (b.bookedBy) return b.bookedBy;
+        const orderIdStr = b.orderId || '';
+        if (orderIdStr.startsWith('KP-OFFLINE-') || b.paymentMethod === 'offline' || b.paymentMethod === 'cash') {
+            return 'Admin Staff / Manual';
+        }
+        if (orderIdStr.startsWith('KP-WA-') || b.createdVia === 'WHATSAPP') {
+            return 'WhatsApp Bot';
+        }
+        return `${b.customerName || 'Customer'} (Online)`;
+    };
+
+    if (activeSidebarKey === 'bookings') {
             // Net revenue helper: include SUCCESS payments + CANCELLED payments where refund was skipped/retained
             const getBookingNetRevenue = (b) => {
                 if (b.paymentStatus === 'SUCCESS') {
@@ -168,8 +182,8 @@ export default function TurfTab(props) {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
                                             const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
-                                            const avatarColors = ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)', 'var(--danger)', 'var(--purple)', 'var(--primary-hover)'];
-                                            const avatarColor = avatarColors[idx % avatarColors.length];
+                                            const avatarColor = getAvatarColor(b.customerName);
+                                            const bookedByLabel = getBookingSourceLabel(b);
 
                                             return (
                                                 <tr key={b._id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.15s' }}
@@ -186,7 +200,7 @@ export default function TurfTab(props) {
                                                                 <div style={{ fontWeight: 600, fontSize: '0.84rem' }}>{b.customerName || 'Walk-in'}</div>
                                                                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.customerPhone || '—'}</div>
                                                                 <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600, marginTop: '1px' }}>
-                                                                    Booked by: {b.bookedBy || (b.paymentMethod === 'offline' ? 'Admin Staff' : 'Online / Self')}
+                                                                    Booked by: {bookedByLabel}
                                                                 </div>
                                                             </div>
                                                         </div>
