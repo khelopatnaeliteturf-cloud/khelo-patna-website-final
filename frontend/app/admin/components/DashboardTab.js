@@ -16,6 +16,8 @@ export default function DashboardTab(props) {
     const [hoveredInventory, setHoveredInventory] = React.useState(null);
     const [hoveredBar, setHoveredBar] = React.useState(null);
     const [bookingSubTab, setBookingSubTab] = React.useState('upcoming');
+    const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Kolkata' });
+    const [bookingSelectedDate, setBookingSelectedDate] = React.useState(todayStr);
 
     React.useEffect(() => {
         if (!bookingsLog || bookingsLog.length === 0) return;
@@ -81,7 +83,6 @@ export default function DashboardTab(props) {
         const lineStr = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
         const areaStr = `${chartPad.left},${chartPad.top + plotH} ${lineStr} ${chartPad.left + plotW},${chartPad.top + plotH}`;
 
-        const todayStr = new Date().toISOString().split('T')[0];
         const todayBookings = bookingsLog.filter(b => b.date === todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED');
         const todaySchedule = todayBookings.map(b => ({
             time: b.timeSlots?.[0] ? b.timeSlots[0].split('-')[0] : '06:00 AM',
@@ -402,17 +403,17 @@ export default function DashboardTab(props) {
                         </div>
                     </div>
 
-                    {/* Upcoming / Past Bookings with Sub-tabs */}
+                    {/* Upcoming / Past Bookings with Sub-tabs and Calendar Date Filter */}
                     <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '380px', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0, gap: '6px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Bookings</h3>
                                 {/* Small Sub-tabs: Upcoming vs Past */}
                                 <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.06)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                     <button 
                                         onClick={() => setBookingSubTab('upcoming')}
                                         style={{
-                                            padding: '3px 10px',
+                                            padding: '3px 8px',
                                             fontSize: '0.72rem',
                                             fontWeight: 700,
                                             borderRadius: '6px',
@@ -428,7 +429,7 @@ export default function DashboardTab(props) {
                                     <button 
                                         onClick={() => setBookingSubTab('past')}
                                         style={{
-                                            padding: '3px 10px',
+                                            padding: '3px 8px',
                                             fontSize: '0.72rem',
                                             fontWeight: 700,
                                             borderRadius: '6px',
@@ -443,40 +444,57 @@ export default function DashboardTab(props) {
                                     </button>
                                 </div>
                             </div>
-                            <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>View All</span>
+
+                            {/* Small Date Picker Calendar */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <input 
+                                    type="date" 
+                                    value={bookingSelectedDate || todayStr}
+                                    onChange={(e) => setBookingSelectedDate(e.target.value)}
+                                    style={{
+                                        fontSize: '0.72rem',
+                                        fontWeight: 600,
+                                        padding: '2px 6px',
+                                        borderRadius: '6px',
+                                        border: '1px solid var(--border-color)',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'var(--text-color)',
+                                        colorScheme: 'dark',
+                                        outline: 'none',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                                <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>View All</span>
+                            </div>
                         </div>
                         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
                             {(() => {
+                                const targetDate = bookingSelectedDate || todayStr;
                                 const nowHour = new Date().getHours();
                                 const filtered = (bookingsLog || []).filter(b => {
                                     if (b.paymentStatus === 'CANCELLED' || b.paymentStatus === 'FAILED') return false;
                                     
-                                    const isFuture = b.date > todayStr;
-                                    const isToday = b.date === todayStr;
-                                    const isPastDate = b.date < todayStr;
+                                    // 1. Filter by target date
+                                    if (b.date !== targetDate) return false;
+
+                                    const isToday = targetDate === todayStr;
 
                                     if (bookingSubTab === 'upcoming') {
-                                        if (isFuture) return true;
-                                        if (isToday) {
-                                            if (!b.timeSlots || b.timeSlots.length === 0) return true;
-                                            return b.timeSlots.some(s => {
-                                                const parts = String(s).split('-');
-                                                const endH = parseInt(parts[1], 10);
-                                                return isNaN(endH) ? true : endH > nowHour;
-                                            });
-                                        }
-                                        return false;
+                                        if (!isToday) return true; // Non-today selected date: show all for that date
+                                        if (!b.timeSlots || b.timeSlots.length === 0) return true;
+                                        return b.timeSlots.some(s => {
+                                            const parts = String(s).split('-');
+                                            const endH = parseInt(parts[1], 10);
+                                            return isNaN(endH) ? true : endH > nowHour;
+                                        });
                                     } else { // 'past' tab
-                                        if (isPastDate) return true;
-                                        if (isToday) {
-                                            if (!b.timeSlots || b.timeSlots.length === 0) return false;
-                                            return b.timeSlots.every(s => {
-                                                const parts = String(s).split('-');
-                                                const endH = parseInt(parts[1], 10);
-                                                return isNaN(endH) ? false : endH <= nowHour;
-                                            });
-                                        }
-                                        return false;
+                                        if (!isToday) return true; // Non-today selected date: show all for that date
+                                        if (!b.timeSlots || b.timeSlots.length === 0) return false;
+                                        return b.timeSlots.every(s => {
+                                            const parts = String(s).split('-');
+                                            const endH = parseInt(parts[1], 10);
+                                            return isNaN(endH) ? false : endH <= nowHour;
+                                        });
                                     }
                                 });
 
