@@ -251,11 +251,15 @@ export default function LoginPage() {
             if (optRes.ok) {
                 const optData = await optRes.json();
                 if (optData.options && navigator.credentials && navigator.credentials.get) {
-                    const challengeBuffer = Uint8Array.from(atob(optData.options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                    const rawChallenge = optData.options.challenge.replace(/-/g, '+').replace(/_/g, '/');
+                    const pad = (4 - (rawChallenge.length % 4)) % 4;
+                    const base64Challenge = rawChallenge + '='.repeat(pad);
+                    const challengeBuffer = Uint8Array.from(atob(base64Challenge), c => c.charCodeAt(0));
                     
                     const credential = await navigator.credentials.get({
                         publicKey: {
                             challenge: challengeBuffer,
+                            rpId: window.location.hostname.includes('localhost') ? 'localhost' : window.location.hostname.replace(/^www\./, ''),
                             userVerification: optData.options.userVerification || 'preferred',
                             timeout: optData.options.timeout || 60000
                         }

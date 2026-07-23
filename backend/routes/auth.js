@@ -555,14 +555,21 @@ router.post('/auth/passkey/login-options', authLimiter, async (req, res) => {
         const challenge = crypto.randomBytes(32).toString('base64url');
         const loginToken = `passkey_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
         passkeyChallenges.set(loginToken, challenge);
-        const hostname = req.hostname && req.hostname !== 'localhost' ? req.hostname : 'khelopatna.in';
+        
+        const hostHeader = req.get('x-forwarded-host') || req.get('host') || req.hostname || '';
+        let rpId = 'khelopatna.in';
+        if (hostHeader.includes('localhost')) {
+            rpId = 'localhost';
+        } else if (hostHeader.includes('onrender.com')) {
+            rpId = hostHeader.split(':')[0];
+        }
 
         res.json({
             success: true,
             loginToken,
             options: {
                 challenge,
-                rpId: hostname,
+                rpId,
                 userVerification: 'preferred',
                 timeout: 60000
             }
