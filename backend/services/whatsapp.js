@@ -300,7 +300,8 @@ async function initWhatsApp() {
             if (connection === 'close') {
                 connectionStatus = 'DISCONNECTED';
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403;
+                const shouldReconnect = !isLoggedOut;
                 const reason = lastDisconnect?.error?.message || 'Unknown';
                 console.log(`WhatsApp connection closed. Reason: ${reason}. Will retry: ${shouldReconnect && retryCount < MAX_RETRIES}`);
 

@@ -149,7 +149,8 @@ async function initWhatsApp() {
 
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403;
+                const shouldReconnect = !isLoggedOut;
 
                 console.warn(`Connection closed. StatusCode: ${statusCode}. Reconnecting: ${shouldReconnect}`);
                 connectionStatus = 'DISCONNECTED';
@@ -157,8 +158,12 @@ async function initWhatsApp() {
                 if (shouldReconnect) {
                     setTimeout(initWhatsApp, 5000);
                 } else {
-                    console.log('Logged out. Cleaning session...');
-                    await dbPool.query('DELETE FROM whatsapp_session');
+                    console.log('Logged out (401/403). Cleaning stale session from database...');
+                    try {
+                        await dbPool.query('DELETE FROM whatsapp_session');
+                    } catch (e) {
+                        console.error('Error wiping session:', e);
+                    }
                     qrCodeImage = null;
                     setTimeout(initWhatsApp, 3000);
                 }
