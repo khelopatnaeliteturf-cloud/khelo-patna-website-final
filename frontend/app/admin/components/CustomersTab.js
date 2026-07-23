@@ -340,7 +340,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
             `}</style>
             
             {/* Top Statistics Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            <div className="admin-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <div className="card-premium" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '12px', borderRadius: '12px', display: 'flex' }}>
                         <span className="material-icons-outlined" style={{ fontSize: '28px' }}>group</span>
