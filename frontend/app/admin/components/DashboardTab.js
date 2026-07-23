@@ -452,16 +452,16 @@ export default function DashboardTab(props) {
                                     value={bookingSelectedDate || todayStr}
                                     onChange={(e) => setBookingSelectedDate(e.target.value)}
                                     style={{
-                                        fontSize: '0.72rem',
+                                        fontSize: '0.74rem',
                                         fontWeight: 600,
-                                        padding: '2px 6px',
-                                        borderRadius: '6px',
-                                        border: '1px solid var(--border-color)',
-                                        background: 'rgba(255,255,255,0.06)',
-                                        color: 'var(--text-color)',
-                                        colorScheme: 'dark',
+                                        padding: '4px 8px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(16, 185, 129, 0.25)',
+                                        background: 'var(--primary-light, rgba(16, 185, 129, 0.06))',
+                                        color: 'var(--primary)',
                                         outline: 'none',
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
+                                        accentColor: 'var(--primary)'
                                     }}
                                 />
                                 <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>View All</span>
