@@ -319,6 +319,16 @@ router.post('/payment/create-order', async (req, res) => {
             return res.status(409).json({ error: 'One or more of the selected slots are no longer available. Please pick different slots.' });
         }
 
+        // Validate consecutive slots
+        if (Array.isArray(bookingData.time_slots) && bookingData.time_slots.length > 1) {
+            const hours = bookingData.time_slots.map(s => parseInt(String(s).split('-')[0], 10)).sort((a, b) => a - b);
+            for (let i = 1; i < hours.length; i++) {
+                if (hours[i] !== hours[i - 1] + 1) {
+                    return res.status(400).json({ error: 'Only consecutive time slots can be booked in a single order.' });
+                }
+            }
+        }
+
         if (chargeAmount === 0) {
             // Create a SUCCESS Booking record directly (bypass Cashfree)
             const newBooking = new Booking({

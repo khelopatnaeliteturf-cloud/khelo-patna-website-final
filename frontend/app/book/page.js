@@ -192,13 +192,40 @@ export default function BookPage() {
         }
     };
 
+    const areSlotsConsecutive = (selectedList) => {
+        if (!selectedList || selectedList.length <= 1) return true;
+
+        const hours = selectedList.map(s => {
+            const startStr = String(s).split('-')[0];
+            return parseInt(startStr, 10);
+        }).sort((a, b) => a - b);
+
+        for (let i = 1; i < hours.length; i++) {
+            if (hours[i] !== hours[i - 1] + 1) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     const handleSlotClick = (slot) => {
         if (!slot.available) return;
+        setErrorMessage('');
         
         if (selectedSlots.includes(slot.value)) {
-            setSelectedSlots(selectedSlots.filter(s => s !== slot.value));
+            const nextSelection = selectedSlots.filter(s => s !== slot.value);
+            if (!areSlotsConsecutive(nextSelection)) {
+                setErrorMessage('⚠️ Deselecting this slot leaves non-consecutive slots. Only consecutive time slots can be booked in a single order.');
+                return;
+            }
+            setSelectedSlots(nextSelection);
         } else {
-            setSelectedSlots([...selectedSlots, slot.value]);
+            const nextSelection = [...selectedSlots, slot.value];
+            if (!areSlotsConsecutive(nextSelection)) {
+                setErrorMessage('⚠️ Only consecutive time slots can be booked in a single order (e.g. 6 PM - 7 PM and 7 PM - 8 PM). Please select continuous slots.');
+                return;
+            }
+            setSelectedSlots(nextSelection);
         }
     };
 
