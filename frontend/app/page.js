@@ -43,6 +43,50 @@ export default function HomePage() {
         rating: 0
     });
 
+    // Homepage Enquiry Form state
+    const [enquiryName, setEnquiryName] = useState('');
+    const [enquiryPhone, setEnquiryPhone] = useState('');
+    const [enquiryInterest, setEnquiryInterest] = useState('');
+    const [enquiryMessage, setEnquiryMessage] = useState('');
+    const [enquirySubmitting, setEnquirySubmitting] = useState(false);
+    const [enquirySuccess, setEnquirySuccess] = useState(false);
+    const [enquiryError, setEnquiryError] = useState('');
+
+    const handleEnquirySubmit = async (e) => {
+        e.preventDefault();
+        setEnquirySubmitting(true);
+        setEnquiryError('');
+        setEnquirySuccess(false);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/public/enquiries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentName: enquiryName,
+                    mobileNumber: enquiryPhone,
+                    interestedIn: enquiryInterest || 'General Enquiry',
+                    questions: enquiryMessage
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setEnquirySuccess(true);
+                setEnquiryName('');
+                setEnquiryPhone('');
+                setEnquiryInterest('');
+                setEnquiryMessage('');
+            } else {
+                setEnquiryError(data.error || 'Failed to submit enquiry. Please try again.');
+            }
+        } catch (err) {
+            setEnquiryError('Network error submitting enquiry. Please check connection.');
+        } finally {
+            setEnquirySubmitting(false);
+        }
+    };
+
     const testimonials = [
         {
             name: "Rajesh Kumar",
@@ -1252,26 +1296,60 @@ export default function HomePage() {
                                 boxShadow: '0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)'
                             }}>
                                 <h3 style={{ fontSize: '1.1rem', fontFamily: 'Montserrat', fontWeight: 800, marginBottom: '20px' }}>Submit Enquiry</h3>
-                                <form onSubmit={(e) => e.preventDefault()}>
+                                {enquirySuccess && (
+                                    <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#10B981', padding: '14px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.88rem', fontWeight: 600 }}>
+                                        ✓ Thank you! Your enquiry has been received. Our team will contact you shortly.
+                                    </div>
+                                )}
+                                {enquiryError && (
+                                    <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#F87171', padding: '14px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.88rem', fontWeight: 600 }}>
+                                        ⚠️ {enquiryError}
+                                    </div>
+                                )}
+                                <form onSubmit={handleEnquirySubmit}>
                                     <div className="mb-3">
-                                        <input type="text" className="glass-input" placeholder="Full Name" required />
+                                        <input
+                                            type="text"
+                                            className="glass-input"
+                                            placeholder="Full Name"
+                                            required
+                                            value={enquiryName}
+                                            onChange={e => setEnquiryName(e.target.value)}
+                                        />
                                     </div>
                                     <div className="mb-3">
-                                        <input type="tel" className="glass-input" placeholder="Mobile Number" required />
+                                        <input
+                                            type="tel"
+                                            className="glass-input"
+                                            placeholder="Mobile Number"
+                                            required
+                                            value={enquiryPhone}
+                                            onChange={e => setEnquiryPhone(e.target.value)}
+                                        />
                                     </div>
                                     <div className="mb-3">
-                                        <select className="glass-input">
+                                        <select
+                                            className="glass-input"
+                                            value={enquiryInterest}
+                                            onChange={e => setEnquiryInterest(e.target.value)}
+                                        >
                                             <option value="">Select academy interest</option>
-                                            <option value="football">Football Academy</option>
-                                            <option value="cricket">Cricket Academy</option>
-                                            <option value="recreational">Weekend slot booking</option>
+                                            <option value="Football Academy">Football Academy</option>
+                                            <option value="Cricket Academy">Cricket Academy</option>
+                                            <option value="Turf Booking">Weekend slot booking</option>
                                         </select>
                                     </div>
                                     <div className="mb-4">
-                                        <textarea className="glass-input" rows="3" placeholder="Message / Requirements"></textarea>
+                                        <textarea
+                                            className="glass-input"
+                                            rows="3"
+                                            placeholder="Message / Requirements"
+                                            value={enquiryMessage}
+                                            onChange={e => setEnquiryMessage(e.target.value)}
+                                        ></textarea>
                                     </div>
-                                    <button type="submit" className="btn-premium" style={{ width: '100%', padding: '14px' }}>
-                                        <span>SUBMIT ADMISSION ENQUIRY</span>
+                                    <button type="submit" disabled={enquirySubmitting} className="btn-premium" style={{ width: '100%', padding: '14px', opacity: enquirySubmitting ? 0.7 : 1 }}>
+                                        <span>{enquirySubmitting ? 'SUBMITTING...' : 'SUBMIT ADMISSION ENQUIRY'}</span>
                                     </button>
                                 </form>
                             </div>
