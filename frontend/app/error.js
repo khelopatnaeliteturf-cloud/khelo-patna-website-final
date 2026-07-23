@@ -63,13 +63,18 @@ export default function Error({ error, reset }) {
 
                 <p style={{
                     fontFamily: 'Poppins, sans-serif',
-                    fontSize: '1rem',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    maxWidth: '400px',
-                    lineHeight: '1.7',
-                    marginBottom: '32px'
+                    fontSize: '0.92rem',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    maxWidth: '500px',
+                    lineHeight: '1.6',
+                    marginBottom: '24px',
+                    wordBreak: 'break-word',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    padding: '12px 16px',
+                    borderRadius: '12px'
                 }}>
-                    We encountered an unexpected error. Please try again or contact support if the problem persists.
+                    {error?.message || 'We encountered an unexpected error. Please try again or contact support.'}
                 </p>
 
                 <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>

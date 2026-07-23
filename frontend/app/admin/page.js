@@ -4103,7 +4103,12 @@ export default function AdminDashboard() {
             icon: 'history'
         }
     };
-    const currentPage = pageMeta[activeSidebarKey] || pageMeta[activeTab] || pageMeta.dashboard;
+    const currentPage = (pageMeta && (pageMeta[activeSidebarKey] || pageMeta[activeTab] || pageMeta.dashboard)) || {
+        icon: 'space_dashboard',
+        eyebrow: 'LIVE CONTROL ROOM',
+        title: 'Operations Command',
+        description: 'Turf bookings, academy movement, collections, and service readiness.'
+    };
     const todayLabel = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
 
     return (
