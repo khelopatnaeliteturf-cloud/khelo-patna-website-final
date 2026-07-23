@@ -526,20 +526,20 @@ router.post('/auth/passkey/register-verify', authenticateToken, async (req, res)
             return res.status(400).json({ error: 'Invalid passkey credential payload.' });
         }
 
-        const staff = await Staff.findById(req.user.id);
+        const userId = req.user.id || req.user._id || req.user.userId;
+        const staff = await Staff.findById(userId);
         if (!staff) return res.status(404).json({ error: 'User not found.' });
 
-        const passkeys = staff.passkeys || [];
+        const passkeys = Array.isArray(staff.passkeys) ? staff.passkeys : [];
         const newPasskey = {
-            id: credential.id,
-            publicKey: credential.response?.publicKey || credential.id,
-            counter: 0,
+            id: String(credential.id),
+            publicKey: String(credential.id),
             createdAt: new Date().toISOString()
         };
         
-        staff.passkeys = [...passkeys.filter(p => p.id !== credential.id), newPasskey];
-        await staff.save();
-        passkeyChallenges.delete(String(req.user.id));
+        const updatedPasskeys = [...passkeys.filter(p => p.id !== credential.id), newPasskey];
+        await Staff.updateOne({ _id: staff._id }, { $set: { passkeys: updatedPasskeys } });
+        passkeyChallenges.delete(String(userId));
 
         res.json({ success: true, message: 'Passkey registered successfully! You can now log in using Face ID / Touch ID / Fingerprint.' });
     } catch (err) {
