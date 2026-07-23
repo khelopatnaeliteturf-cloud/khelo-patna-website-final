@@ -1,0 +1,28 @@
+{
+  "name": "khelo-patna-whatsapp-microservice",
+  "version": "1.0.0",
+  "description": "Standalone Baileys WhatsApp Microservice for KheloPatna Elite Turf",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "baileys",
+    "whatsapp",
+    "khelopatna",
+    "microservice"
+  ],
+  "author": "KheloPatna Team",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.23",
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "pino": "^8.20.0",
+    "qrcode": "^1.5.3"
+  }
+}
