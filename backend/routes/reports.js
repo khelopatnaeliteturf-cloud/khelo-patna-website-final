@@ -387,6 +387,28 @@ router.post('/admin/whatsapp/reconnect', authenticateToken, authorizeRoles('RECE
     res.json({ success: true, message: 'Reconnection initiated.' });
 });
 
+// Incoming Webhook for external Baileys microservice
+const { handleIncomingWebhook } = require('../services/botStates');
+
+router.post('/whatsapp/webhook', async (req, res) => {
+    const { phone, text, secret } = req.body;
+    const apiSecret = process.env.WA_API_SECRET;
+    if (apiSecret && secret !== apiSecret && req.headers['x-wa-secret'] !== apiSecret) {
+        return res.status(403).json({ error: 'Unauthorized webhook call.' });
+    }
+    const incomingText = text || req.body.message;
+    if (!phone || !incomingText) {
+        return res.status(400).json({ error: 'phone and text/message are required.' });
+    }
+    try {
+        await handleIncomingWebhook({ phone, text: incomingText });
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error handling incoming WhatsApp webhook:', err);
+        res.status(500).json({ error: 'Error processing webhook.' });
+    }
+});
+
 // 6. Send Single WhatsApp Message
 router.post('/admin/communicate/send-whatsapp', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
     const { phone, message } = req.body;

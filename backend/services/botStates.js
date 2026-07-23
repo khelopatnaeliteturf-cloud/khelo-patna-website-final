@@ -158,14 +158,25 @@ _Reply *Menu* to return to the main menu._`;
 
 /**
  * Main incoming message handler for WhatsApp Booking Bot.
+ * Supports both local Baileys socket events and external microservice webhooks.
  */
-async function handleIncomingMessage(sock, m) {
-    const phoneJid = m.key.remoteJid;
-    if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') return;
-    const phone = phoneJid.split('@')[0]; // Extract phone number
-    const text = getMessageText(m).trim();
+async function handleIncomingMessage(sockOrPayload, m) {
+    let phone = '';
+    let text = '';
 
-    if (!text) return; // Skip empty messages
+    if (sockOrPayload && typeof sockOrPayload === 'object' && sockOrPayload.phone && sockOrPayload.text) {
+        // External microservice webhook payload
+        phone = String(sockOrPayload.phone).replace(/\D/g, '');
+        text = String(sockOrPayload.text).trim();
+    } else if (m && m.key) {
+        // Local Baileys socket message
+        const phoneJid = m.key.remoteJid;
+        if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') return;
+        phone = phoneJid.split('@')[0];
+        text = getMessageText(m).trim();
+    }
+
+    if (!phone || !text) return; // Skip invalid or empty messages
 
     // 1. Fetch or create user session
     let session = await ChatSession.findOne({ phone: phone });
@@ -517,5 +528,6 @@ async function handleIncomingMessage(sock, m) {
 registerBotListener(handleIncomingMessage);
 
 module.exports = {
-    handleIncomingMessage
+    handleIncomingMessage,
+    handleIncomingWebhook: handleIncomingMessage
 };
