@@ -4095,6 +4095,8 @@ export default function AdminDashboard() {
                      --success-text: #16a34a;
                      --success-bg: rgba(22, 163, 74, 0.06);
                      --success-border: rgba(22, 163, 74, 0.18);
+                     --emerald: #059669;
+                     --emerald-bright: #047857;
                      --info: #2563EB;
                      --info-light: rgba(37, 99, 235, 0.1);
                      --purple: #7C3AED;
@@ -4108,6 +4110,8 @@ export default function AdminDashboard() {
                  [data-theme='dark'] {
                      --bg-color: #0B1120;
                      --card-bg: rgba(30, 41, 59, 0.7);
+                     --emerald: #00FF88;
+                     --emerald-bright: #00FF88;
                      --border-color: rgba(255,255,255,0.06);
                      --primary: #818CF8;
                      --primary-hover: #A5B4FC;
@@ -6169,7 +6173,7 @@ export default function AdminDashboard() {
                                         onClick={(e) => { e.stopPropagation(); setShowChangePasswordModal(true); setShowUserMenu(false); }}
                                         style={{ width: '100%', background: 'transparent', border: 'none', color: 'var(--text-main)', padding: '10px 12px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 }}
                                     >
-                                        <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald)' }}>vpn_key</span>
+                                        <span className="material-icons-outlined" style={{ fontSize: '18px', color: 'var(--emerald-bright, var(--emerald))' }}>vpn_key</span>
                                         Change Password
                                     </button>
                                     <button 
@@ -6415,7 +6419,7 @@ export default function AdminDashboard() {
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 8, 6, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', width: '95%', maxWidth: '450px', boxShadow: 'var(--shadow-lg)' }}>
                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald-bright, var(--emerald))', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span className="material-icons-outlined">vpn_key</span>
                                 Change My Password
                             </h4>

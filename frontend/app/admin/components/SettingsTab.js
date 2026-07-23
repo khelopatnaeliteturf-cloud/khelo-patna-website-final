@@ -1069,7 +1069,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(3, 8, 6, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999999, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
                     <div style={{ background: 'var(--card-bg, #0A1510)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '24px', width: '95%', maxWidth: '540px', boxShadow: 'var(--shadow-lg)' }}>
                         <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--emerald-bright, var(--emerald))', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span className="material-icons-outlined">manage_accounts</span>
                                 Edit User Account
                             </h4>
