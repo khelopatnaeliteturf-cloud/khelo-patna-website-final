@@ -2498,6 +2498,13 @@ export default function AdminDashboard() {
         return '₹' + (Number(amount) || 0).toLocaleString('en-IN');
     };
 
+    // Generate unique customer ID from name + phone
+    const generateCustomerId = (name, phone) => {
+        const str = `${(name || 'WI').substring(0, 2).toUpperCase()}${(phone || '0000').slice(-4)}`;
+        const hash = Array.from(str).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        return `KP-${str.substring(0, 2)}${String(hash).padStart(4, '0').slice(-4)}`;
+    };
+
     // Calendar helper variables
     const monthName = calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const firstDayIndex = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
