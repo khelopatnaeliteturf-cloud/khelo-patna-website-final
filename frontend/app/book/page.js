@@ -1178,10 +1178,44 @@ export default function BookPage() {
                                 <div>
                                     <h3 style={{ fontSize: '1rem', marginBottom: '2px' }}>Choose Time Slots</h3>
                                     <span style={{ fontFamily: 'Space Grotesk', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.04em' }}>
-                                        TAP TO SELECT · MULTIPLE ALLOWED
+                                        TAP TO SELECT · MULTIPLE ALLOWED (MUST BE CONSECUTIVE)
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Inline Slot Error Alert */}
+                            {errorMessage && (
+                                <div className="glass-panel animate-fade-in" style={{
+                                    padding: '14px 18px',
+                                    marginBottom: '20px',
+                                    background: 'rgba(239, 68, 68, 0.12)',
+                                    border: '1px solid rgba(239, 68, 68, 0.4)',
+                                    borderRadius: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justify: 'space-between',
+                                    gap: '12px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                                        <span style={{ color: '#FCA5A5', fontSize: '0.86rem', fontWeight: 600, lineHeight: 1.4 }}>
+                                            {errorMessage}
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setErrorMessage('')}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
+                                            width: '24px', height: '24px', borderRadius: '50%',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            cursor: 'pointer', fontSize: '0.75rem', flexShrink: 0
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
 
                             {loading ? (
                                 <div className="logo-loader-wrapper" style={{ padding: '36px 0' }}>
@@ -1920,6 +1954,55 @@ export default function BookPage() {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {/* Floating Fixed Error Toast — Pops up right on top of user view wherever scrolled */}
+            {errorMessage && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '28px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 99999,
+                    maxWidth: '92vw',
+                    width: '560px',
+                    background: 'linear-gradient(135deg, rgba(30, 10, 15, 0.96) 0%, rgba(20, 5, 8, 0.96) 100%)',
+                    border: '1.5px solid rgba(239, 68, 68, 0.6)',
+                    borderRadius: '20px',
+                    padding: '16px 20px',
+                    boxShadow: '0 20px 50px rgba(239, 68, 68, 0.4), 0 0 25px rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(16px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justify: 'space-between',
+                    gap: '14px'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            width: '38px', height: '38px', borderRadius: '50%',
+                            background: 'rgba(239, 68, 68, 0.25)', border: '1px solid rgba(239, 68, 68, 0.4)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '1.2rem', flexShrink: 0
+                        }}>
+                            ⚠️
+                        </div>
+                        <div style={{ color: '#FCA5A5', fontSize: '0.86rem', fontWeight: 600, lineHeight: 1.45 }}>
+                            {errorMessage}
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setErrorMessage('')}
+                        style={{
+                            background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
+                            width: '28px', height: '28px', borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+                        }}
+                    >
+                        ✕
+                    </button>
                 </div>
             )}
         </div>
