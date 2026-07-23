@@ -1,7 +1,15 @@
 import React from 'react';
 
 export default function InventoryTab(props) {
-    const { activeSidebarKey, inventoryItems, setSuccessMessage, handlePOSCheckout, posSale, setPosSale, posItems } = props;
+    const { 
+        activeSidebarKey = 'equipment-stock', 
+        inventoryItems = [], 
+        setSuccessMessage = () => {}, 
+        handlePOSCheckout = () => {}, 
+        posSale = {}, 
+        setPosSale = () => {}, 
+        posItems = [] 
+    } = props || {};
         if (activeSidebarKey === 'stock-alerts') {
             const lowStock = inventoryItems.filter(item => item.availableQuantity <= 5);
             return (

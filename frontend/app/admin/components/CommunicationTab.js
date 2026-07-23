@@ -24,21 +24,21 @@ function getCleanSummary(text) {
 
 export default function CommunicationTab(props) {
     const { 
-        commType, 
-        setCommType, 
-        handleCommunicateSubmit, 
-        commStudentMsg, 
-        setCommStudentMsg, 
-        allStudents, 
-        commGroupMsg, 
-        setCommGroupMsg, 
-        commStaffMsg, 
-        setCommStaffMsg, 
-        commEmail, 
-        setCommEmail,
-        backendUrl,
-        getHeaders
-    } = props;
+        commType = 'individual', 
+        setCommType = () => {}, 
+        handleCommunicateSubmit = () => {}, 
+        commStudentMsg = {}, 
+        setCommStudentMsg = () => {}, 
+        allStudents = [], 
+        commGroupMsg = {}, 
+        setCommGroupMsg = () => {}, 
+        commStaffMsg = {}, 
+        setCommStaffMsg = () => {}, 
+        commEmail = {}, 
+        setCommEmail = () => {},
+        backendUrl = '',
+        getHeaders = () => ({})
+    } = props || {};
 
     // Local state for communication logs
     const [logs, setLogs] = React.useState([]);

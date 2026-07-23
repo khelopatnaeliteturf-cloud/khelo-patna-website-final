@@ -1,7 +1,17 @@
 import React from 'react';
 
 export default function SessionTab(props) {
-    const { setErrorMessage, setSuccessMessage, setLoading, BACKEND_URL, getHeaders, newSessionData, setNewSessionData, loadSessions, sessionsList } = props;
+    const { 
+        setErrorMessage = () => {}, 
+        setSuccessMessage = () => {}, 
+        setLoading = () => {}, 
+        BACKEND_URL = '', 
+        getHeaders = () => ({}), 
+        newSessionData = {}, 
+        setNewSessionData = () => {}, 
+        loadSessions = () => {}, 
+        sessionsList = [] 
+    } = props || {};
         const handleCreateSession = async (e) => {
             e.preventDefault();
             setErrorMessage('');

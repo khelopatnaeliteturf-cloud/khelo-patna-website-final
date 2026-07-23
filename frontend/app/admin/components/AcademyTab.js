@@ -1,7 +1,31 @@
 import React from 'react';
 
 export default function AcademyTab(props) {
-    const { academySubTab, setAcademySubTab, customerSearchQuery, setCustomerSearchQuery, allStudents, selectedCrmStudent, setSelectedCrmStudent, setActiveTab, setActiveSidebarKey, setPaymentsSubTab, setPaymentSearchId, setSelectedStudentForPayment, setShowEnquiryModal, enquirySearchQuery, setEnquirySearchQuery, enquiriesList, handleConvertEnquiry, handleSaveAttendance, attendanceSport, setAttendanceSport, studentsList, attendanceGrid, toggleStudentAttendance } = props;
+    const { 
+        academySubTab = 'students', 
+        setAcademySubTab = () => {}, 
+        customerSearchQuery = '', 
+        setCustomerSearchQuery = () => {}, 
+        allStudents = [], 
+        selectedCrmStudent = null, 
+        setSelectedCrmStudent = () => {}, 
+        setActiveTab = () => {}, 
+        setActiveSidebarKey = () => {}, 
+        setPaymentsSubTab = () => {}, 
+        setPaymentSearchId = () => {}, 
+        setSelectedStudentForPayment = () => {}, 
+        setShowEnquiryModal = () => {}, 
+        enquirySearchQuery = '', 
+        setEnquirySearchQuery = () => {}, 
+        enquiriesList = [], 
+        handleConvertEnquiry = () => {}, 
+        handleSaveAttendance = () => {}, 
+        attendanceSport = 'cricket', 
+        setAttendanceSport = () => {}, 
+        studentsList = [], 
+        attendanceGrid = {}, 
+        toggleStudentAttendance = () => {} 
+    } = props || {};
         return (
             <div className="animate-fade-in">
                 <div className="d-flex gap-3 mb-4 border-bottom pb-2">

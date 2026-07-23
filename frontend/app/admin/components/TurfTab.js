@@ -1,7 +1,34 @@
 import React from 'react';
 
 export default function TurfTab(props) {
-    const { activeSidebarKey, bookingsLog, selectedBooking, generateCustomerId, bookingsFilter, setBookingsFilter, bookingsDateRange, setBookingsDateRange, bookingsCustomStartDate, setBookingsCustomStartDate, bookingsCustomEndDate, setBookingsCustomEndDate, setShowOfflineBookingModal, setShowBookingsReportModal, formatINR, formatSlotTo12Hr, setSelectedBookingState, turfSettings, closuresList, handleSaveSettings, setTurfSettings, handleCreateClosure, newClosure, setNewClosure, handleDeleteClosure } = props;
+    const { 
+        activeSidebarKey = 'bookings', 
+        bookingsLog = [], 
+        selectedBooking = null, 
+        generateCustomerId = () => {}, 
+        bookingsFilter = 'ALL', 
+        setBookingsFilter = () => {}, 
+        bookingsDateRange = 'ALL', 
+        setBookingsDateRange = () => {}, 
+        bookingsCustomStartDate = '', 
+        setBookingsCustomStartDate = () => {}, 
+        bookingsCustomEndDate = '', 
+        setBookingsCustomEndDate = () => {}, 
+        setShowOfflineBookingModal = () => {}, 
+        setShowBookingsReportModal = () => {}, 
+        formatINR = (n) => '₹' + (n || 0), 
+        formatSlotTo12Hr = (s) => s, 
+        formatMultipleSlots = (s) => s,
+        setSelectedBookingState = () => {}, 
+        turfSettings = {}, 
+        closuresList = [], 
+        handleSaveSettings = () => {}, 
+        setTurfSettings = () => {}, 
+        handleCreateClosure = () => {}, 
+        newClosure = {}, 
+        setNewClosure = () => {}, 
+        handleDeleteClosure = () => {} 
+    } = props || {};
     
     const getBookingSourceLabel = (b) => {
         if (!b) return 'Website';

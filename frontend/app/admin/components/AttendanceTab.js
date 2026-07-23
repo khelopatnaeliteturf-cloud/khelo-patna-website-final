@@ -1,7 +1,14 @@
 import React from 'react';
 
 export default function AttendanceTab(props) {
-    const { handleSaveAttendance, attendanceSport, setAttendanceSport, studentsList, attendanceGrid, toggleStudentAttendance } = props;
+    const { 
+        handleSaveAttendance = () => {}, 
+        attendanceSport = 'cricket', 
+        setAttendanceSport = () => {}, 
+        studentsList = [], 
+        attendanceGrid = {}, 
+        toggleStudentAttendance = () => {} 
+    } = props || {};
         return (
             <div className="card-premium animate-fade-in">
                 <div className="d-flex justify-content-between align-items-center mb-3">
