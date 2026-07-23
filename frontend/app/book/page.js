@@ -253,21 +253,21 @@ export default function BookPage() {
 
         const wCode = liveWeatherData ? liveWeatherData.weather_code : 0;
         let cond = 'Clear Playing Conditions';
-        let icon = '☀️';
+        let icon = 'wb_sunny';
 
         if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(wCode)) {
             cond = 'Rainy Conditions · Free Reschedule Active';
-            icon = '🌧️';
+            icon = 'water_drop';
         } else if ([95, 96, 99].includes(wCode)) {
             cond = 'Thunderstorm Alert · Covered Arena Active';
-            icon = '⛈️';
+            icon = 'thunderstorm';
         } else if ([1, 2, 3].includes(wCode)) {
             cond = 'Partly Cloudy · Great Turf Conditions';
-            icon = '🌤️';
+            icon = 'cloud';
         }
 
         if (hour >= 19 || hour <= 4) {
-            if (icon === '☀️') icon = '🌙';
+            if (icon === 'wb_sunny') icon = 'nightlight';
             return {
                 icon,
                 temp,
@@ -281,7 +281,7 @@ export default function BookPage() {
             };
         } else if (hour >= 5 && hour <= 11) {
             return {
-                icon: icon === '☀️' ? '🌅' : icon,
+                icon: icon === 'wb_sunny' ? 'wb_twilight' : icon,
                 temp,
                 feelsLike,
                 humidity,
@@ -305,7 +305,7 @@ export default function BookPage() {
             };
         } else {
             return {
-                icon: icon === '☀️' ? '🌆' : icon,
+                icon: icon === 'wb_sunny' ? 'wb_twilight' : icon,
                 temp,
                 feelsLike,
                 humidity,
@@ -1354,10 +1354,9 @@ export default function BookPage() {
                                                 width: '48px', height: '48px', borderRadius: '16px',
                                                 background: 'rgba(255,255,255,0.1)',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: '1.8rem',
                                                 border: '1px solid rgba(255,255,255,0.15)'
                                             }}>
-                                                {weather.icon}
+                                                <span className="material-icons-outlined" style={{ fontSize: '26px', color: weather.accent }}>{weather.icon}</span>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#fff', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -1388,11 +1387,11 @@ export default function BookPage() {
                                         </div>
                                         <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>HUMIDITY</span>
-                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.humidity} 💧</span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.humidity} <span className="material-icons-outlined" style={{ fontSize: '14px', verticalAlign: 'middle', color: '#60A5FA' }}>water_drop</span></span>
                                         </div>
                                         <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>WIND SPEED</span>
-                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.wind} 💨</span>
+                                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.wind} <span className="material-icons-outlined" style={{ fontSize: '14px', verticalAlign: 'middle', color: '#9CA3AF' }}>air</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -1404,7 +1403,7 @@ export default function BookPage() {
                             <form onSubmit={handleBookingSubmit} className="glass-card animate-fade-in" style={{ padding: '32px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
                                     <div className="icon-ring" style={{ width: '40px', height: '40px' }}>
-                                        <span style={{ fontSize: '1rem' }}>👤</span>
+                                        <span className="material-icons-outlined" style={{ fontSize: '20px', color: '#10B981' }}>person</span>
                                     </div>
                                     <div>
                                         <h3 style={{ fontSize: '1rem', marginBottom: '2px' }}>Customer Information</h3>
@@ -1930,9 +1929,9 @@ export default function BookPage() {
                             width: '38px', height: '38px', borderRadius: '50%',
                             background: 'rgba(239, 68, 68, 0.25)', border: '1px solid rgba(239, 68, 68, 0.4)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '1.2rem', flexShrink: 0
+                            flexShrink: 0
                         }}>
-                            ⚠️
+                            <span className="material-icons-outlined" style={{ color: '#FCA5A5', fontSize: '20px' }}>warning</span>
                         </div>
                         <div style={{ color: '#FCA5A5', fontSize: '0.86rem', fontWeight: 600, lineHeight: 1.45 }}>
                             {errorMessage}
@@ -1945,10 +1944,10 @@ export default function BookPage() {
                             background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff',
                             width: '28px', height: '28px', borderRadius: '50%',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', fontSize: '0.85rem', flexShrink: 0
+                            cursor: 'pointer', flexShrink: 0
                         }}
                     >
-                        ✕
+                        <span className="material-icons-outlined" style={{ fontSize: '16px', color: '#fff' }}>close</span>
                     </button>
                 </div>
             )}
