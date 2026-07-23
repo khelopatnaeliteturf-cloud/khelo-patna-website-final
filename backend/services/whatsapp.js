@@ -485,7 +485,17 @@ async function sendWhatsAppMessage(toPhone, text) {
 // Getters and setters
 const getQR = () => qrCodeImage;
 const getStatus = () => connectionStatus;
-const setBotEnabled = (enabled) => { botEnabled = enabled; };
+const setBotEnabled = (enabled) => { 
+    botEnabled = Boolean(enabled); 
+    if (process.env.WA_SERVICE_URL) {
+        const axios = require('axios');
+        const url = `${process.env.WA_SERVICE_URL.replace(/\/+$/, '')}/toggle-bot`;
+        axios.post(url, { enabled: botEnabled }, {
+            headers: { 'X-WA-Secret': process.env.WA_API_SECRET || '' },
+            timeout: 5000
+        }).catch(err => console.warn('Microservice bot toggle sync warning:', err.message));
+    }
+};
 const getBotEnabled = () => botEnabled;
 const registerBotListener = (callback) => { onMessageCallback = callback; };
 

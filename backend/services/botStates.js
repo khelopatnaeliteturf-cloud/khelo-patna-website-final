@@ -168,6 +168,11 @@ _Reply *Menu* to return to the main menu._`;
  * Supports both local Baileys socket events and external microservice webhooks.
  */
 async function handleIncomingMessage(sockOrPayload, m) {
+    if (!getBotEnabled()) {
+        console.log('🤖 [WhatsApp Bot] Bot is currently DISABLED by Admin toggle. Skipping auto-reply.');
+        return;
+    }
+
     let phone = '';
     let text = '';
 

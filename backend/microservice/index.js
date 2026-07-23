@@ -281,6 +281,13 @@ app.get('/status', authSecret, (req, res) => {
     });
 });
 
+app.post('/toggle-bot', authSecret, (req, res) => {
+    const { enabled } = req.body;
+    botEnabled = Boolean(enabled);
+    console.log(`🤖 [WhatsApp Microservice] Auto-Bot toggled to: ${botEnabled ? 'ENABLED' : 'DISABLED'}`);
+    res.json({ success: true, bot_enabled: botEnabled });
+});
+
 app.post('/send-text', authSecret, async (req, res) => {
     const { phone, message } = req.body;
     if (!phone || !message) {
