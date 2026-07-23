@@ -41,43 +41,61 @@ let qrCodeImage = null;
 let connectionStatus = 'DISCONNECTED';
 let botEnabled = true;
 
+async function ensureSessionTable() {
+    try {
+        await dbPool.query(`
+            CREATE TABLE IF NOT EXISTS whatsapp_session (
+                key VARCHAR PRIMARY KEY,
+                value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+    } catch (e) {
+        console.error('Error ensuring whatsapp_session table:', e.message);
+    }
+}
+
 /**
  * Custom Supabase PostgreSQL Auth State Provider for Baileys
  */
 async function useSupabaseAuthState() {
+    await ensureSessionTable();
     const { initAuthCreds, BufferJSON } = await import('@whiskeysockets/baileys');
 
     const readData = async (type, id) => {
+        const key = `${type}:${id}`;
         try {
-            const res = await dbPool.query('SELECT value FROM whatsapp_session WHERE type = $1 AND id = $2', [type, id]);
+            const res = await dbPool.query('SELECT value FROM whatsapp_session WHERE key = $1', [key]);
             if (res.rows.length > 0) {
                 return JSON.parse(res.rows[0].value, BufferJSON.reviver);
             }
         } catch (e) {
-            console.error(`Error reading session ${type}:${id}`, e.message);
+            console.error(`Error reading session ${key}:`, e.message);
         }
         return null;
     };
 
     const writeData = async (type, id, value) => {
+        const key = `${type}:${id}`;
         try {
             const valStr = JSON.stringify(value, BufferJSON.replacer);
             await dbPool.query(
-                `INSERT INTO whatsapp_session (type, id, value, updated_at) 
-                 VALUES ($1, $2, $3, NOW()) 
-                 ON CONFLICT (type, id) DO UPDATE SET value = $3, updated_at = NOW()`,
-                [type, id, valStr]
+                `INSERT INTO whatsapp_session (key, value, updated_at) 
+                 VALUES ($1, $2, NOW()) 
+                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                [key, valStr]
             );
         } catch (e) {
-            console.error(`Error writing session ${type}:${id}`, e.message);
+            console.error(`Error writing session ${key}:`, e.message);
         }
     };
 
     const removeData = async (type, id) => {
+        const key = `${type}:${id}`;
         try {
-            await dbPool.query('DELETE FROM whatsapp_session WHERE type = $1 AND id = $2', [type, id]);
+            await dbPool.query('DELETE FROM whatsapp_session WHERE key = $1', [key]);
         } catch (e) {
-            console.error(`Error deleting session ${type}:${id}`, e.message);
+            console.error(`Error deleting session ${key}:`, e.message);
         }
     };
 
