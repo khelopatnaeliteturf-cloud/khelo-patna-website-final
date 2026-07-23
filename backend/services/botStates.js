@@ -545,8 +545,8 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 // Save state data
                 session.bookingData.date = targetDateStr;
                 session.bookingData.totalAmount = hourlyRate;
+                session.bookingData.slotMap = indexToSlotValueMap;
                 session.state = 'SELECTING_SLOTS';
-                session.set('slotMap', indexToSlotValueMap);
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
@@ -561,7 +561,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
         case 'SELECTING_SLOTS':
             const selections = text.split(',').map(s => s.trim());
-            const slotMap = session.get('slotMap');
+            const slotMap = session.bookingData?.slotMap || session.slotMap || {};
 
             if (!slotMap || selections.some(s => !slotMap[s])) {
                 await sendWhatsAppMessage(phone, `⚠️ Invalid selection. Please reply with slot number(s) (e.g. *1* or *1,2*).`);
