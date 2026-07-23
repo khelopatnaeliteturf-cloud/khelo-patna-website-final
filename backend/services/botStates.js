@@ -3,7 +3,7 @@ const ChatSession = require('../models/ChatSession');
 const Booking = require('../models/Booking');
 const TurfSettings = require('../models/TurfSettings');
 const TurfClosure = require('../models/TurfClosure');
-const { sendWhatsAppMessage, registerBotListener } = require('./whatsapp');
+const { sendWhatsAppMessage, registerBotListener, getBotEnabled } = require('./whatsapp');
 const { createPaymentLink } = require('./cashfree');
 const { processAIChat } = require('./aiChatbot');
 
