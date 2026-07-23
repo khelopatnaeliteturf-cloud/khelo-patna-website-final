@@ -574,7 +574,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 session.state = 'ENTERING_ADVANCE_AMOUNT';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `💵 *Enter Advance Deposit Amount*:\n\nPlease reply with the amount in ₹ you wish to pay as advance (e.g. *300* or *500*).\n\n⚠️ *Note*: Minimum advance deposit required to lock a slot is *₹300*.`
+                    `💵 *Enter Advance Deposit Amount*:\n\nPlease reply with the amount in ₹ you wish to pay as advance (e.g. *300* or *500*).\n\n💡 *Note*: To lock and confirm your slot booking, you should pay *₹300* advance deposit.`
                 );
                 return;
             } else if (text === '2' || lowerText.includes('full') || lowerText.includes('100%')) {
@@ -586,7 +586,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 if (!isNaN(typedNum) && typedNum > 0) {
                     if (typedNum < 300) {
                         await sendWhatsAppMessage(phone, 
-                            `⚠️ Minimum advance deposit required to lock a slot is *₹300*. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
+                            `⚠️ You should pay *₹300* for the slot booking. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
                         );
                         return;
                     }
@@ -625,7 +625,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
             if (typedAmt < 300) {
                 await sendWhatsAppMessage(phone, 
-                    `⚠️ Minimum advance deposit required to lock a slot is *₹300*. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
+                    `⚠️ You should pay *₹300* for the slot booking. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
                 );
                 return;
             }
