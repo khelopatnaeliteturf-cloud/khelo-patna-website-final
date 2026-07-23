@@ -539,14 +539,42 @@ export default function AdminDashboard() {
         questions: ''
     });
 
-    // --- AUTHENTICATION CHECK & THEME LOADER ---
+    // --- AUTHENTICATION CHECK & TIME-BASED AUTO THEME SWITCHER (Dark after 6PM, Light after 6AM) ---
+    const getTimeBasedTheme = () => {
+        const currentHour = new Date().getHours();
+        return (currentHour >= 18 || currentHour < 6) ? 'dark' : 'light';
+    };
+
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedRole = localStorage.getItem('user_role');
         const storedUser = localStorage.getItem('username');
-        const storedTheme = localStorage.getItem('erp_theme') || 'light';
 
-        setTheme(storedTheme);
+        const storedTheme = localStorage.getItem('erp_theme');
+        const hasManualOverride = localStorage.getItem('erp_theme_manual') === 'true';
+
+        let activeTheme = storedTheme;
+        if (!hasManualOverride || !storedTheme) {
+            activeTheme = getTimeBasedTheme();
+            localStorage.setItem('erp_theme', activeTheme);
+        }
+        setTheme(activeTheme);
+
+        // Check time-based theme periodically (every 30s)
+        const themeInterval = setInterval(() => {
+            const isManual = localStorage.getItem('erp_theme_manual') === 'true';
+            if (!isManual) {
+                const autoTheme = getTimeBasedTheme();
+                setTheme(prev => {
+                    if (prev !== autoTheme) {
+                        localStorage.setItem('erp_theme', autoTheme);
+                        return autoTheme;
+                    }
+                    return prev;
+                });
+            }
+        }, 30000);
+
         if (storedToken) {
             setToken(storedToken);
         }
@@ -2478,6 +2506,7 @@ export default function AdminDashboard() {
         const nextTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(nextTheme);
         localStorage.setItem('erp_theme', nextTheme);
+        localStorage.setItem('erp_theme_manual', 'true');
     };
 
     // Calendar helper variables

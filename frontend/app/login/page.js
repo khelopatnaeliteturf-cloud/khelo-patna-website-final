@@ -201,6 +201,20 @@ export default function LoginPage() {
             localStorage.setItem('username', data.user.username);
             setSessionMarker();
 
+            // Store credentials in browser/OS PasswordManager for Face ID / Fingerprint auto-fill
+            if (typeof window !== 'undefined' && window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+                try {
+                    const cred = new window.PasswordCredential({
+                        id: username,
+                        password: password,
+                        name: username
+                    });
+                    await navigator.credentials.store(cred);
+                } catch (e) {
+                    console.log('Credential store skipped:', e);
+                }
+            }
+
             // Redirect to dashboard or requested page
             router.push(getRedirectUrl());
 
@@ -210,6 +224,26 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBiometricLogin = async () => {
+        if (typeof window !== 'undefined' && navigator.credentials && navigator.credentials.get) {
+            try {
+                const cred = await navigator.credentials.get({
+                    password: true,
+                    mediation: 'optional'
+                });
+                if (cred && cred.id && cred.password) {
+                    setUsername(cred.id);
+                    setPassword(cred.password);
+                    return;
+                }
+            } catch (e) {
+                console.log('Biometric credential retrieval skipped:', e);
+            }
+        }
+        const userElem = document.getElementById('staff-username');
+        if (userElem) userElem.focus();
     };
 
     const handleBootstrapSubmit = async (e) => {
@@ -405,7 +439,9 @@ export default function LoginPage() {
                             }}>Username</label>
                             <input 
                                 id="staff-username"
+                                name="username"
                                 type="text" 
+                                autoComplete="username"
                                 className="glass-input" 
                                 placeholder="Enter username" 
                                 required
@@ -426,7 +462,7 @@ export default function LoginPage() {
                                 }}
                             />
                         </div>
-                        <div style={{ marginBottom: '28px' }}>
+                        <div style={{ marginBottom: '24px' }}>
                             <label htmlFor="staff-password" style={{
                                 display: 'block',
                                 fontSize: '0.78rem',
@@ -439,7 +475,9 @@ export default function LoginPage() {
                             }}>Password</label>
                             <input 
                                 id="staff-password"
+                                name="password"
                                 type="password" 
+                                autoComplete="current-password"
                                 className="glass-input" 
                                 placeholder="Enter password" 
                                 required
@@ -469,6 +507,32 @@ export default function LoginPage() {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Face ID / Touch ID / Fingerprint Unlock Button */}
+                        <button
+                            type="button"
+                            onClick={handleBiometricLogin}
+                            style={{
+                                width: '100%',
+                                padding: '11px 16px',
+                                borderRadius: '12px',
+                                background: 'rgba(57,255,20,0.05)',
+                                border: '1px dashed rgba(57,255,20,0.25)',
+                                color: '#39ff14',
+                                fontSize: '0.82rem',
+                                fontWeight: 700,
+                                fontFamily: "'Space Grotesk', sans-serif",
+                                cursor: 'pointer',
+                                marginBottom: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <span>🔓 Scan Face ID / Fingerprint</span>
+                        </button>
 
                         <button type="submit" className="btn-premium" disabled={loading} style={{
                             width: '100%',
