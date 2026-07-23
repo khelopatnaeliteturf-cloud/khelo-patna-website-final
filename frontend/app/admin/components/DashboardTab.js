@@ -352,67 +352,69 @@ export default function DashboardTab(props) {
                 </div>
 
                 {/* Middle Section: Chart + Schedule + Activity */}
-                <div className="dashboard-bento-grid" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr 3fr', gap: '20px' }}>
+                <div className="dashboard-bento-grid" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr 3.2fr', gap: '20px', alignItems: 'stretch' }}>
                     {/* Weekly Revenue Line Chart with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '380px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Revenue Overview</h3>
                             <button className="btn-secondary-stripe" style={{ fontSize: '0.78rem', padding: '4px 12px' }}>Last 6 Months</button>
                         </div>
-                        <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
-                            <defs>
-                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.01" />
-                                </linearGradient>
-                            </defs>
-                            {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
-                                const v = Math.round(ratio * chartMax);
-                                const y = chartPad.top + plotH - (v / chartMax) * plotH;
-                                return (<g key={i}>
-                                    <line x1={chartPad.left} y1={y} x2={chartPad.left + plotW} y2={y} stroke="var(--border-color)" strokeWidth="1" />
-                                    <text x={chartPad.left - 8} y={y + 4} textAnchor="end" fill="var(--text-muted)" fontSize="10">₹{v >= 1000 ? (v / 1000).toFixed(1) + 'K' : v}</text>
-                                </g>);
-                            })}
-                            <polygon points={areaStr} fill="url(#chartGrad)" />
-                            <polyline points={lineStr} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                            {chartPoints.map((p, i) => {
-                                const val = chartData[i] || 0;
-                                const monthName = revenueAnalytics[i]?.month || chartLabels[i];
-                                const isHovered = hoveredChartPoint === i;
-                                return (
-                                    <g key={i} style={{ cursor: 'pointer' }} onMouseEnter={() => setHoveredChartPoint(i)} onMouseLeave={() => setHoveredChartPoint(null)}>
-                                        <circle cx={p.x} cy={p.y} r={isHovered ? "7" : "4"} fill={isHovered ? "var(--primary)" : "var(--card-bg)"} stroke="var(--primary)" strokeWidth={isHovered ? "3" : "2.5"} style={{ transition: 'all 0.2s ease' }} />
-                                        {isHovered && (
-                                            <g>
-                                                <rect x={Math.min(p.x - 55, chartW - 120)} y={Math.max(p.y - 45, 10)} width="110" height="34" rx="6" fill="var(--card-bg, #070D1A)" stroke="var(--primary)" strokeWidth="1.5" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.4))" />
-                                                <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 14} textAnchor="middle" fill="var(--primary)" fontSize="9" fontWeight="800">{monthName}</text>
-                                                <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 26} textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="700">{formatINR(val)}</text>
-                                            </g>
-                                        )}
-                                    </g>
-                                );
-                            })}
-                            {chartLabels.map((d, i) => (
-                                <text key={i} x={chartPad.left + (i / Math.max(chartLabels.length - 1, 1)) * plotW} y={chartH - 5} textAnchor="middle" fill="var(--text-muted)" fontSize="10">{d}</text>
-                            ))}
-                        </svg>
+                        <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: '100%', height: '100%', maxHeight: '280px', overflow: 'visible' }}>
+                                <defs>
+                                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.2" />
+                                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.01" />
+                                    </linearGradient>
+                                </defs>
+                                {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+                                    const v = Math.round(ratio * chartMax);
+                                    const y = chartPad.top + plotH - (v / chartMax) * plotH;
+                                    return (<g key={i}>
+                                        <line x1={chartPad.left} y1={y} x2={chartPad.left + plotW} y2={y} stroke="var(--border-color)" strokeWidth="1" />
+                                        <text x={chartPad.left - 8} y={y + 4} textAnchor="end" fill="var(--text-muted)" fontSize="10">₹{v >= 1000 ? (v / 1000).toFixed(1) + 'K' : v}</text>
+                                    </g>);
+                                })}
+                                <polygon points={areaStr} fill="url(#chartGrad)" />
+                                <polyline points={lineStr} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                {chartPoints.map((p, i) => {
+                                    const val = chartData[i] || 0;
+                                    const monthName = revenueAnalytics[i]?.month || chartLabels[i];
+                                    const isHovered = hoveredChartPoint === i;
+                                    return (
+                                        <g key={i} style={{ cursor: 'pointer' }} onMouseEnter={() => setHoveredChartPoint(i)} onMouseLeave={() => setHoveredChartPoint(null)}>
+                                            <circle cx={p.x} cy={p.y} r={isHovered ? "7" : "4"} fill={isHovered ? "var(--primary)" : "var(--card-bg)"} stroke="var(--primary)" strokeWidth={isHovered ? "3" : "2.5"} style={{ transition: 'all 0.2s ease' }} />
+                                            {isHovered && (
+                                                <g>
+                                                    <rect x={Math.min(p.x - 55, chartW - 120)} y={Math.max(p.y - 45, 10)} width="110" height="34" rx="6" fill="var(--card-bg, #070D1A)" stroke="var(--primary)" strokeWidth="1.5" filter="drop-shadow(0 8px 16px rgba(0,0,0,0.4))" />
+                                                    <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 14} textAnchor="middle" fill="var(--primary)" fontSize="9" fontWeight="800">{monthName}</text>
+                                                    <text x={Math.min(p.x - 55, chartW - 120) + 55} y={Math.max(p.y - 45, 10) + 26} textAnchor="middle" fill="var(--text-main)" fontSize="10" fontWeight="700">{formatINR(val)}</text>
+                                                </g>
+                                            )}
+                                        </g>
+                                    );
+                                })}
+                                {chartLabels.map((d, i) => (
+                                    <text key={i} x={chartPad.left + (i / Math.max(chartLabels.length - 1, 1)) * plotW} y={chartH - 5} textAnchor="middle" fill="var(--text-muted)" fontSize="10">{d}</text>
+                                ))}
+                            </svg>
+                        </div>
                     </div>
 
                     {/* Today's Schedule with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '380px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Today's Schedule</h3>
                             <button onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View All</button>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
                             {todaySchedule.length === 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px', color: 'var(--text-muted)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>calendar_today</span>
                                     <span style={{ fontSize: '0.85rem' }}>No bookings scheduled today</span>
                                 </div>
                             ) : (
-                                todaySchedule.slice(0, 5).map((s, i) => {
+                                todaySchedule.slice(0, 10).map((s, i) => {
                                     const matchingBooking = todayBookings[i];
                                     const isHovered = hoveredSchedule === i;
                                     return (
@@ -473,14 +475,14 @@ export default function DashboardTab(props) {
                     </div>
 
                     {/* Recent Activity with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '380px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>Recent Activity</h3>
                             <span onClick={() => { setActiveTab('reports'); setActiveSidebarKey('activity-logs'); }} style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer' }}>View All</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
                             {recentActivities.length === 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px', color: 'var(--text-muted)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>history</span>
                                     <span style={{ fontSize: '0.85rem' }}>No recent activity</span>
                                 </div>
@@ -541,15 +543,15 @@ export default function DashboardTab(props) {
                 </div>
 
                 {/* Bottom Section: 4 cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'stretch' }}>
                     {/* Upcoming Bookings with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '350px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Upcoming Bookings</h3>
                             <span onClick={() => { setActiveTab('turf-management'); setActiveSidebarKey('bookings'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').slice(0, 4).map((b, i) => {
+                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
+                            {bookingsLog.filter(b => b.date >= todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED').slice(0, 10).map((b, i) => {
                                 const d = new Date(b.date + 'T00:00:00');
                                 const isHovered = hoveredBooking === i;
                                 return (
@@ -607,14 +609,14 @@ export default function DashboardTab(props) {
                     </div>
 
                     {/* Recent Admissions with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '350px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Recent Admissions</h3>
                             <span onClick={() => { setActiveTab('membership-management'); setActiveSidebarKey('membership-management'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
                             {recentAdmissions.length === 0 ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px', color: 'var(--text-muted)' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.5 }}>school</span>
                                     <span style={{ fontSize: '0.85rem' }}>No student records found</span>
                                 </div>
@@ -678,12 +680,12 @@ export default function DashboardTab(props) {
                     </div>
 
                     {/* Inventory Alert with Hover Data */}
-                    <div className="card-premium" style={{ padding: '20px', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div className="card-premium" style={{ padding: '20px', position: 'relative', height: '350px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexShrink: 0 }}>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Inventory Alert</h3>
                             <span onClick={() => { setActiveTab('inventory-management'); setActiveSidebarKey('stock-alerts'); }} style={{ fontSize: '0.75rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}>View All</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
                             {alerts.length === 0 ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '150px', color: 'var(--text-muted)' }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '32px', marginBottom: '8px', color: 'var(--success)', opacity: 0.8 }}>check_circle</span>
