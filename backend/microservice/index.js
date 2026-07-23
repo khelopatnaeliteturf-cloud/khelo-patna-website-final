@@ -42,6 +42,8 @@ async function ensureSessionTable() {
                 value TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS key VARCHAR;
+            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS value TEXT;
         `);
     } catch (e) {
         console.error('Error ensuring whatsapp_session table:', e.message);
