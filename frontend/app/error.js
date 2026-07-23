@@ -34,7 +34,7 @@ export default function Error({ error, reset }) {
                 zIndex: 0
             }} />
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', margin: 'auto' }}>
                 {/* Error Icon */}
                 <div style={{
                     width: '100px',

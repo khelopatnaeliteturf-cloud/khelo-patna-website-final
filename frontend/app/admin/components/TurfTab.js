@@ -182,7 +182,8 @@ export default function TurfTab(props) {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
                                             const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
-                                            const avatarColor = getAvatarColor(b.customerName);
+                                            const avatarColors = ['var(--primary)', 'var(--success)', 'var(--warning)', 'var(--info)', 'var(--danger)', '#8b5cf6', '#ec4899'];
+                                            const avatarColor = avatarColors[idx % avatarColors.length];
                                             const bookedByLabel = getBookingSourceLabel(b);
 
                                             return (
