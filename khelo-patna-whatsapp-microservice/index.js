@@ -240,16 +240,19 @@ async function initWhatsApp() {
                     }
                 }
 
-                if (message.key.fromMe) continue;
-
                 const rawJid = message.key.remoteJid;
                 if (!rawJid || rawJid.endsWith('@g.us') || rawJid === 'status@broadcast') continue;
 
                 const phone = rawJid; // Keep full JID for accurate routing (handles @lid and @s.whatsapp.net)
                 const msg = message.message?.ephemeralMessage?.message || message.message?.viewOnceMessage?.message || message.message;
-                const text = msg.conversation || msg.extendedTextMessage?.text || msg.imageMessage?.caption || '';
+                const text = (msg?.conversation || msg?.extendedTextMessage?.text || msg?.imageMessage?.caption || '').trim();
 
                 if (!text) continue;
+
+                // Allow staff out-bound dot commands (. / .. / ...) to control AI bot per individual chat
+                if (message.key.fromMe && text !== '.' && text !== '..' && text !== '...') {
+                    continue;
+                }
 
                 console.log(`[Baileys Microservice] Incoming chat from ${phone}: "${text}". Forwarding to main site webhook...`);
                 try {

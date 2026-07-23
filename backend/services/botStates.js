@@ -230,8 +230,52 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
     const lowerText = text.toLowerCase();
 
-    // Global 'Cancel', 'Menu', or 'Agent' triggers (always active)
-    if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home' || lowerText === 'hi' || lowerText === 'hello' || lowerText === 'hey') {
+    // Dot Commands (. / .. / ...) for Staff Chat Control
+    if (text === '.') {
+        const pauseUntil = Date.now() + (24 * 60 * 60 * 1000); // 24 Hours
+        session.bookingData = session.bookingData || {};
+        session.bookingData.botPausedUntil = pauseUntil;
+        session.state = 'PAUSED';
+        await session.save();
+        await sendWhatsAppMessage(phone, '⏸️ *AI Bot Paused for 24 Hours* for this chat. Human staff has taken over control.');
+        return;
+    }
+
+    if (text === '..') {
+        const pauseUntil = Date.now() + (365 * 24 * 60 * 60 * 1000); // Indefinite (1 year)
+        session.bookingData = session.bookingData || {};
+        session.bookingData.botPausedUntil = pauseUntil;
+        session.state = 'PAUSED';
+        await session.save();
+        await sendWhatsAppMessage(phone, '🛑 *AI Bot Paused Indefinitely* for this chat. Human staff has full control.');
+        return;
+    }
+
+    if (text === '...') {
+        session.bookingData = {};
+        session.state = 'IDLE';
+        await session.save();
+        await sendWhatsAppMessage(phone, '▶️ *AI Bot Access Retained & Re-enabled* for this chat!');
+        return;
+    }
+
+    // Check if bot auto-reply is currently paused for this individual chat
+    if (session.bookingData?.botPausedUntil && Date.now() < session.bookingData.botPausedUntil) {
+        console.log(`🤖 [WhatsApp Bot] Chat ${phone} is currently PAUSED by staff dot command until ${new Date(session.bookingData.botPausedUntil).toLocaleString()}. Skipping bot auto-reply.`);
+        return;
+    }
+
+    // Clean 'Cancel' handling (resets chat cleanly without re-sending full main menu)
+    if (lowerText === 'cancel' || lowerText === 'stop' || lowerText === 'exit') {
+        session.state = 'IDLE';
+        session.bookingData = {};
+        await session.save();
+        await sendWhatsAppMessage(phone, '🚫 *Booking cancelled.* All data cleared. Type anything whenever you are ready to start fresh!');
+        return;
+    }
+
+    // Global 'Menu' or greeting triggers
+    if (lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home' || lowerText === 'hi' || lowerText === 'hello' || lowerText === 'hey') {
         session.state = 'MAIN_MENU';
         session.bookingData = {};
         await session.save();
