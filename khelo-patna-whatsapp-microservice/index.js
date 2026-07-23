@@ -240,7 +240,7 @@ async function initWhatsApp() {
                     const baseUrl = MAIN_BACKEND_URL.replace(/\/+$/, '');
                     const primaryWebhook = `${baseUrl}/api/whatsapp/webhook`;
                     const payload = { phone, text, secret: WA_API_SECRET };
-                    const config = { headers: { 'X-WA-Secret': WA_API_SECRET }, timeout: 10000 };
+                    const config = { headers: { 'X-WA-Secret': WA_API_SECRET }, timeout: 30000 };
 
                     try {
                         await axios.post(primaryWebhook, payload, config);
@@ -262,6 +262,14 @@ async function initWhatsApp() {
         console.error('Error in WhatsApp initialization:', err);
     }
 }
+
+// Render Keep-Alive Pinger to keep main backend and microservice awake 24/7
+setInterval(() => {
+    if (MAIN_BACKEND_URL) {
+        const pingUrl = `${MAIN_BACKEND_URL.replace(/\/+$/, '')}/api/admin/whatsapp/status`;
+        axios.get(pingUrl).catch(() => {});
+    }
+}, 4 * 60 * 1000);
 
 // Middleware to authenticate microservice API requests
 function authSecret(req, res, next) {
@@ -310,11 +318,26 @@ app.post('/send-text', authSecret, async (req, res) => {
             }
         }
 
-        await sock.sendMessage(jid, { text: message });
-        console.log(`[Baileys Microservice] Sent text to ${jid}`);
-        res.json({ success: true, recipient: jid });
+        try {
+            await sock.sendMessage(jid, { text: message });
+            console.log(`[Baileys Microservice] Sent text to ${jid}`);
+            res.json({ success: true, recipient: jid });
+        } catch (sendErr) {
+            console.warn(`[Baileys Microservice] Direct send to ${jid} failed (${sendErr.message}). Attempting fallback routing...`);
+            if (jid.endsWith('@lid')) {
+                const rawDigits = jid.split('@')[0].replace(/\D/g, '');
+                if (rawDigits.length >= 10) {
+                    let formatted = rawDigits.length === 10 ? '91' + rawDigits : rawDigits;
+                    const fallbackJid = `${formatted}@s.whatsapp.net`;
+                    await sock.sendMessage(fallbackJid, { text: message });
+                    console.log(`[Baileys Microservice] Sent text via fallback to ${fallbackJid}`);
+                    return res.json({ success: true, recipient: fallbackJid, fallbackUsed: true });
+                }
+            }
+            throw sendErr;
+        }
     } catch (err) {
-        console.error('Error sending message:', err);
+        console.error('Error sending message:', err.message || err);
         res.status(500).json({ error: err.message || 'Failed to send WhatsApp message' });
     }
 });
