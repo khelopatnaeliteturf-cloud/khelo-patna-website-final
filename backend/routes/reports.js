@@ -12,7 +12,7 @@ const TurfClosure = require('../models/TurfClosure');
 const Enquiry = require('../models/Enquiry');
 const Tenant = require('../models/Tenant');
 const Coach = require('../models/Coach');
-const { getStatus, getBotEnabled, sendWhatsAppMessage } = require('../services/whatsapp');
+const { getStatus, getBotEnabled, getQR, setBotEnabled, forceReconnect, sendWhatsAppMessage } = require('../services/whatsapp');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 
 // Helper: Get start & end dates of today
@@ -365,6 +365,26 @@ router.get('/reports/revenue-analytics', authenticateToken, authorizeRoles('FINA
         console.error('Error generating revenue analytics:', err);
         res.status(500).json({ error: 'Server error calculating revenue analytics.' });
     }
+});
+
+// 5b. WhatsApp Gateway Management Endpoints
+router.get('/admin/whatsapp/status', authenticateToken, (req, res) => {
+    res.json({
+        status: getStatus(), // 'CONNECTED', 'DISCONNECTED', 'CONNECTING', 'DISABLED'
+        qr: getQR(),
+        bot_enabled: getBotEnabled()
+    });
+});
+
+router.post('/admin/whatsapp/toggle-bot', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), (req, res) => {
+    const { enabled } = req.body;
+    setBotEnabled(Boolean(enabled));
+    res.json({ success: true, bot_enabled: getBotEnabled() });
+});
+
+router.post('/admin/whatsapp/reconnect', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), (req, res) => {
+    forceReconnect();
+    res.json({ success: true, message: 'Reconnection initiated.' });
 });
 
 // 6. Send Single WhatsApp Message
