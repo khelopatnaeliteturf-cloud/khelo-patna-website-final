@@ -6060,7 +6060,6 @@ export default function AdminDashboard() {
                     {/* SYSTEM SECTION */}
                     {(() => {
                         const items = [
-                            { id: 'website', label: 'Website', icon: 'web' },
                             { id: 'google-reviews', label: 'Google Reviews', icon: 'star' },
                             { id: 'integrations', label: 'Integrations', icon: 'hub' },
                             { id: 'settings', label: 'Settings', icon: 'settings' },
@@ -6400,9 +6399,6 @@ export default function AdminDashboard() {
                         />
                     )}
                     {activeTab === 'communication' && <CommunicationTab commType={commType} setCommType={setCommType} handleCommunicateSubmit={handleCommunicateSubmit} commStudentMsg={commStudentMsg} setCommStudentMsg={setCommStudentMsg} allStudents={allStudents} commGroupMsg={commGroupMsg} setCommGroupMsg={setCommGroupMsg} commStaffMsg={commStaffMsg} setCommStaffMsg={setCommStaffMsg} commEmail={commEmail} setCommEmail={setCommEmail} backendUrl={BACKEND_URL} getHeaders={getHeaders} />}
-                    {activeTab === 'website' && (
-                        <WebsiteTab />
-                    )}
                     {activeTab === 'integrations' && (
                         <IntegrationsTab 
                             backendUrl={BACKEND_URL}
