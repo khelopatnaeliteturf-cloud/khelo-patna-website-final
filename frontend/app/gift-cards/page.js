@@ -43,7 +43,7 @@ export default function GiftCardsPage() {
                 </div>
 
                 {!purchased ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'start' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', alignItems: 'start' }}>
                         {/* Preview Card */}
                         <div style={{
                             background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',

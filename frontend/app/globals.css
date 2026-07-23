@@ -1799,17 +1799,34 @@ section[data-animate] {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
     }
-
-    .admin-topbar-styled {
-        padding: 10px 12px !important;
-        gap: 8px !important;
-    }
 }
 
-@media (max-width: 480px) {
-    .dashboard-kpi-grid,
-    .admin-stat-grid {
+@media (max-width: 640px) {
+    /* Auto-collapse 2-column inline forms & grids on phones */
+    div[style*="gridTemplateColumns: '1fr 1fr'"],
+    div[style*="gridTemplateColumns: 'repeat(2, 1fr)'"],
+    div[style*="grid-template-columns: 1fr 1fr"],
+    div[style*="grid-template-columns: repeat(2, 1fr)"] {
         grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    /* Modal & Dialog Phone Fits */
+    .modal-content,
+    .dialog-content,
+    div[style*="maxWidth: '600px'"],
+    div[style*="maxWidth: '700px'"],
+    div[style*="maxWidth: '800px'"] {
+        width: 94vw !important;
+        max-width: 94vw !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Input & Button touch targets */
+    input, select, textarea, button {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
 

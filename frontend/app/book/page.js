@@ -1380,7 +1380,7 @@ export default function BookPage() {
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '12px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                                         <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.25)', padding: '10px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.5)', display: 'block', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>TEMPERATURE</span>
                                             <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#fff' }}>{weather.temp}</span>
