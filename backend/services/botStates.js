@@ -551,19 +551,71 @@ async function handleIncomingMessage(sockOrPayload, m) {
             try {
                 const perSlotRate = session.bookingData.totalAmount || 1000;
                 const totalAmount = perSlotRate * chosenSlotValues.length;
+                // Calculate minimum Rs 300 advance deposit or 50%
+                const advanceAmount = Math.max(300, Math.round(totalAmount * 0.5));
 
                 session.bookingData.slots = chosenSlotValues;
                 session.bookingData.totalAmount = totalAmount;
-                session.state = 'ENTERING_NAME';
+                session.bookingData.advanceAmount = advanceAmount;
+                session.state = 'SELECTING_PAYMENT_MODE';
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
-                    `✅ Selected slots: *${chosenSlotValues.join(', ')}*\n💰 Total Price: *₹${totalAmount}*.\n\nPlease reply with your *Full Name* to proceed with this booking.`
+                    `✅ Selected slots: *${chosenSlotValues.join(', ')}*\n💰 Total Slot Price: *₹${totalAmount}*\n\n💳 *Choose Payment Option*:\n\n1️⃣ *Advance Deposit (₹${advanceAmount})* — Lock your slot now, pay balance ₹${totalAmount - advanceAmount} at venue!\n2️⃣ *Full Payment (₹${totalAmount})* — Pay 100% online now.\n\n_Reply *1* for Advance (₹${advanceAmount}) or *2* for Full Payment (₹${totalAmount})._`
                 );
             } catch (err) {
                 console.error('Error saving slots selection:', err);
                 await sendWhatsAppMessage(phone, `⚠️ Server error. Please type *Cancel* to restart.`);
             }
+            break;
+
+        case 'SELECTING_PAYMENT_MODE':
+            let chosenAmount = session.bookingData.totalAmount;
+            let paymentType = 'FULL';
+
+            if (text === '1' || lowerText.includes('advance') || lowerText.includes('300') || lowerText.includes('part')) {
+                chosenAmount = session.bookingData.advanceAmount || Math.max(300, Math.round(session.bookingData.totalAmount * 0.5));
+                paymentType = 'ADVANCE';
+            } else if (text === '2' || lowerText.includes('full') || lowerText.includes('100%')) {
+                chosenAmount = session.bookingData.totalAmount;
+                paymentType = 'FULL';
+            } else {
+                await sendWhatsAppMessage(phone, `Please reply with *1* for Advance Deposit (₹${session.bookingData.advanceAmount}) or *2* for Full Payment (₹${session.bookingData.totalAmount}).`);
+                return;
+            }
+
+            session.bookingData.paymentAmount = chosenAmount;
+            session.bookingData.paymentType = paymentType;
+
+            // Check if phone string is already a clean 10-digit Indian phone number
+            const extractedPhone = String(phone).replace(/\D/g, '').slice(-10);
+            if (extractedPhone.length === 10 && !extractedPhone.startsWith('19') && !extractedPhone.startsWith('10')) {
+                session.bookingData.realPhone = extractedPhone;
+                session.state = 'ENTERING_NAME';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `✅ Selected: *${paymentType === 'ADVANCE' ? `Advance Deposit (₹${chosenAmount})` : `Full Payment (₹${chosenAmount})`}*\n\nPlease reply with your *Full Name* to proceed with this booking.`
+                );
+            } else {
+                session.state = 'ENTERING_PHONE';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `✅ Selected: *${paymentType === 'ADVANCE' ? `Advance Deposit (₹${chosenAmount})` : `Full Payment (₹${chosenAmount})`}*\n\n📱 Please enter your *10-digit Mobile Number* for SMS booking confirmation & payment receipt.`
+                );
+            }
+            break;
+
+        case 'ENTERING_PHONE':
+            const phoneDigits = text.replace(/\D/g, '').slice(-10);
+            if (phoneDigits.length !== 10) {
+                await sendWhatsAppMessage(phone, `⚠️ Invalid phone number. Please enter a valid *10-digit Mobile Number* (e.g. 9709701400).`);
+                return;
+            }
+
+            session.bookingData.realPhone = phoneDigits;
+            session.state = 'ENTERING_NAME';
+            await session.save();
+            await sendWhatsAppMessage(phone, `Thank you! Now please reply with your *Full Name* to proceed.`);
             break;
 
         case 'ENTERING_NAME':
@@ -583,12 +635,15 @@ async function handleIncomingMessage(sockOrPayload, m) {
             session.bookingData.email = lowerText;
             const orderId = `KP-WA-${Date.now()}`;
             session.bookingData.orderId = orderId;
+            const customerPhone = session.bookingData.realPhone || String(phone).replace(/\D/g, '').slice(-10);
+            const payableNow = session.bookingData.paymentAmount || session.bookingData.totalAmount;
+            const restDue = session.bookingData.totalAmount - payableNow;
 
             try {
                 const paymentLink = await createPaymentLink({
                     linkId: orderId,
-                    amount: session.bookingData.totalAmount,
-                    customerPhone: phone,
+                    amount: payableNow,
+                    customerPhone: customerPhone,
                     customerName: session.bookingData.name,
                     customerEmail: session.bookingData.email,
                     returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/book?order_id=${orderId}`
@@ -598,7 +653,7 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
-                    `🎟️ *KheloPatna Booking Invoice* 🎟️\n\n*Customer*: ${session.bookingData.name}\n*Sport*: ${session.bookingData.sport.toUpperCase()}\n*Date*: ${session.bookingData.date}\n*Slots*: ${session.bookingData.slots.join(', ')}\n*Total Price*: ₹${session.bookingData.totalAmount}\n\nPlease pay using this secure link:\n🔗 ${paymentLink}\n\n*Note*: Once paid, your booking is automatically confirmed here on WhatsApp!`
+                    `🎟️ *KheloPatna Booking Invoice* 🎟️\n\n*Customer*: ${session.bookingData.name}\n*Phone*: ${customerPhone}\n*Sport*: ${session.bookingData.sport.toUpperCase()}\n*Date*: ${session.bookingData.date}\n*Slots*: ${session.bookingData.slots.join(', ')}\n*Total Slot Value*: ₹${session.bookingData.totalAmount}\n*Payable Now*: *₹${payableNow}* (${session.bookingData.paymentType === 'ADVANCE' ? 'Advance Deposit' : 'Full Payment'})\n${restDue > 0 ? `*Rest Due at Venue*: ₹${restDue}\n` : ''}\nPlease pay using this secure link:\n🔗 ${paymentLink}\n\n*Note*: Once paid, your slot is instantly locked and confirmed!`
                 );
 
             } catch (err) {
@@ -609,15 +664,17 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
         case 'AWAITING_PAYMENT':
             try {
+                const customerPhone = session.bookingData.realPhone || String(phone).replace(/\D/g, '').slice(-10);
+                const payableNow = session.bookingData.paymentAmount || session.bookingData.totalAmount;
                 const reminderLink = await createPaymentLink({
                     linkId: session.bookingData.orderId,
-                    amount: session.bookingData.totalAmount,
-                    customerPhone: phone,
+                    amount: payableNow,
+                    customerPhone: customerPhone,
                     customerName: session.bookingData.name,
                     customerEmail: session.bookingData.email
                 });
                 await sendWhatsAppMessage(phone, 
-                    `Awaiting online payment of *₹${session.bookingData.totalAmount}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start over, type *Cancel*.`
+                    `Awaiting online payment of *₹${payableNow}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start over, type *Cancel*.`
                 );
             } catch (err) {
                 console.error('Error regenerating payment link:', err);
