@@ -24,6 +24,9 @@ const { bootstrapDatabase } = require('./lib/bootstrap');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Trust proxy for Render reverse proxy rate limiting
+app.set('trust proxy', 1);
+
 // Enable security headers with custom Content Security Policy to allow Cashfree Checkout SDK
 app.use(helmet({
     contentSecurityPolicy: {

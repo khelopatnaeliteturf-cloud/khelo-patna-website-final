@@ -140,12 +140,13 @@ async function initWhatsApp() {
         const baileys = await import('@whiskeysockets/baileys');
         const makeWASocket = baileys.default;
         const DisconnectReason = baileys.DisconnectReason;
+        const Browsers = baileys.Browsers || baileys.default?.Browsers;
 
         sock = makeWASocket({
             logger: pino({ level: 'silent' }),
-            printQRInTerminal: true,
+            printQRInTerminal: false,
             auth: state,
-            browser: ['KheloPatna Elite Turf', 'Chrome', '1.0.0']
+            browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146']
         });
 
         sock.ev.on('connection.update', async (update) => {
@@ -169,24 +170,22 @@ async function initWhatsApp() {
 
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403;
-                const shouldReconnect = !isLoggedOut;
+                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403 || statusCode === 405 || statusCode === 408;
 
-                console.warn(`Connection closed. StatusCode: ${statusCode}. Reconnecting: ${shouldReconnect}`);
+                console.warn(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${isLoggedOut}`);
                 connectionStatus = 'DISCONNECTED';
 
-                if (shouldReconnect) {
-                    setTimeout(initWhatsApp, 5000);
-                } else {
-                    console.log('Logged out (401/403). Cleaning stale session from database...');
+                if (isLoggedOut || statusCode === 405) {
+                    console.log(`StatusCode ${statusCode} detected. Cleaning stale session credentials from database...`);
                     try {
                         await dbPool.query('DELETE FROM whatsapp_session');
                     } catch (e) {
                         console.error('Error wiping session:', e);
                     }
                     qrCodeImage = null;
-                    setTimeout(initWhatsApp, 3000);
                 }
+
+                setTimeout(initWhatsApp, 4000);
             }
         });
 
