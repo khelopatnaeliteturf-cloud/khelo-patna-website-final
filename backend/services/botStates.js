@@ -178,21 +178,73 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
     if (!phone || !text) return; // Skip invalid or empty messages
 
+    // In-memory session fallback cache to prevent database bottlenecks
+    if (!globalThis.__botMemorySessions) {
+        globalThis.__botMemorySessions = new Map();
+    }
+    const memorySessions = globalThis.__botMemorySessions;
+
     // 1. Fetch or create user session
-    let session = await ChatSession.findOne({ phone: phone });
+    let session = null;
+    try {
+        session = await ChatSession.findOne({ phone: phone });
+    } catch (dbErr) {
+        console.warn('ChatSession DB lookup warning, falling back to memory session:', dbErr.message);
+    }
+
     if (!session) {
-        session = new ChatSession({ phone: phone });
-        await session.save();
+        let memData = memorySessions.get(phone) || { state: 'MAIN_MENU', bookingData: {} };
+        session = {
+            phone,
+            state: memData.state || 'MAIN_MENU',
+            bookingData: memData.bookingData || {},
+            save: async function() {
+                memorySessions.set(phone, { state: this.state, bookingData: this.bookingData });
+                try {
+                    const existing = await ChatSession.findOne({ phone: phone });
+                    if (existing) {
+                        existing.state = this.state;
+                        existing.bookingData = this.bookingData;
+                        await existing.save();
+                    } else {
+                        await new ChatSession({ phone: phone, state: this.state, bookingData: this.bookingData }).save();
+                    }
+                } catch (e) {
+                    // Ignore background DB save error, memory session holds state
+                }
+            }
+        };
     }
 
     const lowerText = text.toLowerCase();
 
     // Global 'Cancel' or 'Menu' trigger
-    if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home') {
+    if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home' || lowerText === 'hi' || lowerText === 'hello' || lowerText === 'hey') {
         session.state = 'MAIN_MENU';
         session.bookingData = {};
         await session.save();
         await sendMainMenu(phone);
+        return;
+    }
+
+    // Smart keyword shortcuts for direct booking / rates / location
+    if (lowerText.includes('cricket') && (lowerText.includes('book') || lowerText.includes('reserve') || lowerText.includes('slot'))) {
+        session.state = 'ENTER_DATE';
+        session.bookingData = { sport: 'cricket' };
+        await session.save();
+        await sendWhatsAppMessage(phone, 
+            `🏏 *Cricket Turf Reservation*\n\nPlease reply with your desired date in *DD-MM-YYYY* format (e.g. *${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}*), or reply *today* / *tomorrow*.`
+        );
+        return;
+    }
+
+    if (lowerText.includes('football') && (lowerText.includes('book') || lowerText.includes('reserve') || lowerText.includes('slot'))) {
+        session.state = 'ENTER_DATE';
+        session.bookingData = { sport: 'football' };
+        await session.save();
+        await sendWhatsAppMessage(phone, 
+            `⚽ *Football Turf Reservation*\n\nPlease reply with your desired date in *DD-MM-YYYY* format (e.g. *${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}*), or reply *today* / *tomorrow*.`
+        );
         return;
     }
 

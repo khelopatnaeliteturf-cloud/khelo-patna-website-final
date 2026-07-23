@@ -214,6 +214,20 @@ async function ensureDefaultTenant() {
         `);
         console.log('  Bootstrap: turf_settings table advance_percentage column checked/added');
 
+        // ── Chat Sessions Table for WhatsApp Bot ─────────────────────────
+        console.log('  Bootstrap: ensuring chat_sessions table exists...');
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS chat_sessions (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                phone VARCHAR(50) UNIQUE NOT NULL,
+                state VARCHAR(50) DEFAULT 'IDLE',
+                booking_data JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('  Bootstrap: chat_sessions table checked/created');
+
         return { tenantId, branchId };
     } finally {
         client.release();
