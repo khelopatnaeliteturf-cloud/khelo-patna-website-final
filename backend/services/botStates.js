@@ -225,52 +225,61 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
     const lowerText = text.toLowerCase();
 
-    // AI Multilingual NLU Chatbot & Intent Dispatcher
-    const aiIntent = await getAIBotIntent(text);
-    if (aiIntent) {
-        if (aiIntent.requiresHuman) {
-            session.state = 'AGENT_SUPPORT';
-            await session.save();
-            await sendWhatsAppMessage(phone, aiIntent.reply || 'Aapko humare support manager se connect kar rahe hain (+91 970 970 1400).');
-            return;
-        }
-
-        if (aiIntent.intent === 'BOOK_CRICKET' || (aiIntent.extractedData?.sport === 'cricket')) {
-            session.state = 'SELECTING_DATE';
-            session.bookingData = { sport: 'cricket' };
-            await session.save();
-            await sendWhatsAppMessage(phone, 
-                `${aiIntent.reply || 'Haan bhaiya! Cricket Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
-            );
-            return;
-        } else if (aiIntent.intent === 'BOOK_FOOTBALL' || (aiIntent.extractedData?.sport === 'football')) {
-            session.state = 'SELECTING_DATE';
-            session.bookingData = { sport: 'football' };
-            await session.save();
-            await sendWhatsAppMessage(phone, 
-                `${aiIntent.reply || 'Haan bhaiya! Football Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
-            );
-            return;
-        } else if (aiIntent.intent === 'BOOKING' || (lowerText.includes('book') && lowerText.includes('turf'))) {
-            session.state = 'SELECTING_SPORT';
-            await session.save();
-            await sendWhatsAppMessage(phone, 
-                `${aiIntent.reply || 'Haan bhaiya! Konsa turf book karna hai?'}\n\n1️⃣ *Cricket Turf*\n2️⃣ *Football Turf*\n\nReply kijiye *1* ya *2*.`
-            );
-            return;
-        } else if (aiIntent.reply) {
-            await sendWhatsAppMessage(phone, aiIntent.reply);
-            return;
-        }
-    }
-
-    // Global 'Cancel' or 'Menu' trigger
+    // Global 'Cancel', 'Menu', or 'Agent' triggers (always active)
     if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home' || lowerText === 'hi' || lowerText === 'hello' || lowerText === 'hey') {
         session.state = 'MAIN_MENU';
         session.bookingData = {};
         await session.save();
         await sendMainMenu(phone);
         return;
+    }
+
+    if (lowerText.includes('agent') || lowerText.includes('human') || lowerText.includes('support') || lowerText.includes('owner') || lowerText.includes('manager')) {
+        session.state = 'AGENT_SUPPORT';
+        await session.save();
+        await sendWhatsAppMessage(phone, 'Aapko humare support manager se connect kar rahe hain (+91 970 970 1400) 📞.');
+        return;
+    }
+
+    // AI Multilingual NLU Chatbot & Intent Dispatcher (ONLY for IDLE or MAIN_MENU states)
+    if (session.state === 'IDLE' || session.state === 'MAIN_MENU') {
+        const aiIntent = await getAIBotIntent(text);
+        if (aiIntent) {
+            if (aiIntent.requiresHuman) {
+                session.state = 'AGENT_SUPPORT';
+                await session.save();
+                await sendWhatsAppMessage(phone, aiIntent.reply || 'Aapko humare support manager se connect kar rahe hain (+91 970 970 1400).');
+                return;
+            }
+
+            if (aiIntent.intent === 'BOOK_CRICKET' || (aiIntent.extractedData?.sport === 'cricket')) {
+                session.state = 'SELECTING_DATE';
+                session.bookingData = { sport: 'cricket' };
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `${aiIntent.reply || 'Haan bhaiya! Cricket Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
+                );
+                return;
+            } else if (aiIntent.intent === 'BOOK_FOOTBALL' || (aiIntent.extractedData?.sport === 'football')) {
+                session.state = 'SELECTING_DATE';
+                session.bookingData = { sport: 'football' };
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `${aiIntent.reply || 'Haan bhaiya! Football Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
+                );
+                return;
+            } else if (aiIntent.intent === 'BOOKING' || (lowerText.includes('book') && lowerText.includes('turf'))) {
+                session.state = 'SELECTING_SPORT';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `${aiIntent.reply || 'Haan bhaiya! Konsa turf book karna hai?'}\n\n1️⃣ *Cricket Turf*\n2️⃣ *Football Turf*\n\nReply kijiye *1* ya *2*.`
+                );
+                return;
+            } else if (aiIntent.reply) {
+                await sendWhatsAppMessage(phone, aiIntent.reply);
+                return;
+            }
+        }
     }
 
     // Smart keyword shortcuts for direct booking / rates / location
