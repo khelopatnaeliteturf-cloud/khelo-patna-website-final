@@ -1006,26 +1006,34 @@ export default function AdminDashboard() {
         setActiveSidebarKey('finance');
     };
 
-    const handleRegisterStaffWrapper = async (username, password, role) => {
+    const handleRegisterStaffWrapper = async (usernameOrObj, password, role, name, phone) => {
         setErrorMessage('');
         setSuccessMessage('');
+        
+        let payload = {};
+        if (typeof usernameOrObj === 'object' && usernameOrObj !== null) {
+            payload = usernameOrObj;
+        } else {
+            payload = { username: usernameOrObj, password, role, name, phone };
+        }
+
         try {
             const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ username, password, role })
+                body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (res.ok) {
-                setSuccessMessage(`Staff credentials added for ${username}.`);
+                setSuccessMessage(`User credentials added for ${payload.username}.`);
                 await fetchStaffList();
                 return true;
             } else {
-                setErrorMessage(data.error || 'Failed to register staff.');
+                setErrorMessage(data.error || 'Failed to register user.');
                 return false;
             }
         } catch (e) {
-            setErrorMessage(e.message || 'Failed to register staff.');
+            setErrorMessage(e.message || 'Failed to register user.');
             return false;
         }
     };
