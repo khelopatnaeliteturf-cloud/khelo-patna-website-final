@@ -433,10 +433,10 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                             type="button"
                             onClick={async () => {
                                 try {
-                                    const res = await fetch(`${backendUrl}/api/auth/passkey/register-options`, {
+                                     const res = await fetch(`${backendUrl}/api/auth/passkey/register-options`, {
                                         method: 'POST',
                                         credentials: 'include',
-                                        headers: { 'Content-Type': 'application/json' }
+                                        headers: { ...getHeaders(), 'Content-Type': 'application/json' }
                                     });
                                     const data = await res.json();
                                     if (!res.ok) throw new Error(data.error || 'Failed to initialize Passkey');
@@ -467,7 +467,7 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                         const verifyRes = await fetch(`${backendUrl}/api/auth/passkey/register-verify`, {
                                             method: 'POST',
                                             credentials: 'include',
-                                            headers: { 'Content-Type': 'application/json' },
+                                            headers: { ...getHeaders(), 'Content-Type': 'application/json' },
                                             body: JSON.stringify({
                                                 credential: { id: rawId, type: credential.type }
                                             })
