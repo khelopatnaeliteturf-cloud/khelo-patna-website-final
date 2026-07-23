@@ -507,7 +507,9 @@ router.post('/auth/passkey/register-options', authenticateToken, async (req, res
                     { alg: -257, type: 'public-key' }
                 ],
                 authenticatorSelection: {
-                    userVerification: 'preferred'
+                    authenticatorAttachment: 'platform',
+                    userVerification: 'preferred',
+                    residentKey: 'preferred'
                 },
                 timeout: 60000
             }

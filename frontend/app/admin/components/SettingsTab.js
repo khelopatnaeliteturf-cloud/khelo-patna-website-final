@@ -454,6 +454,10 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                                                 ...data.options.rp,
                                                 id: window.location.hostname.includes('localhost') ? 'localhost' : window.location.hostname.replace(/^www\./, '')
                                             },
+                                            authenticatorSelection: {
+                                                authenticatorAttachment: 'platform',
+                                                userVerification: 'preferred'
+                                            },
                                             challenge: challengeBuffer,
                                             user: {
                                                 ...data.options.user,
