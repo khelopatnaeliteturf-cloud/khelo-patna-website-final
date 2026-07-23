@@ -225,38 +225,41 @@ async function handleIncomingMessage(sockOrPayload, m) {
 
     const lowerText = text.toLowerCase();
 
-    // AI NLU Intent Extractor (Groq / Grok / Gemini)
+    // AI Multilingual NLU Chatbot & Intent Dispatcher
     const aiIntent = await getAIBotIntent(text);
     if (aiIntent) {
-        if (aiIntent.intent === 'BOOK_CRICKET') {
-            session.state = 'ENTER_DATE';
+        if (aiIntent.requiresHuman) {
+            session.state = 'AGENT_SUPPORT';
+            await session.save();
+            await sendWhatsAppMessage(phone, aiIntent.reply || 'Aapko humare support manager se connect kar rahe hain (+91 970 970 1400).');
+            return;
+        }
+
+        if (aiIntent.intent === 'BOOK_CRICKET' || (aiIntent.extractedData?.sport === 'cricket')) {
+            session.state = 'SELECTING_DATE';
             session.bookingData = { sport: 'cricket' };
             await session.save();
             await sendWhatsAppMessage(phone, 
-                `🏏 *KheloPatna AI Assistant*:\n\n${aiIntent.friendlyReply || 'I can help you reserve a Cricket Turf slot!'}\n\nPlease reply with your date in *DD-MM-YYYY* format (or *today* / *tomorrow*).`
+                `${aiIntent.reply || 'Haan bhaiya! Cricket Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
             );
             return;
-        } else if (aiIntent.intent === 'BOOK_FOOTBALL') {
-            session.state = 'ENTER_DATE';
+        } else if (aiIntent.intent === 'BOOK_FOOTBALL' || (aiIntent.extractedData?.sport === 'football')) {
+            session.state = 'SELECTING_DATE';
             session.bookingData = { sport: 'football' };
             await session.save();
             await sendWhatsAppMessage(phone, 
-                `⚽ *KheloPatna AI Assistant*:\n\n${aiIntent.friendlyReply || 'I can help you reserve a Football Turf slot!'}\n\nPlease reply with your date in *DD-MM-YYYY* format (or *today* / *tomorrow*).`
+                `${aiIntent.reply || 'Haan bhaiya! Football Turf book kar dete hain.'}\n\n📅 Date select kijiye in *DD-MM-YYYY* format, ya type kijiye *today* / *tomorrow*.`
             );
             return;
-        } else if (aiIntent.intent === 'INQUIRE_RATES') {
-            let settings = await TurfSettings.findOne();
-            let cricketRate = settings?.cricketBaseRate || 1000;
-            let footballRate = settings?.footballBaseRate || 1000;
-            let netsRate = settings?.weeklyRates?.nets?.[0] || settings?.netsBaseRate || 100;
+        } else if (aiIntent.intent === 'BOOKING' || (lowerText.includes('book') && lowerText.includes('turf'))) {
+            session.state = 'SELECTING_SPORT';
+            await session.save();
             await sendWhatsAppMessage(phone, 
-                `💰 *KheloPatna Turf Rates*:\n\n🏏 *Cricket*: ₹${cricketRate}/hr\n⚽ *Football*: ₹${footballRate}/hr\n🎯 *Batting Nets*: ₹${netsRate}/hr per head\n\n_Reply *1* to book a slot, or *Menu* for main menu._`
+                `${aiIntent.reply || 'Haan bhaiya! Konsa turf book karna hai?'}\n\n1️⃣ *Cricket Turf*\n2️⃣ *Football Turf*\n\nReply kijiye *1* ya *2*.`
             );
             return;
-        } else if (aiIntent.intent === 'INQUIRE_LOCATION') {
-            await sendWhatsAppMessage(phone, 
-                `📍 *KheloPatna Elite Turf Location*:\n\nNear ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007\n🗺️ *Google Maps*: https://maps.app.goo.gl/iF1kcgi6seEnsRfaA`
-            );
+        } else if (aiIntent.reply) {
+            await sendWhatsAppMessage(phone, aiIntent.reply);
             return;
         }
     }
