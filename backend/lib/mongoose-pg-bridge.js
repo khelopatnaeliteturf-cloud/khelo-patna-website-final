@@ -572,31 +572,45 @@ function createModel(modelName) {
                 const res = await client.query(sql, values);
                 return [{ _id: null, total: parseFloat(res.rows[0].total) }];
             } else if (typeof groupId === 'string' && groupId.startsWith('$')) {
-                // Pattern C: Group by field (like customerPhone)
+                // Pattern C: Group by field (like customerPhone or rating)
                 const groupCol = toSnake(groupId.slice(1));
-                const sql = `
-                    SELECT 
-                        ${groupCol} AS _id,
-                        MIN(customer_name) AS name,
-                        MIN(customer_email) AS email,
-                        COUNT(*)::int AS total_bookings,
-                        SUM(CASE WHEN payment_status = 'SUCCESS' THEN 1 ELSE 0 END)::int AS successful_bookings,
-                        SUM(CASE WHEN payment_status = 'SUCCESS' THEN paid_amount ELSE 0 END)::float AS total_spent,
-                        MAX(date) AS last_booking_date
-                    FROM ${tableName}
-                    ${whereClause}
-                    GROUP BY ${groupCol}
-                `;
-                const res = await client.query(sql, values);
-                return res.rows.map(row => ({
-                    _id: row._id,
-                    name: row.name,
-                    email: row.email,
-                    totalBookings: row.total_bookings,
-                    successfulBookings: row.successful_bookings,
-                    totalSpent: row.total_spent,
-                    lastBookingDate: row.last_booking_date
-                }));
+                if (tableName === 'bookings') {
+                    const sql = `
+                        SELECT 
+                            ${groupCol} AS _id,
+                            MIN(customer_name) AS name,
+                            MIN(customer_email) AS email,
+                            COUNT(*)::int AS total_bookings,
+                            SUM(CASE WHEN payment_status = 'SUCCESS' THEN 1 ELSE 0 END)::int AS successful_bookings,
+                            SUM(CASE WHEN payment_status = 'SUCCESS' THEN paid_amount ELSE 0 END)::float AS total_spent,
+                            MAX(date) AS last_booking_date
+                        FROM ${tableName}
+                        ${whereClause}
+                        GROUP BY ${groupCol}
+                    `;
+                    const res = await client.query(sql, values);
+                    return res.rows.map(row => ({
+                        _id: row._id,
+                        name: row.name,
+                        email: row.email,
+                        totalBookings: row.total_bookings,
+                        successfulBookings: row.successful_bookings,
+                        totalSpent: row.total_spent,
+                        lastBookingDate: row.last_booking_date
+                    }));
+                } else {
+                    const sql = `
+                        SELECT ${groupCol} AS _id, COUNT(*)::int AS count
+                        FROM ${tableName}
+                        ${whereClause}
+                        GROUP BY ${groupCol}
+                    `;
+                    const res = await client.query(sql, values);
+                    return res.rows.map(row => ({
+                        _id: row._id,
+                        count: row.count
+                    }));
+                }
             } else {
                 // Pattern B: Monthly grouping
                 const sumFieldExpr = groupStage.total?.$sum;
