@@ -282,6 +282,9 @@ export default function LoginPage() {
                         if (verifyRes.ok && verifyData.user) {
                             localStorage.setItem('user_role', verifyData.user.role);
                             localStorage.setItem('username', verifyData.user.username);
+                            if (verifyData.token) localStorage.setItem('token', verifyData.token);
+                            if (verifyData.user.tenantId) localStorage.setItem('tenantId', verifyData.user.tenantId);
+                            if (verifyData.user.branchId) localStorage.setItem('branchId', verifyData.user.branchId);
                             setSessionMarker();
                             router.push(getRedirectUrl());
                             return;

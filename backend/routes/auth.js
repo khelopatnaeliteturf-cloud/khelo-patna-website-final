@@ -617,7 +617,9 @@ router.post('/auth/passkey/login-verify', authLimiter, async (req, res) => {
         const payload = {
             id: staff._id,
             username: staff.username,
-            role: staff.role
+            role: staff.role,
+            tenantId: staff.tenantId,
+            branchId: staff.branchId
         };
         const token = jwt.sign(payload, getJwtSecret(), { expiresIn: '24h' });
         const cookiePolicy = sessionCookiePolicy(req);
@@ -636,8 +638,13 @@ router.post('/auth/passkey/login-verify', authLimiter, async (req, res) => {
             token,
             user: {
                 id: staff._id,
+                _id: staff._id,
+                name: staff.name,
                 username: staff.username,
-                role: staff.role
+                role: staff.role,
+                tenantId: staff.tenantId,
+                branchId: staff.branchId,
+                permissions: staff.permissions
             }
         });
     } catch (err) {
