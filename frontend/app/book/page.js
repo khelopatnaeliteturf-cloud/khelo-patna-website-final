@@ -962,35 +962,51 @@ export default function BookPage() {
                             </div>
                         )}
 
-                        {/* Patna Weather Forecast & Rain Policy Banner */}
-                        <div className="glass-panel animate-fade-in" style={{
-                            padding: '16px 20px',
-                            marginBottom: '28px',
-                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%)',
-                            border: '1px solid rgba(59, 130, 246, 0.35)',
-                            borderRadius: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '14px',
-                            boxShadow: '0 8px 25px rgba(59, 130, 246, 0.1)'
-                        }}>
-                            <div style={{
-                                width: '38px', height: '38px', borderRadius: '50%',
-                                background: 'rgba(59, 130, 246, 0.2)', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                        {/* Dynamic Animated Weather Card — Appears ONLY when slot(s) are selected */}
+                        {selectedSlots.length > 0 && (
+                            <div className="glass-panel animate-fade-in" style={{
+                                padding: '20px 24px',
+                                marginBottom: '28px',
+                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 78, 59, 0.2) 100%)',
+                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                borderRadius: '20px',
+                                boxShadow: '0 12px 30px rgba(16, 185, 129, 0.12)'
                             }}>
-                                <span style={{ fontSize: '1.3rem' }}>🌤️</span>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#60A5FA', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                    <span>Patna Weather Forecast & Rain Protection Policy</span>
-                                    <span style={{ fontSize: '0.72rem', background: 'rgba(59, 130, 246, 0.25)', color: '#93C5FD', padding: '2px 8px', borderRadius: '10px' }}>32°C Clear</span>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                                            🌤️
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#10B981', letterSpacing: '0.02em' }}>
+                                                Patna Match Time Live Weather
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+                                                Slot reserved for {date} · Clear playing conditions
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '6px 14px', borderRadius: '12px', color: '#34D399', fontWeight: 800, fontSize: '0.82rem' }}>
+                                        31°C · Clear Sky
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.5 }}>
-                                    Great playing weather! If unexpected monsoon rain affects your reserved slot, admin guarantees <strong>1-click free slot rescheduling</strong> to any future open date.
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>TEMPERATURE</span>
+                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>31°C <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)' }}>(Feels 33°)</span></span>
+                                    </div>
+                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>HUMIDITY</span>
+                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>58% 💧</span>
+                                    </div>
+                                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '12px' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', display: 'block', fontWeight: 700 }}>WIND SPEED</span>
+                                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>8 km/h 💨</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Error Alert */}
                         {errorMessage && (

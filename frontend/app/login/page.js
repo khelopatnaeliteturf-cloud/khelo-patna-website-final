@@ -47,6 +47,19 @@ export default function LoginPage() {
         };
     }, []);
 
+    const [passkeySupported, setPasskeySupported] = useState(true);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const hasWebAuthn = Boolean(
+                window.PublicKeyCredential ||
+                window.PasswordCredential ||
+                (navigator.credentials && navigator.credentials.get)
+            );
+            setPasskeySupported(hasWebAuthn);
+        }
+    }, []);
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -584,7 +597,7 @@ export default function LoginPage() {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <span>🔓 Scan Face ID / Fingerprint</span>
+                            <span>🔑 {passkeySupported ? 'Scan Face ID / Passkey' : 'Use Passkey / Auto-Fill Credentials'}</span>
                         </button>
 
                         <button type="submit" className="btn-premium" disabled={loading} style={{
