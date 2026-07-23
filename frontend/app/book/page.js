@@ -6,6 +6,26 @@ import { getBackendUrl } from '../lib/backendUrl';
 
 const BACKEND_URL = getBackendUrl();
 
+const formatSlotTo12Hr = (slotVal) => {
+    if (!slotVal || typeof slotVal !== 'string') return String(slotVal || '');
+    const parts = slotVal.split('-');
+    if (parts.length !== 2) return slotVal;
+
+    const formatHour = (h) => {
+        let hourNum = parseInt(h, 10);
+        if (isNaN(hourNum)) return h;
+        if (hourNum === 0 || hourNum === 24) return '12:00 AM';
+        if (hourNum === 12) return '12:00 PM';
+        if (hourNum > 12) {
+            const val = hourNum - 12;
+            return `${val < 10 ? '0' + val : val}:00 PM`;
+        }
+        return `${hourNum < 10 ? '0' + hourNum : hourNum}:00 AM`;
+    };
+
+    return `${formatHour(parts[0])} - ${formatHour(parts[1])}`;
+};
+
 export default function BookPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sport, setSport] = useState('football');
