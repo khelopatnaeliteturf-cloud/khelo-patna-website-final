@@ -538,7 +538,8 @@ router.post('/auth/passkey/register-verify', authenticateToken, async (req, res)
         };
         
         const updatedPasskeys = [...passkeys.filter(p => p.id !== credential.id), newPasskey];
-        await Staff.updateOne({ _id: staff._id }, { $set: { passkeys: updatedPasskeys } });
+        staff.passkeys = updatedPasskeys;
+        await staff.save();
         passkeyChallenges.delete(String(userId));
 
         res.json({ success: true, message: 'Passkey registered successfully! You can now log in using Face ID / Touch ID / Fingerprint.' });
