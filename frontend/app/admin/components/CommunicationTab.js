@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 function renderWhatsAppFormatted(text) {
     if (!text) return { __html: '' };
@@ -415,11 +416,11 @@ export default function CommunicationTab(props) {
                 </div>
             )}
 
-            {/* Modal for viewing detailed log content */}
-            {selectedLog && (
+            {/* Modal for viewing detailed log content (Portal to document.body for top-level z-index) */}
+            {selectedLog && typeof document !== 'undefined' && createPortal(
                 <div className="modal-backdrop-premium fade show d-flex align-items-center justify-content-center" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh',
-                    background: 'rgba(3, 8, 6, 0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999999
+                    background: 'rgba(3, 8, 6, 0.82)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', zIndex: 99999999
                 }}>
                     <div className="card-premium animate-scale-up" style={{
                         width: '92%', maxWidth: '750px', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
@@ -515,7 +516,8 @@ export default function CommunicationTab(props) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

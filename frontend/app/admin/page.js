@@ -1364,9 +1364,16 @@ export default function AdminDashboard() {
         try {
             const res = await fetch(`${BACKEND_URL}/api/admin/whatsapp/status`, { headers: getHeaders() });
             const data = await res.json();
-            if (res.ok) setWhatsappStatus(data);
+            if (res.ok) {
+                setWhatsappStatus(prev => {
+                    if (prev?.status === data.status && prev?.bot_enabled === data.bot_enabled && prev?.qr === data.qr) {
+                        return prev;
+                    }
+                    return data;
+                });
+            }
         } catch (e) {
-            setErrorMessage('Error connecting to WhatsApp socket api.');
+            // Ignore background network warning
         }
     };
 
