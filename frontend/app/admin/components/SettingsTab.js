@@ -431,6 +431,72 @@ export default function SettingsTab({ backendUrl, getHeaders, notifySuccess, not
                         </div>
                         <button
                             type="button"
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch(`${backendUrl}/api/auth/passkey/register-options`, {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) throw new Error(data.error || 'Failed to initialize Passkey');
+
+                                    const challengeBuffer = Uint8Array.from(atob(data.options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+                                    const userIdBuffer = Uint8Array.from(data.options.user.id, c => c.charCodeAt(0));
+
+                                    const credential = await navigator.credentials.create({
+                                        publicKey: {
+                                            ...data.options,
+                                            challenge: challengeBuffer,
+                                            user: {
+                                                ...data.options.user,
+                                                id: userIdBuffer
+                                            }
+                                        }
+                                    });
+
+                                    if (credential) {
+                                        const rawId = credential.id;
+                                        const verifyRes = await fetch(`${backendUrl}/api/auth/passkey/register-verify`, {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                credential: { id: rawId, type: credential.type }
+                                            })
+                                        });
+                                        const verifyData = await verifyRes.json();
+                                        if (verifyRes.ok) {
+                                            alert('✅ Passkey registered successfully! You can now log in using Face ID / Touch ID on this device.');
+                                        } else {
+                                            alert(`⚠️ ${verifyData.error || 'Passkey registration failed.'}`);
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error('Passkey creation error:', err);
+                                    alert('⚠️ Passkey creation was cancelled or is unsupported on this browser.');
+                                }
+                            }}
+                            style={{ 
+                                background: 'rgba(57,255,20,0.1)', 
+                                color: '#39ff14', 
+                                border: '1px dashed rgba(57,255,20,0.3)', 
+                                padding: '6px 14px', 
+                                borderRadius: '8px', 
+                                fontSize: '0.74rem', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                fontWeight: 700,
+                                height: '36px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>fingerprint</span>
+                            Register Device Passkey
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => setShowAddUserModal(true)}
                             className="btn-primary-stripe"
                             style={{ 
