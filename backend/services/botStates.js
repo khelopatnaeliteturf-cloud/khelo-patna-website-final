@@ -152,6 +152,7 @@ _Reply *Menu* to return to the main menu._`;
  */
 async function handleIncomingMessage(sock, m) {
     const phoneJid = m.key.remoteJid;
+    if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') return;
     const phone = phoneJid.split('@')[0]; // Extract phone number
     const text = getMessageText(m).trim();
 
