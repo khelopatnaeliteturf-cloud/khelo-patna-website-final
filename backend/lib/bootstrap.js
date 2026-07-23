@@ -183,6 +183,7 @@ async function ensureDefaultTenant() {
                 type VARCHAR(20) NOT NULL CHECK (type IN ('EMAIL', 'WHATSAPP')),
                 recipient VARCHAR(255) NOT NULL,
                 recipient_name VARCHAR(255) DEFAULT NULL,
+                booked_by VARCHAR(255) DEFAULT NULL,
                 subject VARCHAR(255) DEFAULT NULL,
                 content TEXT NOT NULL,
                 status VARCHAR(20) CHECK (status IN ('SENT', 'FAILED')) DEFAULT 'SENT',
@@ -190,6 +191,7 @@ async function ensureDefaultTenant() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
             ALTER TABLE communication_logs ADD COLUMN IF NOT EXISTS recipient_name VARCHAR(255) DEFAULT NULL;
+            ALTER TABLE communication_logs ADD COLUMN IF NOT EXISTS booked_by VARCHAR(255) DEFAULT NULL;
             ALTER TABLE communication_logs ENABLE ROW LEVEL SECURITY;
         `);
         console.log('  Bootstrap: communication_logs table checked/created');
