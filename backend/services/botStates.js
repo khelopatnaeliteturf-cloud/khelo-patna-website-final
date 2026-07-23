@@ -1,9 +1,46 @@
+const axios = require('axios');
 const ChatSession = require('../models/ChatSession');
 const Booking = require('../models/Booking');
 const TurfSettings = require('../models/TurfSettings');
 const TurfClosure = require('../models/TurfClosure');
 const { sendWhatsAppMessage, registerBotListener } = require('./whatsapp');
 const { createPaymentLink } = require('./cashfree');
+
+// Groq / Grok / Gemini AI NLU Intent Parser for WhatsApp Auto-Booking
+async function getAIBotIntent(userMessage) {
+    const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey || !userMessage || userMessage.trim().length < 3) return null;
+
+    try {
+        const prompt = `You are KheloPatna AI Assistant, an expert auto-booking assistant for KheloPatna Elite Turf, Patna.
+Analyze the customer's WhatsApp message and determine their intent.
+
+User Message: "${userMessage}"
+
+Return ONLY a JSON object (no markdown, no backticks) in this exact format:
+{
+  "intent": "BOOK_CRICKET" | "BOOK_FOOTBALL" | "INQUIRE_RATES" | "INQUIRE_LOCATION" | "NONE",
+  "friendlyReply": "Short friendly sentence"
+}`;
+
+        if (process.env.GROQ_API_KEY) {
+            const res = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: 'system', content: prompt }],
+                temperature: 0.1,
+                response_format: { type: 'json_object' }
+            }, {
+                headers: { 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+                timeout: 4000
+            });
+            const textContent = res.data.choices[0]?.message?.content;
+            return JSON.parse(textContent);
+        }
+    } catch (err) {
+        // Silent fallback to local state machine
+    }
+    return null;
+}
 
 const ALL_HOURLY_SLOTS = [
     { value: '00-01', text: '12:00 AM - 01:00 AM', startHour: 0 },
@@ -217,6 +254,42 @@ async function handleIncomingMessage(sockOrPayload, m) {
     }
 
     const lowerText = text.toLowerCase();
+
+    // AI NLU Intent Extractor (Groq / Grok / Gemini)
+    const aiIntent = await getAIBotIntent(text);
+    if (aiIntent) {
+        if (aiIntent.intent === 'BOOK_CRICKET') {
+            session.state = 'ENTER_DATE';
+            session.bookingData = { sport: 'cricket' };
+            await session.save();
+            await sendWhatsAppMessage(phone, 
+                `🏏 *KheloPatna AI Assistant*:\n\n${aiIntent.friendlyReply || 'I can help you reserve a Cricket Turf slot!'}\n\nPlease reply with your date in *DD-MM-YYYY* format (or *today* / *tomorrow*).`
+            );
+            return;
+        } else if (aiIntent.intent === 'BOOK_FOOTBALL') {
+            session.state = 'ENTER_DATE';
+            session.bookingData = { sport: 'football' };
+            await session.save();
+            await sendWhatsAppMessage(phone, 
+                `⚽ *KheloPatna AI Assistant*:\n\n${aiIntent.friendlyReply || 'I can help you reserve a Football Turf slot!'}\n\nPlease reply with your date in *DD-MM-YYYY* format (or *today* / *tomorrow*).`
+            );
+            return;
+        } else if (aiIntent.intent === 'INQUIRE_RATES') {
+            let settings = await TurfSettings.findOne();
+            let cricketRate = settings?.cricketBaseRate || 1000;
+            let footballRate = settings?.footballBaseRate || 1000;
+            let netsRate = settings?.weeklyRates?.nets?.[0] || settings?.netsBaseRate || 100;
+            await sendWhatsAppMessage(phone, 
+                `💰 *KheloPatna Turf Rates*:\n\n🏏 *Cricket*: ₹${cricketRate}/hr\n⚽ *Football*: ₹${footballRate}/hr\n🎯 *Batting Nets*: ₹${netsRate}/hr per head\n\n_Reply *1* to book a slot, or *Menu* for main menu._`
+            );
+            return;
+        } else if (aiIntent.intent === 'INQUIRE_LOCATION') {
+            await sendWhatsAppMessage(phone, 
+                `📍 *KheloPatna Elite Turf Location*:\n\nNear ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800007\n🗺️ *Google Maps*: https://maps.app.goo.gl/iF1kcgi6seEnsRfaA`
+            );
+            return;
+        }
+    }
 
     // Global 'Cancel' or 'Menu' trigger
     if (lowerText === 'cancel' || lowerText === 'menu' || lowerText === 'main menu' || lowerText === 'home' || lowerText === 'hi' || lowerText === 'hello' || lowerText === 'hey') {
