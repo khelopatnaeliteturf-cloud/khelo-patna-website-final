@@ -441,11 +441,17 @@ export default function CommunicationTab(props) {
                                     <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>RECIPIENT</div>
                                     <div className="font-monospace fw-bold" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{selectedLog.recipient}</div>
                                 </div>
-                                <div className="col-sm-3 col-6">
+                                <div className="col-sm-6">
+                                    <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>BOOKED BY / INITIATOR</div>
+                                    <div className="fw-bold" style={{ color: 'var(--primary)', fontSize: '0.92rem' }}>
+                                        {selectedLog.bookedBy || selectedLog.sender || (selectedLog.type === 'EMAIL' ? 'KheloPatna System' : 'Online / WhatsApp Bot')}
+                                    </div>
+                                </div>
+                                <div className="col-sm-6">
                                     <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>CHANNEL</div>
                                     <div className="fw-bold" style={{ color: selectedLog.type === 'EMAIL' ? '#3b82f6' : '#10b981' }}>{selectedLog.type}</div>
                                 </div>
-                                <div className="col-sm-3 col-6">
+                                <div className="col-sm-6">
                                     <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>STATUS</div>
                                     <div>
                                         {selectedLog.status === 'SENT' ? (

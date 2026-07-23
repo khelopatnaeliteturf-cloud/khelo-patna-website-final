@@ -107,12 +107,14 @@ async function sendBookingNotifications(booking) {
     const advancePaid = Number(booking.paidAmount || 0);
     const balanceDue = Math.max(0, totalAmount - discountAmount - advancePaid);
     const formattedTiming = (booking.timeSlots || []).map(formatSlotTo12Hr).join(', ');
+    const bookedByText = booking.bookedBy || (booking.paymentMethod === 'offline' ? 'Admin Staff' : `${booking.customerName} (Online)`);
 
     const waText = `⚽ *Booking Confirmation* ⚽
 
 Dear ${booking.customerName}, your turf booking is confirmed!
 
 *Booking Summary*:
+*   Booked By: ${bookedByText}
 *   Sport: ${booking.sport.toUpperCase()}
 *   Date: ${booking.date}
 *   Timing: ${formattedTiming}
@@ -337,7 +339,8 @@ router.post('/payment/create-order', async (req, res) => {
                 sport: bookingData.sport,
                 participantsCount: Number(bookingData.participantsCount || 1),
                 couponCode: bookingData.couponCode || null,
-                discountAmount: Number(bookingData.discountAmount || 0)
+                discountAmount: Number(bookingData.discountAmount || 0),
+                bookedBy: customerName ? `${customerName} (Online)` : 'Online Customer'
             });
 
             await newBooking.save();
@@ -387,7 +390,8 @@ router.post('/payment/create-order', async (req, res) => {
             sport: bookingData.sport,
             participantsCount: Number(bookingData.participantsCount || 1),
             couponCode: bookingData.couponCode || null,
-            discountAmount: Number(bookingData.discountAmount || 0)
+            discountAmount: Number(bookingData.discountAmount || 0),
+            bookedBy: customerName ? `${customerName} (Online)` : 'Online Customer'
         });
 
         await newBooking.save();
@@ -1186,6 +1190,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
                 ? `${backendUrl.replace(/\/+$/, '')}/mock-payment.html?order_id=${orderId}&amount=${paidAmount}`
                 : `${backendUrl.replace(/\/+$/, '')}/checkout.html?session_id=${cfOrder.payment_session_id}&env=${process.env.CASHFREE_ENV || 'sandbox'}`;
 
+            const staffUser = req.user?.username || req.user?.role || 'Admin Staff';
             newBooking = new Booking({
                 tenantId,
                 branchId,
@@ -1201,7 +1206,8 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
                 paymentMethod: 'cashfree',
                 orderId: orderId,
                 sport: sport,
-                participantsCount: Number(participantsCount || 1)
+                participantsCount: Number(participantsCount || 1),
+                bookedBy: `Staff (${staffUser})`
             });
 
             await newBooking.save();
@@ -1217,6 +1223,7 @@ router.post('/admin/bookings', authenticateToken, authorizeRoles('SUPER_ADMIN', 
 Dear ${customerName}, your turf booking has been initiated.
 
 *Booking Summary*:
+*   Booked By: Staff (${staffUser})
 *   Sport: ${sport.toUpperCase()}
 *   Date: ${date}
 *   Timing: ${formattedTiming}
@@ -1235,6 +1242,7 @@ Thank you! 🏆`;
 
         } else {
             // Direct / Offline Booking flow
+            const staffUser = req.user?.username || req.user?.role || 'Admin Staff';
             newBooking = new Booking({
                 tenantId,
                 branchId,
@@ -1250,7 +1258,8 @@ Thank you! 🏆`;
                 paymentMethod: paymentMethod || 'offline',
                 orderId: orderId,
                 sport: sport,
-                participantsCount: Number(participantsCount || 1)
+                participantsCount: Number(participantsCount || 1),
+                bookedBy: `Staff (${staffUser})`
             });
 
             await newBooking.save();

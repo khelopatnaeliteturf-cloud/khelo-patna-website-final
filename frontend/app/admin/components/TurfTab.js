@@ -185,6 +185,9 @@ export default function TurfTab(props) {
                                                             <div>
                                                                 <div style={{ fontWeight: 600, fontSize: '0.84rem' }}>{b.customerName || 'Walk-in'}</div>
                                                                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{b.customerPhone || '—'}</div>
+                                                                <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600, marginTop: '1px' }}>
+                                                                    Booked by: {b.bookedBy || (b.paymentMethod === 'offline' ? 'Admin Staff' : 'Online / Self')}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>

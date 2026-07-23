@@ -4,7 +4,7 @@ const net = require('net');
 const Tenant = require('../models/Tenant');
 const CommunicationLog = require('../models/CommunicationLog');
 
-async function logEmail({ to, subject, content, status, errorMessage }) {
+async function logEmail({ to, subject, content, status, errorMessage, bookedBy, recipientName }) {
     try {
         const tenant = await Tenant.findOne({ subdomain: 'khelopatna' });
         const tenantId = tenant ? tenant._id : null;
@@ -12,6 +12,8 @@ async function logEmail({ to, subject, content, status, errorMessage }) {
             tenantId,
             type: 'EMAIL',
             recipient: to,
+            recipientName,
+            bookedBy,
             subject,
             content,
             status,

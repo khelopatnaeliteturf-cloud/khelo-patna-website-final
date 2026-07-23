@@ -3,7 +3,7 @@ const axios = require('axios');
 const Tenant = require('../models/Tenant');
 const CommunicationLog = require('../models/CommunicationLog');
 
-async function logWhatsApp({ to, content, status, errorMessage }) {
+async function logWhatsApp({ to, content, status, errorMessage, bookedBy, recipientName }) {
     try {
         const tenant = await Tenant.findOne({ subdomain: 'khelopatna' });
         const tenantId = tenant ? tenant._id : null;
@@ -11,6 +11,8 @@ async function logWhatsApp({ to, content, status, errorMessage }) {
             tenantId,
             type: 'WHATSAPP',
             recipient: to,
+            recipientName,
+            bookedBy,
             content,
             status,
             errorMessage
