@@ -4,16 +4,26 @@ export default function TurfTab(props) {
     const { activeSidebarKey, bookingsLog, selectedBooking, generateCustomerId, bookingsFilter, setBookingsFilter, bookingsDateRange, setBookingsDateRange, bookingsCustomStartDate, setBookingsCustomStartDate, bookingsCustomEndDate, setBookingsCustomEndDate, setShowOfflineBookingModal, setShowBookingsReportModal, formatINR, formatSlotTo12Hr, setSelectedBookingState, turfSettings, closuresList, handleSaveSettings, setTurfSettings, handleCreateClosure, newClosure, setNewClosure, handleDeleteClosure } = props;
     
     const getBookingSourceLabel = (b) => {
-        if (!b) return 'Online / Self';
-        if (b.bookedBy) return b.bookedBy;
-        const orderIdStr = b.orderId || '';
-        if (orderIdStr.startsWith('KP-OFFLINE-') || b.paymentMethod === 'offline' || b.paymentMethod === 'cash') {
-            return 'Admin Staff / Manual';
+        if (!b) return 'Website';
+        const rawBookedBy = String(b.bookedBy || '').trim();
+        const orderIdStr = String(b.orderId || '');
+        const name = b.customerName || 'Customer';
+
+        // 1. If explicitly booked by Staff / Admin
+        if (rawBookedBy.startsWith('Staff') || rawBookedBy.startsWith('Admin') || orderIdStr.startsWith('KP-OFFLINE-') || b.paymentMethod === 'offline' || b.paymentMethod === 'cash') {
+            if (rawBookedBy && (rawBookedBy.startsWith('Staff') || rawBookedBy.startsWith('Admin'))) {
+                return rawBookedBy;
+            }
+            return 'Admin Staff';
         }
-        if (orderIdStr.startsWith('KP-WA-') || b.createdVia === 'WHATSAPP') {
-            return 'WhatsApp Bot';
+
+        // 2. If booked via WhatsApp Bot
+        if (rawBookedBy.includes('WhatsApp Bot') || orderIdStr.startsWith('KP-WA-') || b.createdVia === 'WHATSAPP') {
+            return `${name} (WhatsApp Bot)`;
         }
-        return `${b.customerName || 'Customer'} (Online)`;
+
+        // 3. Website Booking
+        return `${name} (Website)`;
     };
 
     if (activeSidebarKey === 'bookings') {

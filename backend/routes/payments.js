@@ -338,7 +338,7 @@ router.post('/payment/create-order', async (req, res) => {
                 participantsCount: Number(bookingData.participantsCount || 1),
                 couponCode: bookingData.couponCode || null,
                 discountAmount: Number(bookingData.discountAmount || 0),
-                bookedBy: customerName ? `${customerName} (Online)` : 'Online Customer'
+                bookedBy: customerName ? `${customerName} (Website)` : 'Website'
             });
 
             await newBooking.save();
@@ -389,7 +389,7 @@ router.post('/payment/create-order', async (req, res) => {
             participantsCount: Number(bookingData.participantsCount || 1),
             couponCode: bookingData.couponCode || null,
             discountAmount: Number(bookingData.discountAmount || 0),
-            bookedBy: customerName ? `${customerName} (Online)` : 'Online Customer'
+            bookedBy: customerName ? `${customerName} (Website)` : 'Website'
         });
 
         await newBooking.save();
