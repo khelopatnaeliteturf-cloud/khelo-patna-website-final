@@ -51,6 +51,7 @@ async function ensureSessionTable() {
             );
             ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS key VARCHAR;
             ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS value TEXT;
+            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
         `);
     } catch (e) {
         console.error('Error ensuring whatsapp_session table:', e.message);
@@ -81,12 +82,22 @@ async function useSupabaseAuthState() {
         const key = `${type}:${id}`;
         try {
             const valStr = JSON.stringify(value, BufferJSON.replacer);
-            await dbPool.query(
-                `INSERT INTO whatsapp_session (key, value, updated_at) 
-                 VALUES ($1, $2, NOW()) 
-                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
-                [key, valStr]
-            );
+            try {
+                await dbPool.query(
+                    `INSERT INTO whatsapp_session (key, value, updated_at) 
+                     VALUES ($1, $2, NOW()) 
+                     ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                    [key, valStr]
+                );
+            } catch (colErr) {
+                // Fallback for pre-existing tables without updated_at column
+                await dbPool.query(
+                    `INSERT INTO whatsapp_session (key, value) 
+                     VALUES ($1, $2) 
+                     ON CONFLICT (key) DO UPDATE SET value = $2`,
+                    [key, valStr]
+                );
+            }
         } catch (e) {
             console.error(`Error writing session ${key}:`, e.message);
         }
