@@ -570,22 +570,33 @@ async function handleIncomingMessage(sockOrPayload, m) {
             break;
 
         case 'SELECTING_PAYMENT_MODE':
-            let chosenAmount = session.bookingData.totalAmount;
-            let paymentType = 'FULL';
-
-            if (text === '1' || lowerText.includes('advance') || lowerText.includes('300') || lowerText.includes('part')) {
-                chosenAmount = session.bookingData.advanceAmount || Math.max(300, Math.round(session.bookingData.totalAmount * 0.5));
-                paymentType = 'ADVANCE';
-            } else if (text === '2' || lowerText.includes('full') || lowerText.includes('100%')) {
-                chosenAmount = session.bookingData.totalAmount;
-                paymentType = 'FULL';
-            } else {
-                await sendWhatsAppMessage(phone, `Please reply with *1* for Advance Deposit (₹${session.bookingData.advanceAmount}) or *2* for Full Payment (₹${session.bookingData.totalAmount}).`);
+            if (text === '1' || lowerText.includes('advance') || lowerText.includes('part')) {
+                session.state = 'ENTERING_ADVANCE_AMOUNT';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `💵 *Enter Advance Deposit Amount*:\n\nPlease reply with the amount in ₹ you wish to pay as advance (e.g. *300* or *500*).\n\n⚠️ *Note*: Minimum advance deposit required to lock a slot is *₹300*.`
+                );
                 return;
+            } else if (text === '2' || lowerText.includes('full') || lowerText.includes('100%')) {
+                session.bookingData.paymentAmount = session.bookingData.totalAmount;
+                session.bookingData.paymentType = 'FULL';
+            } else {
+                // Check if user directly typed an advance number (e.g. 100, 300, 500)
+                const typedNum = parseInt(text.replace(/\D/g, ''), 10);
+                if (!isNaN(typedNum) && typedNum > 0) {
+                    if (typedNum < 300) {
+                        await sendWhatsAppMessage(phone, 
+                            `⚠️ Minimum advance deposit required to lock a slot is *₹300*. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
+                        );
+                        return;
+                    }
+                    session.bookingData.paymentAmount = Math.min(typedNum, session.bookingData.totalAmount);
+                    session.bookingData.paymentType = (session.bookingData.paymentAmount >= session.bookingData.totalAmount) ? 'FULL' : 'ADVANCE';
+                } else {
+                    await sendWhatsAppMessage(phone, `Please reply with *1* for Advance Deposit or *2* for Full Payment (₹${session.bookingData.totalAmount}).`);
+                    return;
+                }
             }
-
-            session.bookingData.paymentAmount = chosenAmount;
-            session.bookingData.paymentType = paymentType;
 
             // Check if phone string is already a clean 10-digit Indian phone number
             const extractedPhone = String(phone).replace(/\D/g, '').slice(-10);
@@ -594,13 +605,49 @@ async function handleIncomingMessage(sockOrPayload, m) {
                 session.state = 'ENTERING_NAME';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `✅ Selected: *${paymentType === 'ADVANCE' ? `Advance Deposit (₹${chosenAmount})` : `Full Payment (₹${chosenAmount})`}*\n\nPlease reply with your *Full Name* to proceed with this booking.`
+                    `✅ Selected: *${session.bookingData.paymentType === 'ADVANCE' ? `Advance Deposit (₹${session.bookingData.paymentAmount})` : `Full Payment (₹${session.bookingData.paymentAmount})`}*\n\nPlease reply with your *Full Name* to proceed with this booking.`
                 );
             } else {
                 session.state = 'ENTERING_PHONE';
                 await session.save();
                 await sendWhatsAppMessage(phone, 
-                    `✅ Selected: *${paymentType === 'ADVANCE' ? `Advance Deposit (₹${chosenAmount})` : `Full Payment (₹${chosenAmount})`}*\n\n📱 Please enter your *10-digit Mobile Number* for SMS booking confirmation & payment receipt.`
+                    `✅ Selected: *${session.bookingData.paymentType === 'ADVANCE' ? `Advance Deposit (₹${session.bookingData.paymentAmount})` : `Full Payment (₹${session.bookingData.paymentAmount})`}*\n\n📱 Please enter your *10-digit Mobile Number* for SMS booking confirmation & payment receipt.`
+                );
+            }
+            break;
+
+        case 'ENTERING_ADVANCE_AMOUNT':
+            const typedAmt = parseInt(text.replace(/\D/g, ''), 10);
+            if (isNaN(typedAmt) || typedAmt <= 0) {
+                await sendWhatsAppMessage(phone, `⚠️ Invalid amount. Please enter a valid number in ₹ (e.g. *300* or *500*).`);
+                return;
+            }
+
+            if (typedAmt < 300) {
+                await sendWhatsAppMessage(phone, 
+                    `⚠️ Minimum advance deposit required to lock a slot is *₹300*. Please enter *₹300* or a higher amount (or reply *2* for Full Payment of ₹${session.bookingData.totalAmount}).`
+                );
+                return;
+            }
+
+            const finalAdvance = Math.min(typedAmt, session.bookingData.totalAmount);
+            session.bookingData.paymentAmount = finalAdvance;
+            session.bookingData.paymentType = (finalAdvance >= session.bookingData.totalAmount) ? 'FULL' : 'ADVANCE';
+
+            // Check if phone string is already a clean 10-digit Indian phone number
+            const phoneCheck = String(phone).replace(/\D/g, '').slice(-10);
+            if (phoneCheck.length === 10 && !phoneCheck.startsWith('19') && !phoneCheck.startsWith('10')) {
+                session.bookingData.realPhone = phoneCheck;
+                session.state = 'ENTERING_NAME';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `✅ Selected: *${session.bookingData.paymentType === 'ADVANCE' ? `Advance Deposit (₹${finalAdvance})` : `Full Payment (₹${finalAdvance})`}*\n\nPlease reply with your *Full Name* to proceed with this booking.`
+                );
+            } else {
+                session.state = 'ENTERING_PHONE';
+                await session.save();
+                await sendWhatsAppMessage(phone, 
+                    `✅ Selected: *${session.bookingData.paymentType === 'ADVANCE' ? `Advance Deposit (₹${finalAdvance})` : `Full Payment (₹${finalAdvance})`}*\n\n📱 Please enter your *10-digit Mobile Number* for SMS booking confirmation & payment receipt.`
                 );
             }
             break;
