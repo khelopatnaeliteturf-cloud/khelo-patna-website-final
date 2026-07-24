@@ -2,25 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import MobileAdminView from '@/app/admin/components/MobileAdminView';
-import { getBackendUrl } from '../lib/backendUrl';
 
 export default function MobileAppPage() {
-    const BACKEND_URL = getBackendUrl();
+    const BACKEND_URL = 'https://api.khelopatna.in';
     const [stats, setStats] = useState({});
     const [bookingsLog, setBookingsLog] = useState([]);
     const [allStudents, setAllStudents] = useState([]);
-    const [inventoryItems, setInventoryItems] = useState([]);
     const [revenueAnalytics, setRevenueAnalytics] = useState([]);
     const [sessionsList, setSessionsList] = useState([]);
     const [coachesList, setCoachesList] = useState([]);
-    const [activeCheckins, setActiveCheckins] = useState([]);
-    const [user, setUser] = useState({ username: 'Admin' });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadAppData();
     }, []);
 
     const loadAppData = async () => {
+        setLoading(true);
         try {
             const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
             const headers = {
@@ -43,7 +41,8 @@ export default function MobileAppPage() {
             }
             if (resBookings && resBookings.ok) {
                 const data = await resBookings.json();
-                setBookingsLog(Array.isArray(data) ? data : data.bookings || []);
+                const list = Array.isArray(data) ? data : data.bookings || [];
+                setBookingsLog(list);
             }
             if (resStudents && resStudents.ok) {
                 const data = await resStudents.json();
@@ -62,25 +61,27 @@ export default function MobileAppPage() {
                 setCoachesList(Array.isArray(data) ? data : []);
             }
         } catch (e) {
-            console.error('App data load error', e);
+            console.error('Failed loading live database stats:', e);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <main style={{ backgroundColor: '#050A10', minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
             <MobileAdminView
-                user={user}
+                user={{ username: 'Admin' }}
                 role="ADMIN"
                 stats={stats}
                 bookingsLog={bookingsLog}
                 studentsList={allStudents}
-                inventoryItems={inventoryItems}
+                inventoryItems={[]}
                 staffList={[]}
                 attendanceData={{}}
                 revenueAnalytics={revenueAnalytics}
                 sessionsList={sessionsList}
                 coachesList={coachesList}
-                activeCheckins={activeCheckins}
+                activeCheckins={[]}
                 onOpenBookingModal={() => { window.location.href = '/book'; }}
                 onOpenStudentModal={() => { window.location.href = '/enquiry'; }}
                 onOpenFeeModal={() => { window.location.href = '/academy/pay-fees'; }}
