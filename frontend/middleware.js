@@ -5,6 +5,14 @@ const MAINTENANCE_MODE = false;
 
 export function middleware(request) {
     const { pathname } = request.nextUrl;
+    const hostname = request.headers.get('host') || '';
+
+    // Automatically route app.khelopatna.in domain directly to /app mobile interface
+    if (hostname.includes('app.khelopatna.in') && !pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.includes('.')) {
+        if (pathname !== '/app') {
+            return NextResponse.rewrite(new URL('/app', request.url));
+        }
+    }
 
     // If maintenance mode is disabled, let all requests proceed normally
     if (!MAINTENANCE_MODE) {
