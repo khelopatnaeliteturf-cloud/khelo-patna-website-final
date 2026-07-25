@@ -46,73 +46,28 @@ function parseUserAgent(ua) {
     return { device, browser, os: osName };
 }
 
-// Randomized pools for Khelo Patna Elite Turf review generation
-const KEY_FEATURES = [
-    "Premium Indoor Turf Arena", "Top-quality Artificial Grass", "Excellent LED Floodlighting",
-    "Professional Cricket Net Benches", "Bowling Machine Sessions", "Sports Academy Programs",
-    "Extremely Polite & Professional Staff", "Courteous & Cooperative Management", "Well-Maintained locker & waiting areas", "Ample vehicle parking",
-    "Safe & Disciplined environment for kids", "Online Turf Slot Booking", "Clean drinking water & amenities",
-    "High ceiling net height for big shots", "Birthday/Event slot hiring", "Exciting local tournaments",
-    "Certified & Helpful academy coaches", "Personal attention from trainers", "Friendly & Respectful customer support"
-];
-
-const REVIEWER_TYPES = [
-    "Turf booking player", "Parent of Cricket Academy student", "Parent of Football Academy student",
-    "Regular weekend player", "Corporate team event host", "Co-player with friends",
-    "Academy Student", "Local sports enthusiast", "First-time turf visitor", "Long-term turf subscriber"
-];
-
-const EMOTIONS = [
-    "Happy", "Proud", "Satisfied", "Impressionable", "Grateful",
-    "Excited", "Confident", "Relieved", "Thrilled", "Amazed"
-];
-
-const FOCUS_AREAS = [
-    "Staff professionalism & politeness", "Pitch quality & high ceiling height", "Bowling machine", "Cricket coaching", "Football academy",
-    "Booking ease", "Helpful ground staff", "Parking space", "Lockers & benches", "Drinking water & cleanliness",
-    "Tournament matches", "Coaching techniques", "Location access", "Player safety", "Overall sports atmosphere"
-];
-
-const IMPROVEMENTS = [
-    "Better gameplay stamina", "Increased batting/bowling accuracy", "Improved physical fitness",
-    "Teamwork & discipline", "Enhanced football dribbling skills", "More confidence in sports",
-    "Reduced screen-time for kids", "Better social circle in games", "Enhanced weekend recreation",
-    "Better bowling technique"
-];
-
-const WRITING_STYLES = [
-    "Short Player review", "Detailed experience", "Conversational", "Story-based", "Professional review"
-];
-
-const LENGTHS = [
-    "20-40 words (short and punchy)",
-    "40-70 words (medium length, natural)",
-    "70-120 words (detailed gameplay experience)"
-];
-
-const POSITIVE_KEYWORDS = [
-    "polite", "courteous", "extremely professional", "cooperative", "well-maintained", "outstanding", "superb", "highly-recommended",
-    "premium", "friendly", "helpful staff", "perfect", "amazing", "smooth",
-    "disciplined", "top-tier", "clean", "wonderful", "impressive", "quality"
-];
-
-// Offline Fallback Pools (specifically customized for Khelo Patna Elite Turf)
-const fallbacks = [
-    "Superb turf pitch quality! The staff is extremely polite, professional, and cooperative. Played football here last night under the LED lights with a smooth booking process.",
+// Optimized Fallbacks Pool categorized by theme
+const FALLBACK_TURF_BOOKINGS = [
+    "Superb turf pitch quality! The staff is extremely polite, professional, and cooperative. Played football here last night under the LED lights with a smooth online booking process.",
     "Best indoor turf in Patna. High ceiling net height for big cricket shots, and the ground staff is very helpful and well-behaved. Highly recommended!",
-    "Enrolled my son in the Khelo Patna Football Academy. The coaches are highly professional, patient, and encouraging. Outstanding experience!",
-    "Great lighting and plenty of parking space near Kumhrar. The management team is very polite and professional. Perfect for regular weekend games.",
-    "Excellent behavior of the support staff and easy online slot reservations. The owner and staff are super courteous, polite, and well-disciplined.",
-    "Excellent value for cricket training. Coach Bhakt Vatsal and the staff give personal, professional attention to every student. My child's stamina has improved a lot.",
-    "Clean drinking water, locker benches, and a polite, helpful management staff. Easily the most well-maintained turf arena in Bihar.",
-    "Hosted a corporate tournament here last Sunday. The staff was incredibly professional and organized everything smoothly. Everyone thoroughly enjoyed it.",
-    "My daughter loves the cricket practice nets! The staff is very polite, respectful, and ensures a safe, family-friendly environment.",
-    "The turf artificial grass is of high quality and high ceiling height. The staff is polite, professional, and very prompt with bookings.",
-    "Great location near Kumhrar. Easy access, polite and cooperative staff, and reasonable rates. We book it every weekend for our football group.",
-    "Wonderful coaching program! Highly professional management and coaches. My son has gained so much confidence since joining this academy.",
-    "Amazing indoor turf and net setup. The staff is extremely polite and supportive. The LED lighting is fantastic for late-night matches.",
+    "Great lighting and plenty of parking space near Kumhrar. The management team is very polite and professional. Perfect for regular weekend cricket games.",
+    "Excellent behavior of the support staff and easy slot reservations. The owner and staff are super courteous, polite, and well-disciplined.",
+    "Clean drinking water, locker benches, and a polite, helpful management staff. Easily the most well-maintained sports turf in Patna.",
+    "Amazing indoor turf and net setup. The staff is extremely polite and supportive. The LED floodlights are fantastic for late-night matches.",
     "Highly recommended turf! Safe, clean, and perfectly run by professional and polite management. Clear advance booking and great hospitality.",
-    "Been booking Khelo Patna Turf for months now. Top-class polite staff, spacious nets with high ceiling, and consistent ground quality. Best in Patna."
+    "Been booking Khelo Patna Turf for months now. Top-class polite staff, spacious nets with high ceiling, and consistent ground quality. Best in Patna.",
+    "Loved playing cricket here with my group. Wide pitch, high ceiling, and super cooperative staff who arranged everything quickly."
+];
+
+const FALLBACK_CORPORATE_EVENTS = [
+    "Really relieved we chose Khelo Patna Elite Turf for our corporate team event! Super cooperative staff made everything smooth, organized, and hassle-free. Exceptional turf quality and management.",
+    "Hosted our company's annual sports event at Khelo Patna Turf. Highly polite and professional management who handled our group seamlessly. Highly recommended for corporate matches!"
+];
+
+const FALLBACK_ACADEMY = [
+    "Enrolled my son in the Khelo Patna Cricket Academy. The coaches are highly professional, patient, and encouraging. Outstanding progress and great discipline!",
+    "Wonderful coaching program! Highly professional management and coaches. My son has gained so much confidence and improved his game since joining this academy.",
+    "Excellent value for cricket training. Coach Bhakt Vatsal and the staff give personal, professional attention to every student. Great environment for young players."
 ];
 
 // POST /api/generate-maps-review
@@ -122,20 +77,38 @@ router.post('/generate-maps-review', async (req, res) => {
         return res.status(400).json({ error: "Rating must be an integer between 1 and 5." });
     }
 
-    // Capture metadata from request
+    // Capture metadata
     const ip = req.ip || req.headers['x-forwarded-for'] || "unknown";
     const ua = req.headers['user-agent'] || "unknown";
     const { device, browser, os } = parseUserAgent(ua);
 
-    // Always generate positive reviews (Google Maps rating push)
-    // Mostly 5 stars, sometimes 4
-    const rand = Math.random();
-    const effectiveRating = rand < 0.85 ? 5 : 4;
+    // Rating distribution: 85% 5-star, 15% 4-star
+    const randRating = Math.random();
+    const effectiveRating = randRating < 0.85 ? 5 : 4;
+
+    // Calculate IST Time & Academy Schedule Window (3 PM to 7 PM, Mon to Fri)
+    const nowIST = new Date(Date.now() + 5.5 * 3600 * 1000);
+    const dayIST = nowIST.getUTCDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+    const hourIST = nowIST.getUTCHours(); // 0 to 23
+    const isAcademyTimeWindow = (dayIST >= 1 && dayIST <= 5) && (hourIST >= 15 && hourIST < 19);
+
+    // Determine Category with Strict Probabilities:
+    // 1. Corporate Event: Exactly 8% probability (0.08)
+    // 2. Academy Review: Allowed ONLY during 3 PM - 7 PM Mon-Fri (if selected)
+    // 3. Turf Bookings & Matches: 92% default (or 100% outside 3 PM - 7 PM Mon-Fri)
+    const randCategory = Math.random();
+    let category = "TURF_BOOKING"; // default 92%
+
+    if (randCategory < 0.08) {
+        category = "CORPORATE_EVENT"; // 8% chance
+    } else if (isAcademyTimeWindow && randCategory < 0.40) {
+        category = "ACADEMY"; // Only generated between 3 PM - 7 PM Mon-Fri
+    }
 
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
-    // Helper: check if review is already used
+    // Helper: check if review text is already used
     const isUsed = async (text) => {
         const existing = await MapsReviewUsed.findOne({ text });
         return existing !== null;
@@ -158,83 +131,76 @@ router.post('/generate-maps-review', async (req, res) => {
     // Fallback path if GROQ is not set
     if (!GROQ_API_KEY) {
         console.warn("[MapsReview] GROQ_API_KEY is not set — using local fallback");
-        // Shuffle fallbacks
-        const shuffled = [...fallbacks].sort(() => Math.random() - 0.5);
+        let pool = FALLBACK_TURF_BOOKINGS;
+        if (category === "CORPORATE_EVENT") pool = FALLBACK_CORPORATE_EVENTS;
+        if (category === "ACADEMY") pool = FALLBACK_ACADEMY;
+
+        const shuffled = [...pool].sort(() => Math.random() - 0.5);
         for (const fb of shuffled) {
             if (!(await isUsed(fb))) {
                 await markUsed(fb);
                 return res.json({ text: fb });
             }
         }
-        return res.json({ text: fallbacks[Math.floor(Math.random() * fallbacks.length)] });
+        return res.json({ text: pool[Math.floor(Math.random() * pool.length)] });
     }
 
-    // Build randomized prompt for Groq Cloud
+    // Build specific prompt based on category
     const MAX_RETRIES = 5;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        const reviewerType = REVIEWER_TYPES[Math.floor(Math.random() * REVIEWER_TYPES.length)];
-        const emotion = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
-        
-        // Select random focus areas
-        const focusCount = Math.floor(Math.random() * 3) + 1; // 1 to 3
-        const shuffledFocus = [...FOCUS_AREAS].sort(() => Math.random() - 0.5);
-        const selectedFocus = shuffledFocus.slice(0, focusCount);
-        
-        const improvement = IMPROVEMENTS[Math.floor(Math.random() * IMPROVEMENTS.length)];
-        const writingStyle = WRITING_STYLES[Math.floor(Math.random() * WRITING_STYLES.length)];
-        const length = LENGTHS[Math.floor(Math.random() * LENGTHS.length)];
-        
-        // Select random positive keywords
-        const keywordCount = Math.floor(Math.random() * 3) + 2; // 2 to 4
-        const shuffledKeywords = [...POSITIVE_KEYWORDS].sort(() => Math.random() - 0.5);
-        const selectedKeywords = shuffledKeywords.slice(0, keywordCount);
 
-        const prompt = `
+        let prompt = "";
+
+        if (category === "CORPORATE_EVENT") {
+            prompt = `
 BUSINESS PROFILE:
-Khelo Patna Elite Turf is a premium indoor sports turf arena established near Saguna More, Khagaul Road, Patna. It offers standard slot bookings for Football and Cricket Turf, Cricket Practice Nets with a professional bowling machine, and academy coaching programs for kids and youth.
+Khelo Patna Elite Turf is a premium indoor sports turf arena near Kumhrar, Sandalpur Road, Patna.
 
-Write a Google Maps review for Khelo Patna Elite Turf.
-Rating: ${effectiveRating} out of 5 stars.
+TASK:
+Write a 5-star Google Maps review for a Corporate / Company Team Building Event hosted at Khelo Patna Elite Turf.
 
-REVIEWER TYPE: ${reviewerType}
-EMOTION: ${emotion}
-WRITING STYLE: ${writingStyle}
-LENGTH: ${length}
-FOCUS AREAS: ${selectedFocus.join(', ')}
-STUDENT/PLAYER IMPROVEMENT TO MENTION: ${improvement}
-USE SOME OF THESE WORDS NATURALLY: ${selectedKeywords.join(', ')}
-
-BUSINESS HIGHLIGHTS YOU MAY REFERENCE:
-- Extremely polite, humble, helpful, and professional staff & management
-- High ceiling net height for big cricket shots and football games
-- Premium indoor artificial turf pitch with high-quality green grass
-- Late-night matches under bright LED floodlights
-- Cricket practice nets with a professional bowling machine
-- Certified Cricket and Football coaching academy for kids and youth
-- Smooth online turf slot scheduling and transparent pricing
-- Ample vehicle parking space, clean drinking water, lockers, and benches
-- Safe, secure, family-friendly, and disciplined sports environment
-
-CRITICAL STAFF PRAISE RULE:
-- Every review MUST include a natural, positive praise for the staff's professionalism, politeness, helpfulness, or courteous management behavior (e.g., "staff is very polite", "courteous management", "extremely professional and helpful ground staff", "well-behaved team", "super cooperative staff").
-
-HUMANIZATION RULES:
-- Use natural, conversational language. Do NOT sound robotic, artificial, or marketing-heavy.
-- Write like a real customer typing a quick review on their mobile phone.
-- Occasionally include minor informal expressions.
-- Keep the language simple and authentic.
-
-STRICT ANTI-REPETITION RULES:
-- Never repeat any review exactly.
-- Never reuse opening sentences.
-- Never reuse closing sentences.
-- Vary the sentence lengths and tone completely.
-
-OUTPUT RULES:
-- Output ONLY the raw review text.
-- Do NOT include quotes, headings, labels, intro, or greeting.
-- Do NOT use overused cliché phrases: 'holistic development', 'highly recommended', 'top-notch', 'second to none'.
+STRICT CATEGORY CONSTRAINTS (CORPORATE EVENT):
+1. Focus strictly on corporate team outing, company cricket/football match, smooth event hosting, and team enjoyment.
+2. STAFF PRAISE RULE: Must praise the super cooperative, polite, and professional staff/management (e.g. "super cooperative staff made everything smooth", "highly professional event management").
+3. DO NOT MENTION BOWLING MACHINE. Absolutely zero mention of bowling machines.
+4. DO NOT MENTION KIDS OR ACADEMY COACHING.
+5. Length: 30 to 60 words.
+6. Language: Natural, authentic, written by an employee or manager who attended the corporate event.
 `;
+        } else if (category === "ACADEMY") {
+            prompt = `
+BUSINESS PROFILE:
+Khelo Patna Elite Turf is a premium indoor sports turf arena near Kumhrar, Sandalpur Road, Patna offering certified Cricket and Football Academy training for kids.
+
+TASK:
+Write a 5-star Google Maps review from a parent whose child is enrolled in the Khelo Patna Sports Academy.
+
+STRICT CATEGORY CONSTRAINTS (ACADEMY REVIEW):
+1. Focus on certified coaches, personal attention, discipline, fitness improvement, or kids building confidence and social circle through sports.
+2. STAFF PRAISE RULE: Must praise the cooperative, polite, encouraging coaches and management staff.
+3. DO NOT MENTION BOWLING MACHINE unless specifically describing cricket net batting drills.
+4. Length: 30 to 65 words.
+5. Language: Authentic, warm, and conversational parent review.
+`;
+        } else {
+            // Default 92%: Turf Bookings, Hourly Play, Matches
+            const isCricketNet = Math.random() < 0.3; // 30% nets, 70% general turf
+            prompt = `
+BUSINESS PROFILE:
+Khelo Patna Elite Turf is a premium indoor sports turf arena near Kumhrar, Sandalpur Road, Patna offering high-quality artificial turf for Cricket and Football matches.
+
+TASK:
+Write a 5-star Google Maps review for an hourly turf slot booking / match played with friends.
+
+STRICT CATEGORY CONSTRAINTS (TURF BOOKINGS):
+1. Focus on turf grass quality, high ceiling net height for big shots, bright LED floodlights, easy online booking, or parking facilities.
+2. STAFF PRAISE RULE: Must naturally praise the polite, courteous, cooperative, and professional ground staff or management (e.g. "staff is very polite and cooperative", "courteous management").
+${isCricketNet ? '3. You may mention cricket practice nets or bowling machine for batting practice.' : '3. DO NOT MENTION BOWLING MACHINE. Focus on football or general cricket turf match.'}
+4. DO NOT MENTION CORPORATE EVENTS OR ACADEMY KIDS.
+5. Length: 25 to 55 words.
+6. Language: Authentic, casual, mobile-friendly review by a sports player.
+`;
+        }
 
         try {
             const groqRes = await axios.post(
@@ -251,8 +217,8 @@ OUTPUT RULES:
                             content: prompt
                         }
                     ],
-                    max_tokens: 250,
-                    temperature: 1.0
+                    max_tokens: 220,
+                    temperature: 0.95
                 },
                 {
                     headers: {
@@ -284,20 +250,23 @@ OUTPUT RULES:
 
         } catch (err) {
             console.error(`[MapsReview] Groq generation attempt ${attempt + 1} failed:`, err.message);
-            // Continue retry loop
         }
     }
 
-    // If retries fail, fallback to local pool
+    // Fallback to local pool if retries fail
     console.warn("[MapsReview] All Groq retries failed, falling back to local list");
-    const shuffled = [...fallbacks].sort(() => Math.random() - 0.5);
+    let pool = FALLBACK_TURF_BOOKINGS;
+    if (category === "CORPORATE_EVENT") pool = FALLBACK_CORPORATE_EVENTS;
+    if (category === "ACADEMY") pool = FALLBACK_ACADEMY;
+
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
     for (const fb of shuffled) {
         if (!(await isUsed(fb))) {
             await markUsed(fb);
             return res.json({ text: fb });
         }
     }
-    return res.json({ text: fallbacks[Math.floor(Math.random() * fallbacks.length)] });
+    return res.json({ text: pool[Math.floor(Math.random() * pool.length)] });
 });
 
 // GET /api/admin/maps-reviews (List all generated reviews logs)
@@ -312,7 +281,7 @@ router.get('/admin/maps-reviews', authenticateToken, authorizeRoles('SUPER_ADMIN
 });
 
 // GET /api/admin/maps-reviews/stats (Fetch aggregated statistics)
-router.get('/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), async (req, res) => {
+router.get('/api/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), async (req, res) => {
     try {
         let total = 0;
         try {
@@ -333,63 +302,9 @@ router.get('/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER
             console.warn('Ratings aggregate warning:', e.message);
         }
 
-        const devices = { "Desktop": 0, "Mobile": 0, "Tablet": 0 };
-        try {
-            const devicesRes = await MapsReviewUsed.aggregate([
-                { $group: { _id: "$device", count: { $sum: 1 } } }
-            ]);
-            devicesRes.forEach(d => {
-                if (d._id) devices[d._id] = d.count;
-            });
-        } catch (e) {
-            console.warn('Devices aggregate warning:', e.message);
-        }
-
-        const os = {};
-        try {
-            const osRes = await MapsReviewUsed.aggregate([
-                { $group: { _id: "$os", count: { $sum: 1 } } }
-            ]);
-            osRes.forEach(o => {
-                if (o._id) os[o._id] = o.count;
-            });
-        } catch (e) {
-            console.warn('OS aggregate warning:', e.message);
-        }
-
-        const browser = {};
-        try {
-            const browserRes = await MapsReviewUsed.aggregate([
-                { $group: { _id: "$browser", count: { $sum: 1 } } }
-            ]);
-            browserRes.forEach(b => {
-                if (b._id) browser[b._id] = b.count;
-            });
-        } catch (e) {
-            console.warn('Browser aggregate warning:', e.message);
-        }
-
-        const topIps = [];
-        try {
-            const ipsRes = await MapsReviewUsed.aggregate([
-                { $group: { _id: "$ip", count: { $sum: 1 } } },
-                { $sort: { count: -1 } },
-                { $limit: 5 }
-            ]);
-            ipsRes.forEach(item => {
-                if (item._id) topIps.push({ ip: item._id, count: item.count });
-            });
-        } catch (e) {
-            console.warn('IP aggregate warning:', e.message);
-        }
-
         res.json({
             totalReviews: total,
-            ratings,
-            devices,
-            os,
-            browser,
-            topIps
+            ratings
         });
     } catch (err) {
         console.error('Error computing maps reviews stats:', err);
