@@ -1,13 +1,13 @@
 export const metadata = {
-  title: 'Indoor Cricket Turf & Nets — KheloPatna Elite Turf, Patna',
-  description: 'Practice cricket on professional indoor turf with bowling machines, batting nets, and LED floodlights at KheloPatna Elite Turf, Kumhrar, Patna.',
+  title: 'Cricket Turf in Patna — KheloPatna Indoor Cricket Nets Near Signature Sights',
+  description: 'Book indoor cricket turf and practice nets in Patna near Signature Sights. Professional bowling machines, high net ceiling, LED floodlights, and cricket academy coaching.',
   alternates: { canonical: '/cricket-turf' },
+  keywords: 'cricket, cricket turf in patna, indoor cricket patna, cricket nets patna, signature sights, turf near me, cricket booking patna',
   openGraph: {
-    title: 'Indoor Cricket Turf & Nets — KheloPatna Elite Turf',
-    description: 'Practice cricket on professional indoor turf with bowling machines, batting nets, and LED floodlights.',
+    title: 'Cricket Turf in Patna — Indoor Cricket Nets Near Signature Sights',
+    description: 'Book indoor cricket turf & nets in Patna. Bowling machines, LED lights, and high net ceiling.',
     url: 'https://khelopatna.in/cricket-turf',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Indoor Cricket Turf' }]
-  }
+  },
 };
 
 export default function CricketTurfLayout({ children }) {

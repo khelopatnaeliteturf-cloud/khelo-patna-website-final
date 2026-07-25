@@ -6,9 +6,9 @@ export const viewport = {
 };
 
 export const metadata = {
-  title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
-  description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling. Play Elite, Play Patna.",
-  keywords: "turf booking, indoor cricket, indoor football, Patna sports, KheloPatna, sports academy, football turf Patna, cricket nets Patna, sports academy Bihar",
+  title: "KheloPatna Elite Turf — #1 Cricket & Football Turf in Patna | Near Signature Sights",
+  description: "Book premium indoor cricket nets & football turf in Patna. Professional cricket bowling machines, sports academy, and turf near me at Kumhrar near Signature Sights. Book hourly slots online!",
+  keywords: "cricket, turf, turf in patna, signature sights, turf near me, cricket turf Patna, cricket nets Patna, football turf Patna, best turf in Patna, indoor cricket arena, cricket academy Patna, sports turf Kumhrar Patna",
   authors: [{ name: "KheloPatna" }],
   creator: "KheloPatna",
   publisher: "KheloPatna Elite Turf",
@@ -23,8 +23,8 @@ export const metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
-    description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling.",
+    title: "KheloPatna Elite Turf — #1 Cricket & Football Turf in Patna | Near Signature Sights",
+    description: "Book premium indoor cricket nets & football turf in Patna. Professional bowling machines, academy training, and instant slot reservations near Signature Sights.",
     url: "https://khelopatna.in",
     siteName: "KheloPatna Elite Turf",
     images: [
@@ -32,7 +32,7 @@ export const metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "KheloPatna Elite Turf - Premium Sports Arena in Patna",
+        alt: "KheloPatna Elite Turf - #1 Cricket & Football Turf in Patna Near Signature Sights",
       },
     ],
     locale: "en_IN",
@@ -40,8 +40,8 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KheloPatna Elite Turf — Patna's #1 Indoor Sports Arena",
-    description: "Book premium indoor cricket & football turfs in Patna. Professional bowling machines, academy training, and smart slot scheduling.",
+    title: "KheloPatna Elite Turf — #1 Cricket & Football Turf in Patna | Near Signature Sights",
+    description: "Book premium indoor cricket nets & football turf in Patna. Professional bowling machines, academy training, and instant slot reservations near Signature Sights.",
     images: ["/og-image.jpg"],
     creator: "@khelopatna",
   },
@@ -83,7 +83,7 @@ export default function RootLayout({ children }) {
                 {
                   "@type": "LocalBusiness",
                   "@id": "https://khelopatna.in/#localbusiness",
-                  "name": "KheloPatna Elite Turf",
+                  "name": "KheloPatna Elite Turf — Cricket & Football Arena",
                   "image": [
                     "https://khelopatna.in/logo.png",
                     "https://khelopatna.in/og-image.jpg"
@@ -93,10 +93,10 @@ export default function RootLayout({ children }) {
                   "url": "https://khelopatna.in",
                   "address": {
                     "@type": "PostalAddress",
-                    "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
+                    "streetAddress": "Near Signature Sights, Sandalpur Road, Kumhrar, Near ICICI Bank",
                     "addressLocality": "Patna",
                     "addressRegion": "Bihar",
-                    "postalCode": "800006",
+                    "postalCode": "800007",
                     "addressCountry": "IN"
                   },
                   "geo": {
@@ -118,6 +118,7 @@ export default function RootLayout({ children }) {
                     "opens": "06:00",
                     "closes": "23:00"
                   },
+                  "keywords": "cricket, turf, turf in patna, signature sights, turf near me, cricket turf Patna, cricket nets Patna, football turf Patna",
                   "sameAs": [
                     "https://www.facebook.com/profile.php?id=61577271700289#",
                     "https://www.instagram.com/khelopatna_eliteturf",
@@ -128,14 +129,14 @@ export default function RootLayout({ children }) {
                   "@type": "SportsActivityLocation",
                   "@id": "https://khelopatna.in/#sportsarena",
                   "name": "KheloPatna Elite Turf Sports Arena",
-                  "description": "Patna's premier indoor cricket & football turf with professional lighting, bowling machines, and training academy.",
+                  "description": "#1 Turf in Patna for Cricket & Football near Signature Sights. Professional bowling machines, LED lights, and academy training.",
                   "url": "https://khelopatna.in",
                   "address": {
                     "@type": "PostalAddress",
-                    "streetAddress": "Kumhrar, Sandalpur Road, Near ICICI Bank",
+                    "streetAddress": "Near Signature Sights, Sandalpur Road, Kumhrar",
                     "addressLocality": "Patna",
                     "addressRegion": "Bihar",
-                    "postalCode": "800006",
+                    "postalCode": "800007",
                     "addressCountry": "IN"
                   }
                 }
