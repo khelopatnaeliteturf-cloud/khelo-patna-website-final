@@ -50,10 +50,10 @@ function parseUserAgent(ua) {
 const KEY_FEATURES = [
     "Premium Indoor Turf Arena", "Top-quality Artificial Grass", "Excellent LED Floodlighting",
     "Professional Cricket Net Benches", "Bowling Machine Sessions", "Sports Academy Programs",
-    "Cooperative Coaching Staff", "Well-Maintained locker & waiting areas", "Ample vehicle parking",
+    "Extremely Polite & Professional Staff", "Courteous & Cooperative Management", "Well-Maintained locker & waiting areas", "Ample vehicle parking",
     "Safe & Disciplined environment for kids", "Online Turf Slot Booking", "Clean drinking water & amenities",
-    "Corporate match turf bookings", "Birthday/Event slot hiring", "Exciting local tournaments",
-    "Professional football academy training", "Personal attention from trainers", "Friendly customer support"
+    "High ceiling net height for big shots", "Birthday/Event slot hiring", "Exciting local tournaments",
+    "Certified & Helpful academy coaches", "Personal attention from trainers", "Friendly & Respectful customer support"
 ];
 
 const REVIEWER_TYPES = [
@@ -68,8 +68,8 @@ const EMOTIONS = [
 ];
 
 const FOCUS_AREAS = [
-    "Pitch quality", "Lighting", "Bowling machine", "Cricket coaching", "Football academy",
-    "Booking ease", "Staff behavior", "Parking space", "Lockers & benches", "Drinking water & cleanliness",
+    "Staff professionalism & politeness", "Pitch quality & high ceiling height", "Bowling machine", "Cricket coaching", "Football academy",
+    "Booking ease", "Helpful ground staff", "Parking space", "Lockers & benches", "Drinking water & cleanliness",
     "Tournament matches", "Coaching techniques", "Location access", "Player safety", "Overall sports atmosphere"
 ];
 
@@ -91,28 +91,28 @@ const LENGTHS = [
 ];
 
 const POSITIVE_KEYWORDS = [
-    "excellent", "well-maintained", "outstanding", "superb", "highly-recommended",
-    "premium", "friendly", "professional", "perfect", "amazing", "smooth",
+    "polite", "courteous", "extremely professional", "cooperative", "well-maintained", "outstanding", "superb", "highly-recommended",
+    "premium", "friendly", "helpful staff", "perfect", "amazing", "smooth",
     "disciplined", "top-tier", "clean", "wonderful", "impressive", "quality"
 ];
 
 // Offline Fallback Pools (specifically customized for Khelo Patna Elite Turf)
 const fallbacks = [
-    "Superb turf pitch quality! Played football here last night with friends under the LED lights. The booking process was very smooth.",
-    "Best indoor turf in Patna. The cricket nets are wide, and the bowling machine is great for practice sessions. Highly recommended!",
-    "Enrolled my son in the Khelo Patna Football Academy. He absolutely loves the training session on the artificial turf. Outstanding coaching!",
-    "Great lighting and plenty of parking space near Khagaul Road. The turf is soft on the knees, preventing joint injuries. Perfect for regular weekend games.",
-    "Excellent behavior of the support staff and easy online slot reservations. The slots are always perfectly blocked and well-disciplined.",
-    "Excellent value for cricket training. Coach Bhakt Vatsal gives personal attention to every academy student. My child's stamina has improved a lot.",
-    "Clean drinking water, locker benches, and a premium atmosphere. Easily the most well-maintained turf arena in Bihar.",
-    "Hosted a corporate tournament here last Sunday. The facilities and scheduling were top-tier. Everyone thoroughly enjoyed it.",
-    "My daughter loves the cricket practice nets! It has helped her reduce screen time and build a real passion for physical fitness.",
-    "The turf artificial grass is of high quality and doesn't get slippery. Perfect for both casual matches and intensive drills.",
-    "Great location near Saguna More. Easy access, cooperative staff, and reasonable rates. We book it every weekend for our football group.",
-    "Wonderful coaching program! My son has gained so much confidence in batting and team collaboration since joining this academy.",
-    "Amazing indoor turf and net setup. The LED lighting is fantastic for late-night matches. Safe environment with helpful trainers.",
-    "Highly recommended turf! Safe, clean, and perfectly run. The dynamic pricing and advance payments are clear and transparent.",
-    "Been booking Khelo Patna Turf for 3 months now. Top-class management, spacious nets, and consistent ground quality. Best in Patna."
+    "Superb turf pitch quality! The staff is extremely polite, professional, and cooperative. Played football here last night under the LED lights with a smooth booking process.",
+    "Best indoor turf in Patna. High ceiling net height for big cricket shots, and the ground staff is very helpful and well-behaved. Highly recommended!",
+    "Enrolled my son in the Khelo Patna Football Academy. The coaches are highly professional, patient, and encouraging. Outstanding experience!",
+    "Great lighting and plenty of parking space near Kumhrar. The management team is very polite and professional. Perfect for regular weekend games.",
+    "Excellent behavior of the support staff and easy online slot reservations. The owner and staff are super courteous, polite, and well-disciplined.",
+    "Excellent value for cricket training. Coach Bhakt Vatsal and the staff give personal, professional attention to every student. My child's stamina has improved a lot.",
+    "Clean drinking water, locker benches, and a polite, helpful management staff. Easily the most well-maintained turf arena in Bihar.",
+    "Hosted a corporate tournament here last Sunday. The staff was incredibly professional and organized everything smoothly. Everyone thoroughly enjoyed it.",
+    "My daughter loves the cricket practice nets! The staff is very polite, respectful, and ensures a safe, family-friendly environment.",
+    "The turf artificial grass is of high quality and high ceiling height. The staff is polite, professional, and very prompt with bookings.",
+    "Great location near Kumhrar. Easy access, polite and cooperative staff, and reasonable rates. We book it every weekend for our football group.",
+    "Wonderful coaching program! Highly professional management and coaches. My son has gained so much confidence since joining this academy.",
+    "Amazing indoor turf and net setup. The staff is extremely polite and supportive. The LED lighting is fantastic for late-night matches.",
+    "Highly recommended turf! Safe, clean, and perfectly run by professional and polite management. Clear advance booking and great hospitality.",
+    "Been booking Khelo Patna Turf for months now. Top-class polite staff, spacious nets with high ceiling, and consistent ground quality. Best in Patna."
 ];
 
 // POST /api/generate-maps-review
@@ -205,13 +205,18 @@ STUDENT/PLAYER IMPROVEMENT TO MENTION: ${improvement}
 USE SOME OF THESE WORDS NATURALLY: ${selectedKeywords.join(', ')}
 
 BUSINESS HIGHLIGHTS YOU MAY REFERENCE:
+- Extremely polite, humble, helpful, and professional staff & management
+- High ceiling net height for big cricket shots and football games
 - Premium indoor artificial turf pitch with high-quality green grass
 - Late-night matches under bright LED floodlights
 - Cricket practice nets with a professional bowling machine
-- Cricket and Football coaching academy for kids and youth
+- Certified Cricket and Football coaching academy for kids and youth
 - Smooth online turf slot scheduling and transparent pricing
 - Ample vehicle parking space, clean drinking water, lockers, and benches
-- Safe, secure, and disciplined sports environment
+- Safe, secure, family-friendly, and disciplined sports environment
+
+CRITICAL STAFF PRAISE RULE:
+- Every review MUST include a natural, positive praise for the staff's professionalism, politeness, helpfulness, or courteous management behavior (e.g., "staff is very polite", "courteous management", "extremely professional and helpful ground staff", "well-behaved team", "super cooperative staff").
 
 HUMANIZATION RULES:
 - Use natural, conversational language. Do NOT sound robotic, artificial, or marketing-heavy.

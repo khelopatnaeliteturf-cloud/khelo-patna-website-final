@@ -44,11 +44,11 @@ export default function ReviewHub() {
             console.error("Error generating review text:", err);
             // Fallbacks in client
             const clientFallbacks = {
-                5: "Outstanding indoor sports arena! Played football last night with friends under the LED lights. Highly recommend Khelo Patna Elite Turf!",
-                4: "Very good turf ground with cooperative staff and wide cricket practice nets. The slot scheduling is easy and fast.",
-                3: "Nice turf ground and good coaching programs. Recommended for regular slot matches.",
-                2: "The turf pitch quality is good, but scheduling adjustments and slots are sometimes hard to secure.",
-                1: "Disappointed with slot coordination. Hope the staff improves their administrative responsiveness."
+                5: "Outstanding indoor sports arena! The staff and management are extremely polite, cooperative, and professional. Played football last night under the LED lights with high net ceiling height. Highly recommend Khelo Patna Elite Turf!",
+                4: "Very good turf ground with extremely polite and cooperative staff. Wide cricket practice nets and high ceiling height. Easy slot scheduling!",
+                3: "Good turf ground with polite management and supportive coaches. Recommended for regular slot matches.",
+                2: "The turf pitch quality is good and staff is polite, but weekend prime slots book out fast.",
+                1: "Decent ground quality, hope they add more evening time slots."
             };
             setReviewText(clientFallbacks[selectedRating] || clientFallbacks[5]);
             setError("Using backup draft. Please proceed to copy and paste.");
