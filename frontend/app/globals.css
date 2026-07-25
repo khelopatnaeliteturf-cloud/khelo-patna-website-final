@@ -1830,3 +1830,20 @@ section[data-animate] {
     }
 }
 
+/* ─── Mobile GPU Flickering & Light Blinking Fix (< 768px) ─── */
+@media (max-width: 768px) {
+    .floating-orb {
+        display: none !important;
+        animation: none !important;
+    }
+    .stadium-beam--left,
+    .stadium-beam--right {
+        animation: none !important;
+        opacity: 0.25 !important;
+    }
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+

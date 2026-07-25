@@ -158,8 +158,9 @@ export default function HomePage() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Cursor tracking
+    // Cursor tracking (desktop fine pointer only to prevent mobile re-render flickering)
     useEffect(() => {
+        if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) return;
         const handleMouseMove = (e) => {
             setCursorPos({ x: e.clientX, y: e.clientY });
         };
