@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { getBackendUrl } from '../lib/backendUrl';
 
 const BACKEND_URL = getBackendUrl();
-const GOOGLE_MAPS_URL = "https://share.google/hQevRNuoL0FzOBIGE";
+const GOOGLE_MAPS_URL = "https://g.page/r/CTxYinspu53uEBM/review";
 
 export default function ReviewHub() {
     const [rating, setRating] = useState(0);
