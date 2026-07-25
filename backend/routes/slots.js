@@ -169,8 +169,9 @@ router.get('/available-slots', async (req, res) => {
                     isCustomClosure = true;
                     closureReason = closure.reason || 'Closed';
                 } else {
-                    const slotStart = new Date(date + `T${startHourStr}:00:00`);
-                    if (slotStart >= closure.startDate && slotStart < closure.endDate) {
+                    const closureStartMs = new Date(closure.startDate).getTime();
+                    const closureEndMs = new Date(closure.endDate).getTime();
+                    if (slotStartMs < closureEndMs && (slotStartMs + 3600000) > closureStartMs) {
                         isCustomClosure = true;
                         closureReason = closure.reason || 'Closed';
                     }
@@ -315,11 +316,19 @@ router.post('/admin/closures', authenticateToken, authorizeRoles('SUPER_ADMIN', 
         return res.status(400).json({ error: 'Start date and end date are required.' });
     }
     try {
+        const parseIST = (dStr) => {
+            if (!dStr) return new Date();
+            if (typeof dStr === 'string' && !dStr.includes('+') && !dStr.includes('Z')) {
+                return new Date(`${dStr}:00+05:30`);
+            }
+            return new Date(dStr);
+        };
+
         const closure = new TurfClosure({
             tenantId,
             branchId,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            startDate: parseIST(startDate),
+            endDate: parseIST(endDate),
             recurringDay: recurringDay !== undefined ? Number(recurringDay) : undefined,
             reason
         });

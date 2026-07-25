@@ -1393,12 +1393,20 @@ export default function AdminDashboard() {
     const handleCreateClosure = async (e) => {
         e.preventDefault();
         try {
+            const formatIST = (val) => {
+                if (!val) return val;
+                if (!val.includes('+') && !val.includes('Z')) {
+                    return `${val}:00+05:30`;
+                }
+                return val;
+            };
+
             const res = await fetch(`${BACKEND_URL}/api/admin/closures`, {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({
-                    startDate: newClosure.startDate,
-                    endDate: newClosure.endDate,
+                    startDate: formatIST(newClosure.startDate),
+                    endDate: formatIST(newClosure.endDate),
                     recurringDay: newClosure.recurringDay !== '' ? newClosure.recurringDay : undefined,
                     reason: newClosure.reason
                 })

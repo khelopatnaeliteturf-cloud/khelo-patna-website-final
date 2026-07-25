@@ -736,8 +736,8 @@ export default function TurfTab(props) {
                                     </div>
                                 ) : (
                                     closuresList.map(c => {
-                                        const startStr = new Date(c.startDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-                                        const endStr = new Date(c.endDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                                        const startStr = new Date(c.startDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+                                        const endStr = new Date(c.endDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
                                         return (
                                             <div key={c._id} style={{ padding: '12px 14px', background: 'var(--bg-color)', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'border-color 0.2s' }}
                                                 onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.2)'}
