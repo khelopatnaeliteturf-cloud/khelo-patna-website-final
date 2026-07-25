@@ -142,7 +142,7 @@ export default function PrivacyPolicyPage() {
                             </p>
                             <p style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '8px', fontSize: '0.88rem' }}>
                                 <strong>KheloPatna Elite Sports & Turf</strong><br />
-                                Near ICICI Bank, Kumhrar, Sandalpur Road, Patna – 800006<br />
+                                Kumhrar, Sandalpur Road, Near ICICI Bank, Patna – 800006, Bihar<br />
                                 <strong>Email:</strong> service@khelopatna.in<br />
                                 <strong>Phone:</strong> (+91) 970 970 1400
                             </p>

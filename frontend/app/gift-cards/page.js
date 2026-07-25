@@ -70,7 +70,7 @@ export default function GiftCardsPage() {
                                 </div>
                             )}
                             <div style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', opacity: 0.85 }}>
-                                <span>Kumhrar, Sandalpur Road, Patna – 800006</span>
+                                <span>Kumhrar, Sandalpur Road, Near ICICI Bank, Patna – 800006, Bihar</span>
                                 <span>Valid for 1 Year</span>
                             </div>
                         </div>

@@ -111,7 +111,7 @@ export default function ContactPage() {
                             </div>
                             <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#fff', fontWeight: 800, fontSize: '1.2rem', marginBottom: '12px' }}>Visit Us</h3>
                             <p style={{ color: '#a1b4a8', lineHeight: '1.6', fontSize: '0.9rem', margin: 0 }}>
-                                Near ICICI Bank, Kumhrar,<br />Sandalpur Road, Patna – 800006
+                                Kumhrar, Sandalpur Road, Near ICICI Bank,<br />Patna – 800006, Bihar
                             </p>
                         </div>
                     </div>
