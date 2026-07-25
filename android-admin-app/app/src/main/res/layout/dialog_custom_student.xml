@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/dialog_bg"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Student Admission"
+        android:textColor="#60A5FA"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Admit student to KheloPatna Training Academy."
+        android:textColor="#94A3B8"
+        android:textSize="12sp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/etStudentName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Student Full Name *"
+        android:textColorHint="#64748B"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:background="@drawable/input_bg"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/etParentPhone"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Parent Phone Number *"
+        android:inputType="phone"
+        android:textColorHint="#64748B"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:background="@drawable/input_bg"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:layout_marginBottom="20dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/btnCancelStudent"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Cancel"
+            android:textColor="#94A3B8"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/btnConfirmStudent"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Admit Student"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/btn_blue_glow"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
