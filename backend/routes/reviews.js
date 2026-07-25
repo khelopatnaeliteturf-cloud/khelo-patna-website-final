@@ -46,17 +46,17 @@ function parseUserAgent(ua) {
     return { device, browser, os: osName };
 }
 
-// Optimized Fallbacks Pool categorized by theme
-const FALLBACK_TURF_BOOKINGS = [
-    "Superb turf pitch quality! The staff is extremely polite, professional, and cooperative. Played football here last night under the LED lights with a smooth online booking process.",
+// Fallback pools categorized by theme
+const FALLBACK_TURF_BOOKINGS_NIGHT = [
+    "Superb turf pitch quality! Played football here late last night under the bright LED floodlights — the lighting vision is crystal clear. The staff is extremely polite and cooperative.",
+    "Best indoor turf in Patna for night matches. Fantastic LED floodlights, high ceiling net height for big cricket shots, and very helpful ground staff. Highly recommended!",
+    "Great late-night game with friends. The LED floodlight visibility is top-tier and management team is very polite and professional."
+];
+
+const FALLBACK_TURF_BOOKINGS_GENERAL = [
+    "Superb turf pitch quality! The staff is extremely polite, professional, and cooperative. High ceiling net height and smooth online booking process.",
     "Best indoor turf in Patna. High ceiling net height for big cricket shots, and the ground staff is very helpful and well-behaved. Highly recommended!",
-    "Great lighting and plenty of parking space near Kumhrar. The management team is very polite and professional. Perfect for regular weekend cricket games.",
-    "Excellent behavior of the support staff and easy slot reservations. The owner and staff are super courteous, polite, and well-disciplined.",
-    "Clean drinking water, locker benches, and a polite, helpful management staff. Easily the most well-maintained sports turf in Patna.",
-    "Amazing indoor turf and net setup. The staff is extremely polite and supportive. The LED floodlights are fantastic for late-night matches.",
-    "Highly recommended turf! Safe, clean, and perfectly run by professional and polite management. Clear advance booking and great hospitality.",
-    "Been booking Khelo Patna Turf for months now. Top-class polite staff, spacious nets with high ceiling, and consistent ground quality. Best in Patna.",
-    "Loved playing cricket here with my group. Wide pitch, high ceiling, and super cooperative staff who arranged everything quickly."
+    "Clean drinking water, locker benches, and a polite, helpful management staff. Easily the most well-maintained sports turf in Patna."
 ];
 
 const FALLBACK_CORPORATE_EVENTS = [
@@ -66,8 +66,7 @@ const FALLBACK_CORPORATE_EVENTS = [
 
 const FALLBACK_ACADEMY = [
     "Enrolled my son in the Khelo Patna Cricket Academy. The coaches are highly professional, patient, and encouraging. Outstanding progress and great discipline!",
-    "Wonderful coaching program! Highly professional management and coaches. My son has gained so much confidence and improved his game since joining this academy.",
-    "Excellent value for cricket training. Coach Bhakt Vatsal and the staff give personal, professional attention to every student. Great environment for young players."
+    "Wonderful coaching program! Highly professional management and coaches. My son has gained so much confidence and improved his game since joining this academy."
 ];
 
 // POST /api/generate-maps-review
@@ -86,23 +85,41 @@ router.post('/generate-maps-review', async (req, res) => {
     const randRating = Math.random();
     const effectiveRating = randRating < 0.85 ? 5 : 4;
 
-    // Calculate IST Time & Academy Schedule Window (3 PM to 7 PM, Mon to Fri)
+    // Calculate IST Time & Schedule Windows
     const nowIST = new Date(Date.now() + 5.5 * 3600 * 1000);
     const dayIST = nowIST.getUTCDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
     const hourIST = nowIST.getUTCHours(); // 0 to 23
     const isAcademyTimeWindow = (dayIST >= 1 && dayIST <= 5) && (hourIST >= 15 && hourIST < 19);
 
-    // Determine Category with Strict Probabilities:
+    // Time-of-day Context System
+    let timeOfDay = "NIGHT";
+    let timeContextPrompt = "";
+
+    if (hourIST >= 20 || hourIST < 6) {
+        timeOfDay = "NIGHT";
+        timeContextPrompt = "TIME-OF-DAY CONTEXT (LATE NIGHT / EVENING MATCH): Must naturally mention playing under bright LED floodlights, clear night lighting vision, cool night air, or high net ceiling under floodlights.";
+    } else if (hourIST >= 6 && hourIST < 11) {
+        timeOfDay = "MORNING";
+        timeContextPrompt = "TIME-OF-DAY CONTEXT (EARLY MORNING SESSION): Mention fresh morning game atmosphere, cool morning breeze, energizing morning slot match, or high net ceiling.";
+    } else if (hourIST >= 11 && hourIST < 15) {
+        timeOfDay = "AFTERNOON";
+        timeContextPrompt = "TIME-OF-DAY CONTEXT (AFTERNOON PLAY): Mention comfortable indoor shade away from sun heat, spacious high net ceiling height, or smooth afternoon slot booking.";
+    } else {
+        timeOfDay = "EVENING";
+        timeContextPrompt = "TIME-OF-DAY CONTEXT (PEAK EVENING MATCH): Mention vibrant evening match atmosphere, bright LED floodlights turning on at sunset, high ceiling net height, or polite staff assistance.";
+    }
+
+    // Category Selection with Strict Probabilities:
     // 1. Corporate Event: Exactly 8% probability (0.08)
     // 2. Academy Review: Allowed ONLY during 3 PM - 7 PM Mon-Fri (if selected)
     // 3. Turf Bookings & Matches: 92% default (or 100% outside 3 PM - 7 PM Mon-Fri)
     const randCategory = Math.random();
-    let category = "TURF_BOOKING"; // default 92%
+    let category = "TURF_BOOKING";
 
     if (randCategory < 0.08) {
-        category = "CORPORATE_EVENT"; // 8% chance
+        category = "CORPORATE_EVENT";
     } else if (isAcademyTimeWindow && randCategory < 0.40) {
-        category = "ACADEMY"; // Only generated between 3 PM - 7 PM Mon-Fri
+        category = "ACADEMY";
     }
 
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -131,7 +148,7 @@ router.post('/generate-maps-review', async (req, res) => {
     // Fallback path if GROQ is not set
     if (!GROQ_API_KEY) {
         console.warn("[MapsReview] GROQ_API_KEY is not set — using local fallback");
-        let pool = FALLBACK_TURF_BOOKINGS;
+        let pool = timeOfDay === "NIGHT" ? FALLBACK_TURF_BOOKINGS_NIGHT : FALLBACK_TURF_BOOKINGS_GENERAL;
         if (category === "CORPORATE_EVENT") pool = FALLBACK_CORPORATE_EVENTS;
         if (category === "ACADEMY") pool = FALLBACK_ACADEMY;
 
@@ -145,7 +162,7 @@ router.post('/generate-maps-review', async (req, res) => {
         return res.json({ text: pool[Math.floor(Math.random() * pool.length)] });
     }
 
-    // Build specific prompt based on category
+    // Build specific prompt based on category & time-of-day
     const MAX_RETRIES = 5;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 
@@ -162,10 +179,11 @@ Write a 5-star Google Maps review for a Corporate / Company Team Building Event 
 STRICT CATEGORY CONSTRAINTS (CORPORATE EVENT):
 1. Focus strictly on corporate team outing, company cricket/football match, smooth event hosting, and team enjoyment.
 2. STAFF PRAISE RULE: Must praise the super cooperative, polite, and professional staff/management (e.g. "super cooperative staff made everything smooth", "highly professional event management").
-3. DO NOT MENTION BOWLING MACHINE. Absolutely zero mention of bowling machines.
-4. DO NOT MENTION KIDS OR ACADEMY COACHING.
-5. Length: 30 to 60 words.
-6. Language: Natural, authentic, written by an employee or manager who attended the corporate event.
+3. ${timeContextPrompt}
+4. DO NOT MENTION BOWLING MACHINE. Absolutely zero mention of bowling machines.
+5. DO NOT MENTION KIDS OR ACADEMY COACHING.
+6. Length: 30 to 60 words.
+7. Language: Natural, authentic, written by an employee or manager who attended the corporate event.
 `;
         } else if (category === "ACADEMY") {
             prompt = `
@@ -193,12 +211,13 @@ TASK:
 Write a 5-star Google Maps review for an hourly turf slot booking / match played with friends.
 
 STRICT CATEGORY CONSTRAINTS (TURF BOOKINGS):
-1. Focus on turf grass quality, high ceiling net height for big shots, bright LED floodlights, easy online booking, or parking facilities.
+1. ${timeContextPrompt}
 2. STAFF PRAISE RULE: Must naturally praise the polite, courteous, cooperative, and professional ground staff or management (e.g. "staff is very polite and cooperative", "courteous management").
-${isCricketNet ? '3. You may mention cricket practice nets or bowling machine for batting practice.' : '3. DO NOT MENTION BOWLING MACHINE. Focus on football or general cricket turf match.'}
-4. DO NOT MENTION CORPORATE EVENTS OR ACADEMY KIDS.
-5. Length: 25 to 55 words.
-6. Language: Authentic, casual, mobile-friendly review by a sports player.
+3. Highlight high net ceiling height for big shots and premium green turf grass quality.
+${isCricketNet ? '4. You may mention cricket practice nets or bowling machine for batting practice.' : '4. DO NOT MENTION BOWLING MACHINE. Focus on football or general cricket turf match.'}
+5. DO NOT MENTION CORPORATE EVENTS OR ACADEMY KIDS.
+6. Length: 25 to 55 words.
+7. Language: Authentic, casual, mobile-friendly review by a sports player.
 `;
         }
 
@@ -255,7 +274,7 @@ ${isCricketNet ? '3. You may mention cricket practice nets or bowling machine fo
 
     // Fallback to local pool if retries fail
     console.warn("[MapsReview] All Groq retries failed, falling back to local list");
-    let pool = FALLBACK_TURF_BOOKINGS;
+    let pool = timeOfDay === "NIGHT" ? FALLBACK_TURF_BOOKINGS_NIGHT : FALLBACK_TURF_BOOKINGS_GENERAL;
     if (category === "CORPORATE_EVENT") pool = FALLBACK_CORPORATE_EVENTS;
     if (category === "ACADEMY") pool = FALLBACK_ACADEMY;
 
