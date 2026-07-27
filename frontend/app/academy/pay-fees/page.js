@@ -526,9 +526,9 @@ export default function PayFeesPage() {
                         <div style={{ marginBottom: '36px' }}>
                             <h1 style={{
                                 fontFamily: 'Unbounded', fontWeight: 900, fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
-                                marginBottom: '10px', lineHeight: '1.2'
+                                marginBottom: '10px', lineHeight: '1.2', display: 'flex', alignItems: 'center', gap: '12px'
                             }}>
-                                💳{' '}
+                                <span className="material-icons-outlined" style={{ fontSize: '36px', color: 'var(--neon)' }}>payments</span>
                                 <span style={{
                                     background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 40%, var(--neon) 100%)',
                                     WebkitBackgroundClip: 'text',
@@ -599,7 +599,12 @@ export default function PayFeesPage() {
                                             }} />
                                             Searching...
                                         </span>
-                                    ) : '🔍 Search Dues'}
+                                    ) : (
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>search</span>
+                                            <span>SEARCH DUES</span>
+                                        </span>
+                                    )}
                                 </button>
                             </form>
                         </div>
@@ -848,7 +853,12 @@ export default function PayFeesPage() {
                                                         }} />
                                                         Processing...
                                                     </span>
-                                                ) : '💳 Pay Outstanding Fees'}
+                                                ) : (
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                                        <span className="material-icons-outlined" style={{ fontSize: '18px' }}>credit_card</span>
+                                                        <span>Pay Outstanding Fees</span>
+                                                    </span>
+                                                )}
                                             </button>
                                         </div>
                                     </div>
@@ -874,8 +884,10 @@ export default function PayFeesPage() {
                         animation: 'scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
                     }}>
                         <div style={{
-                            fontSize: '44px', marginBottom: '16px', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.4))'
-                        }}>💳</div>
+                            marginBottom: '16px', display: 'flex', justifyContent: 'center'
+                        }}>
+                            <span className="material-icons-outlined" style={{ fontSize: '44px', color: '#10B981' }}>payment</span>
+                        </div>
                         
                         <h3 style={{
                             fontSize: '1.4rem', fontWeight: 700, margin: '0 0 6px',
