@@ -915,13 +915,11 @@ export default function HomePage() {
                                             height: '44px',
                                             borderRadius: '50%',
                                             background: 'linear-gradient(135deg, #00FF88, #10b981)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justify: 'center',
+                                            position: 'relative',
                                             boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
                                             flexShrink: 0
                                         }}>
-                                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#040609" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#040609" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'block' }}>
                                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                                 <line x1="6" y1="6" x2="18" y2="18"></line>
                                             </svg>
@@ -947,19 +945,19 @@ export default function HomePage() {
                                     </div>
 
                                     {/* Row 2: Text Labels (Perfect Horizontal Baseline) */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
-                                        <div style={{ width: '110px', textAlign: 'center' }}>
-                                            <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#00FF88', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
-                                                KHELOPATNA TURF
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+                                        <div style={{ width: '120px', textAlign: 'center' }}>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#00FF88', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
+                                                KHELOPATNA ELITE TURF
                                             </span>
                                         </div>
-                                        <div style={{ width: '46px', textAlign: 'center' }}>
+                                        <div style={{ width: '44px', textAlign: 'center' }}>
                                             <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
                                                 COLLAB
                                             </span>
                                         </div>
-                                        <div style={{ width: '110px', textAlign: 'center' }}>
-                                            <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
+                                        <div style={{ width: '120px', textAlign: 'center' }}>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
                                                 S.D. PUBLIC SCHOOL
                                             </span>
                                         </div>
