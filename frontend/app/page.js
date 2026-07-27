@@ -966,7 +966,7 @@ export default function HomePage() {
 
                                 {/* Footer Note */}
                                 <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0, lineHeight: '1.6', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px', width: '100%' }}>
-                                    Official Sports Infrastructure Partner of S.D. Public School, Kumhrar, Sandalpur Road, Patna.
+                                    Official Sports Infrastructure Partner of S.D. Public School.
                                 </p>
                             </div>
                         </div>
