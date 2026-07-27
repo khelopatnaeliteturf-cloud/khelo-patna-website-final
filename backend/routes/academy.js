@@ -10,10 +10,11 @@ const Enquiry = require('../models/Enquiry');
 const Tenant = require('../models/Tenant');
 const FeeStructure = require('../models/FeeStructure');
 const AuditLog = require('../models/AuditLog');
+const AcademyAdmission = require('../models/AcademyAdmission');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 const { sendWhatsAppMessage } = require('../services/whatsapp');
 const { sendFeeInvoiceEmail } = require('../services/mailercloud');
-const { createOrder } = require('../services/cashfree');
+const { createOrder, verifyPayment } = require('../services/cashfree');
 const { generateMonthlyFeesForTenant } = require('../services/billing');
 
 // Staff roles allowed to read academy operational data.
@@ -1224,6 +1225,253 @@ router.delete('/academy/fees/:id', authenticateToken, authorizeRoles('FINANCE_MA
     } catch (err) {
         console.error('Error deleting fee invoice:', err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+// 19. Initiate Dedicated Academy Admission Application Payment (₹1,000 Registration Fee)
+router.post('/academy/admission/initiate', async (req, res) => {
+    const {
+        studentName, dateOfBirth, age, gender, sport, batchTime,
+        parentName, parentPhone, parentEmail, address, emergencyContact, experience
+    } = req.body;
+
+    if (!studentName || !parentName || !parentPhone || !sport || !batchTime) {
+        return res.status(400).json({ error: 'Missing mandatory registration fields (Student Name, Parent Name, Mobile, Sport, Batch Time).' });
+    }
+
+    try {
+        const tenant = await Tenant.findOne() || { _id: 'KHELOPATNA' };
+        const orderId = `KP-ADM-${Date.now()}`;
+        const REGISTRATION_FEE = 1000;
+
+        let cleanPhone = String(parentPhone).replace(/\D/g, '');
+        if (cleanPhone.length > 10) cleanPhone = cleanPhone.slice(-10);
+
+        // Initiate Cashfree checkout session
+        const returnUrl = `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/academy/admission/confirmation?order_id=${orderId}`;
+        const orderData = await createOrder({
+            amount: REGISTRATION_FEE,
+            orderId,
+            customerName: parentName,
+            customerEmail: parentEmail || 'admission@khelopatna.in',
+            customerPhone: cleanPhone,
+            returnUrl
+        });
+
+        // Save application draft in AcademyAdmission table
+        const admission = new AcademyAdmission({
+            tenantId: tenant._id,
+            orderId,
+            studentName,
+            dateOfBirth,
+            age: Number(age) || null,
+            gender: gender || 'Male',
+            sport: String(sport).toLowerCase(),
+            batchTime,
+            parentName,
+            parentPhone: cleanPhone,
+            parentEmail,
+            address,
+            emergencyContact,
+            experience,
+            registrationFee: REGISTRATION_FEE,
+            depositPaid: 0,
+            paymentStatus: 'PENDING',
+            status: 'PAYMENT_INITIATED',
+            createdAt: new Date()
+        });
+
+        await admission.save();
+
+        res.json({
+            success: true,
+            orderId,
+            paymentSessionId: orderData.payment_session_id,
+            registrationFee: REGISTRATION_FEE
+        });
+    } catch (err) {
+        console.error('Error initiating admission registration:', err);
+        res.status(500).json({ error: err.message || 'Failed to initiate admission registration payment.' });
+    }
+});
+
+// 20. Verify Admission Application Payment & Finalize Application
+router.post('/academy/admission/verify', async (req, res) => {
+    const { orderId } = req.body;
+    if (!orderId) {
+        return res.status(400).json({ error: 'Order ID is required for payment verification.' });
+    }
+
+    try {
+        const admission = await AcademyAdmission.findOne({ orderId });
+        if (!admission) {
+            return res.status(404).json({ error: 'Admission application record not found.' });
+        }
+
+        if (admission.paymentStatus === 'PAID') {
+            return res.json({ success: true, message: 'Payment already verified.', admission });
+        }
+
+        const verifyResult = await verifyPayment(orderId, 1000);
+        if (!verifyResult.success || verifyResult.payment_status !== 'SUCCESS') {
+            return res.status(400).json({ error: 'Payment verification failed or payment is pending.' });
+        }
+
+        admission.paymentStatus = 'PAID';
+        admission.depositPaid = 1000;
+        admission.status = 'REGISTERED';
+        admission.transactionId = verifyResult.payment_details?.transaction_id || `TXN-${Date.now()}`;
+        admission.registeredAt = new Date();
+        await admission.save();
+
+        // Audit Log
+        try {
+            await new AuditLog({
+                tenantId: admission.tenantId || 'KHELOPATNA',
+                userId: 'Customer (Online)',
+                module: 'Academy Admission',
+                action: 'PAY_FEE',
+                newData: {
+                    orderId: admission.orderId,
+                    studentName: admission.studentName,
+                    parentName: admission.parentName,
+                    sport: admission.sport,
+                    amount: 1000,
+                    note: '₹1,000 Registration Fee Paid (100% Adjustable against admission)'
+                },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
+        // Send WhatsApp Confirmation to Parent
+        try {
+            const message = `🏆 *KheloPatna Academy — Admission Registration Received!* 🏆\n\nDear *${admission.parentName}*,\nThank you for registering *${admission.studentName}* for the *${admission.sport.toUpperCase()} ACADEMY* at KheloPatna Elite Turf!\n\n*Registration Details*:\n*   Ref Code: *${admission.orderId}*\n*   Student Name: *${admission.studentName}*\n*   Sport: *${admission.sport.toUpperCase()}*\n*   Batch Time: *${admission.batchTime}*\n*   Registration Fee Paid: *₹1,000* (100% Adjustable against tuition fee)\n\nOur academy coordinator will review your application and contact you shortly for batch orientation.\n\n📍 *Location*: Sandalpur Road, Near ICICI Bank, Kumhrar, Patna – 800006\n📞 *Contact*: (+91) 970 970 1400`;
+            await sendWhatsAppMessage(admission.parentPhone, message);
+        } catch (waErr) {
+            console.error('WhatsApp confirmation error:', waErr.message);
+        }
+
+        res.json({ success: true, message: 'Registration fee verified successfully!', admission });
+    } catch (err) {
+        console.error('Error verifying admission payment:', err);
+        res.status(500).json({ error: err.message || 'Server error verifying payment.' });
+    }
+});
+
+// 21. Get All Admission Applications (Staff / Admin Protected)
+router.get('/academy/admission/applications', authenticateToken, STAFF_READ, async (req, res) => {
+    try {
+        const tenantId = req.user.tenantId;
+        const applications = await AcademyAdmission.find({ tenantId }).sort({ createdAt: -1 });
+        res.json(applications);
+    } catch (err) {
+        console.error('Error fetching admission applications:', err);
+        res.status(500).json({ error: 'Server error loading applications.' });
+    }
+});
+
+// 22. Approve & Admit Registered Student (Staff / Admin Protected — Adjusts ₹1,000 Fee)
+router.post('/academy/admission/approve/:id', authenticateToken, authorizeRoles('RECEPTIONIST', 'BRANCH_MANAGER', 'ACADEMY_OWNER', 'SUPER_ADMIN'), async (req, res) => {
+    try {
+        const admission = await AcademyAdmission.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!admission) {
+            return res.status(404).json({ error: 'Admission application not found.' });
+        }
+
+        const { oneTimeAdmissionFee = 1500, monthlyFee = 2000 } = req.body;
+
+        // Auto-generate sequential membership ID (KPC001 / KPF001)
+        const prefix = admission.sport === 'cricket' ? 'KPC' : admission.sport === 'football' ? 'KPF' : 'KP';
+        const lastStudent = await Student.findOne({ tenantId: req.user.tenantId, sport: admission.sport }).sort({ createdAt: -1 });
+        
+        let seq = 1;
+        if (lastStudent && lastStudent.membershipId) {
+            const match = lastStudent.membershipId.match(/(\d+)$/);
+            if (match) seq = parseInt(match[1], 10) + 1;
+        }
+        const membershipId = `${prefix}${String(seq).padStart(3, '0')}`;
+
+        // Deduct/adjust the ₹1,000 registration deposit from admission fee!
+        const registrationDeposit = admission.depositPaid || 1000;
+        const netAdmissionFeeDue = Math.max(0, Number(oneTimeAdmissionFee) - registrationDeposit);
+
+        const newStudent = new Student({
+            tenantId: req.user.tenantId,
+            branchId: req.user.branchId,
+            membershipId,
+            name: admission.studentName,
+            parentName: admission.parentName,
+            phone: admission.parentPhone,
+            parentEmail: admission.parentEmail,
+            dateOfBirth: admission.dateOfBirth ? new Date(admission.dateOfBirth) : new Date(),
+            age: admission.age,
+            gender: admission.gender,
+            residentialAddress: admission.address,
+            emergencyContact: admission.emergencyContact,
+            previousExperience: admission.experience,
+            sport: admission.sport,
+            batchTime: admission.batchTime,
+            status: 'ACTIVE',
+            oneTimeAdmissionFee: Number(oneTimeAdmissionFee),
+            monthlyFee: Number(monthlyFee),
+            adjustedFee: registrationDeposit,
+            admissionDate: new Date()
+        });
+
+        await newStudent.save();
+
+        // Mark application status as ADMITTED
+        admission.status = 'ADMITTED';
+        admission.studentId = newStudent._id;
+        await admission.save();
+
+        // Create Invoice with net balance due (adjusted for ₹1,000 deposit)
+        const invoice = new Fee({
+            tenantId: req.user.tenantId,
+            branchId: req.user.branchId,
+            studentId: newStudent._id,
+            amountDue: netAdmissionFeeDue,
+            amountPaid: 0,
+            monthFor: 'Admission Fee (Adjusted ₹1,000 Deposit)',
+            status: netAdmissionFeeDue === 0 ? 'PAID' : 'PENDING',
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        });
+        await invoice.save();
+
+        // Audit Log
+        try {
+            await new AuditLog({
+                tenantId: req.user.tenantId,
+                userId: req.user.username || 'Owner',
+                module: 'Academy Admission',
+                action: 'ADMISSION',
+                newData: {
+                    membershipId,
+                    studentName: newStudent.name,
+                    parentName: newStudent.parentName,
+                    sport: newStudent.sport,
+                    adjustedDeposit: registrationDeposit,
+                    netBalanceDue: netAdmissionFeeDue
+                },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
+        // Send WhatsApp welcome & adjustment confirmation
+        try {
+            const welcomeMsg = `🏆 *Welcome to KheloPatna Academy!* 🏆\n\nDear Parent, *${newStudent.name}* (ID: *${membershipId}*) has been officially admitted to our *${newStudent.sport.toUpperCase()} ACADEMY*!\n\n*Intake & Adjustment Summary*:\n*   Membership ID: *${membershipId}*\n*   Batch Time: *${newStudent.batchTime}*\n*   Admission Fee: ₹${oneTimeAdmissionFee}\n*   Registration Deposit Adjusted: *-₹${registrationDeposit}*\n*   Balance Due: *₹${netAdmissionFeeDue}*\n\nOur certified coaches look forward to building a champion! 🏏⚽`;
+            await sendWhatsAppMessage(newStudent.phone, welcomeMsg);
+        } catch (_) {}
+
+        res.json({
+            success: true,
+            message: `Student successfully admitted! ₹${registrationDeposit} deposit adjusted.`,
+            student: newStudent,
+            invoice
+        });
+    } catch (err) {
+        console.error('Error approving admission:', err);
+        res.status(500).json({ error: err.message || 'Failed to approve admission.' });
     }
 });
 

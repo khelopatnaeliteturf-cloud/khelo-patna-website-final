@@ -987,9 +987,9 @@ export default function HomePage() {
                                             <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Free club jerseys</span>
                                         </div>
                                     </div>
-                                    <a href="https://forms.gle/6wMsARgxUnEC7VM87" target="_blank" rel="noopener noreferrer" className="btn-premium" style={{ width: '100%', padding: '14px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <Link href="/academy/admission?sport=football" className="btn-premium" style={{ width: '100%', padding: '14px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <span>APPLY FOR FOOTBALL ADMISSION</span> <span className="material-icons-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -1031,9 +1031,9 @@ export default function HomePage() {
                                             <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Premium match schedule</span>
                                         </div>
                                     </div>
-                                    <a href="https://forms.gle/6wMsARgxUnEC7VM87" target="_blank" rel="noopener noreferrer" className="btn-premium" style={{ width: '100%', padding: '14px', fontSize: '0.75rem', background: 'linear-gradient(135deg, var(--cyan) 0%, #0088b3 100%)', boxShadow: '0 4px 18px rgba(0, 200, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <Link href="/academy/admission?sport=cricket" className="btn-premium" style={{ width: '100%', padding: '14px', fontSize: '0.75rem', background: 'linear-gradient(135deg, var(--cyan) 0%, #0088b3 100%)', boxShadow: '0 4px 18px rgba(0, 200, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <span>APPLY FOR CRICKET ADMISSION</span> <span className="material-icons-outlined" style={{ fontSize: '14px' }}>arrow_forward</span>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
