@@ -95,6 +95,34 @@ export default function AboutPage() {
                             padding: '40px',
                             backdropFilter: 'blur(20px)'
                         }}>
+                            {/* SDPS x KheloPatna Co-Branding Logo Badge */}
+                            <div style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '12px', 
+                                background: 'linear-gradient(135deg, rgba(8, 16, 12, 0.7), rgba(16, 185, 129, 0.12))', 
+                                border: '1px solid rgba(16, 185, 129, 0.35)', 
+                                padding: '8px 18px', 
+                                borderRadius: '30px', 
+                                marginBottom: '20px',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                flexWrap: 'wrap'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: '0.65rem', border: '1.5px solid #60A5FA' }}>
+                                        SDPS
+                                    </div>
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '0.5px' }}>S.D. PUBLIC SCHOOL</span>
+                                </div>
+
+                                <span style={{ fontSize: '0.82rem', color: '#00FF88', fontWeight: 900 }}>✖️</span>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <img src="/logo.png" alt="KheloPatna" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#00FF88', letterSpacing: '0.5px' }}>ELITE TURF PATNA</span>
+                                </div>
+                            </div>
+
                             <h2 style={{
                                 fontFamily: 'Montserrat, sans-serif',
                                 color: '#fff',

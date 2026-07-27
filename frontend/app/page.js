@@ -822,12 +822,39 @@ export default function HomePage() {
                         
                         {/* Left Content */}
                         <div className="col-lg-6">
-                            <span className="section-eyebrow">ABOUT KHELOPATNA</span>
-                            <h2 style={{ fontSize: '2.4rem', fontFamily: 'Montserrat', fontWeight: 900, marginBottom: '24px' }}>
+                            {/* SDPS x KheloPatna Co-Branding Logo Badge */}
+                            <div style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '12px', 
+                                background: 'linear-gradient(135deg, rgba(8, 16, 12, 0.7), rgba(16, 185, 129, 0.12))', 
+                                border: '1px solid rgba(16, 185, 129, 0.35)', 
+                                padding: '8px 18px', 
+                                borderRadius: '30px', 
+                                marginBottom: '20px',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                flexWrap: 'wrap'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e3a8a, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: '0.7rem', border: '1.5px solid #60A5FA', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                                        SDPS
+                                    </div>
+                                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '0.5px' }}>S.D. PUBLIC SCHOOL</span>
+                                </div>
+
+                                <span style={{ fontSize: '0.85rem', color: '#00FF88', fontWeight: 900 }}>✖️</span>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <img src="/logo.png" alt="KheloPatna" style={{ width: '26px', height: '26px', objectFit: 'contain' }} />
+                                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#00FF88', letterSpacing: '0.5px' }}>ELITE TURF PATNA</span>
+                                </div>
+                            </div>
+
+                            <h2 style={{ fontSize: '2.4rem', fontFamily: 'Montserrat', fontWeight: 900, marginBottom: '20px' }}>
                                 S.D. Public School Legacy & Vision
                             </h2>
                             <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.8', marginBottom: '20px' }}>
-                                Rooted in the rich athletic heritage of <strong style={{ color: '#fff' }}>S.D. Public School</strong>, KheloPatna Elite Turf was engineered to provide Patna's youth, athletes, and local clubs with international-standard sports arenas.
+                                Built directly on the campus grounds of <strong style={{ color: '#fff' }}>S.D. Public School, Kumhrar, Patna</strong>, KheloPatna Elite Turf was engineered in official partnership to provide Patna's youth, student athletes, and sports lovers with Bihar's most advanced indoor arenas.
                             </p>
                             <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: '1.8', marginBottom: '30px' }}>
                                 We have combined pro-grade non-abrasive turf systems, full safety nets, clinical lighting, and structured youth programs to establish Bihar's premium sports-tech venue.
