@@ -887,6 +887,17 @@ router.delete('/academy/coaches/:id', authenticateToken, authorizeRoles('ACADEMY
 });
 
 // 11. Batch Management
+// Public route to fetch active batches for public admission form
+router.get('/public/academy/batches', async (req, res) => {
+    try {
+        const tenant = await Tenant.findOne() || { _id: 'KHELOPATNA' };
+        const batches = await Batch.find({ tenantId: tenant._id }).select('name sport timeSlot coachId capacity maxCapacity price').populate('coachId', 'name');
+        res.json(batches);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.get('/academy/batches', authenticateToken, STAFF_READ, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
