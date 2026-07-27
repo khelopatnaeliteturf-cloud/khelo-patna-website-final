@@ -4,6 +4,7 @@ const Booking = require('../models/Booking');
 const TurfSettings = require('../models/TurfSettings');
 const TurfClosure = require('../models/TurfClosure');
 const Tenant = require('../models/Tenant');
+const AuditLog = require('../models/AuditLog');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 
 const ALL_HOURLY_SLOTS = [
@@ -288,6 +289,18 @@ router.put('/admin/turf-settings', authenticateToken, authorizeRoles('SUPER_ADMI
             }
         }
         await settings.save();
+        
+        try {
+            await new AuditLog({
+                tenantId: tenantId || 'KHELOPATNA',
+                userId: req.user.username || req.user.role || 'Owner',
+                module: 'Turf Settings',
+                action: 'UPDATE_SETTINGS',
+                newData: { cricketBaseRate: settings.cricketBaseRate, footballBaseRate: settings.footballBaseRate, netsBaseRate: settings.netsBaseRate, blackoutHours: settings.blackoutHours },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
         res.json({ success: true, settings });
     } catch (err) {
         console.error('Error updating settings:', err);
@@ -333,6 +346,18 @@ router.post('/admin/closures', authenticateToken, authorizeRoles('SUPER_ADMIN', 
             reason
         });
         await closure.save();
+
+        try {
+            await new AuditLog({
+                tenantId: tenantId || 'KHELOPATNA',
+                userId: req.user.username || req.user.role || 'Owner',
+                module: 'Turf Management',
+                action: 'CREATE_CLOSURE',
+                newData: { reason, startDate: closure.startDate, endDate: closure.endDate, recurringDay },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
         res.json({ success: true, closure });
     } catch (err) {
         console.error('Error creating closure:', err);
@@ -347,6 +372,18 @@ router.delete('/admin/closures/:id', authenticateToken, authorizeRoles('SUPER_AD
         if (!result) {
             return res.status(404).json({ error: 'Closure not found.' });
         }
+
+        try {
+            await new AuditLog({
+                tenantId: tenantId || 'KHELOPATNA',
+                userId: req.user.username || req.user.role || 'Owner',
+                module: 'Turf Management',
+                action: 'DELETE_CLOSURE',
+                newData: { closureId: req.params.id, reason: result.reason || 'Block removed' },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
         res.json({ success: true, message: 'Closure successfully deleted.' });
     } catch (err) {
         console.error('Error deleting closure:', err);

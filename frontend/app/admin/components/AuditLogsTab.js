@@ -46,8 +46,10 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
             case 'UPDATE_PRICING':
             case 'UPDATE_SETTINGS':
                 return <span style={{ background: 'rgba(79, 70, 229, 0.14)', color: '#4338CA', border: '1px solid rgba(79, 70, 229, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>⚙️ Settings Updated</span>;
-            case 'TOGGLE_WHATSAPP_BOT':
-                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🤖 WhatsApp Bot Toggled</span>;
+            case 'ADD_STAFF':
+                return <span style={{ background: 'rgba(37, 99, 235, 0.14)', color: '#1D4ED8', border: '1px solid rgba(37, 99, 235, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🪪 New Staff Added</span>;
+            case 'DELETE_STAFF':
+                return <span style={{ background: 'rgba(239, 68, 68, 0.14)', color: '#B91C1C', border: '1px solid rgba(239, 68, 68, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🗑️ Staff Account Deleted</span>;
             default:
                 return <span style={{ background: 'rgba(100, 116, 139, 0.12)', color: '#1E293B', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{action ? action.replace(/_/g, ' ') : 'System Action'}</span>;
         }

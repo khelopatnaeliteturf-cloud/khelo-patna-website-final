@@ -204,6 +204,18 @@ router.post('/auth/register', authLimiter, async (req, res) => {
 
         await newStaff.save();
 
+        try {
+            const AuditLog = require('../models/AuditLog');
+            await new AuditLog({
+                tenantId: tenantId || 'KHELOPATNA',
+                userId: (decoded && decoded.username) || 'Owner',
+                module: 'Staff Directory',
+                action: 'ADD_STAFF',
+                newData: { username: newStaff.username, role: newStaff.role, name: newStaff.name, phone: newStaff.phone },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
         res.status(201).json({
             success: true,
             message: `Staff account successfully registered for ${username} with role ${role}.`,
@@ -331,6 +343,19 @@ router.delete('/auth/staff/:id', authenticateToken, authorizeRoles('SUPER_ADMIN'
         }
 
         await Staff.deleteOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        
+        try {
+            const AuditLog = require('../models/AuditLog');
+            await new AuditLog({
+                tenantId: req.user.tenantId || 'KHELOPATNA',
+                userId: req.user.username || req.user.role || 'Owner',
+                module: 'Staff Directory',
+                action: 'DELETE_STAFF',
+                newData: { staffId: req.params.id, username: staff.username, role: staff.role },
+                timestamp: new Date()
+            }).save();
+        } catch (_) {}
+
         res.json({ message: 'Staff member successfully deleted.' });
     } catch (err) {
         console.error('Error deleting staff member:', err);
