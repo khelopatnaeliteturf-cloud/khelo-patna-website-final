@@ -195,9 +195,24 @@ app.get('/api/admin/whatsapp/status', authenticateToken, authorizeRoles('SUPER_A
     });
 });
 
-app.post('/api/admin/whatsapp/toggle-bot', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), (req, res) => {
+app.post('/api/admin/whatsapp/toggle-bot', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'STAFF', 'RECEPTIONIST'), async (req, res) => {
     const { enabled } = req.body;
     setBotEnabled(enabled);
+    
+    try {
+        const AuditLog = require('./models/AuditLog');
+        await new AuditLog({
+            tenantId: req.user.tenantId || 'KHELOPATNA',
+            userId: req.user.username || req.user.role || 'owner',
+            module: 'Integrations',
+            action: 'TOGGLE_WHATSAPP_BOT',
+            newData: { enabled: Boolean(enabled), status: enabled ? 'ENABLED' : 'DISABLED', toggledBy: req.user.username || req.user.role || 'owner' },
+            timestamp: new Date()
+        }).save();
+    } catch (e) {
+        console.warn('Failed to save bot toggle audit log:', e.message);
+    }
+
     res.json({ success: true, bot_enabled: getBotEnabled() });
 });
 
