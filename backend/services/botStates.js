@@ -765,7 +765,9 @@ async function handleIncomingMessage(sockOrPayload, m) {
                     returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/book?order_id=${orderId}`
                 });
 
+                session.bookingData.paymentLink = paymentLink;
                 session.state = 'AWAITING_PAYMENT';
+                if (typeof session.markModified === 'function') session.markModified('bookingData');
                 await session.save();
 
                 await sendWhatsAppMessage(phone, 
@@ -782,19 +784,30 @@ async function handleIncomingMessage(sockOrPayload, m) {
             try {
                 const customerPhone = session.bookingData.realPhone || String(phone).replace(/\D/g, '').slice(-10);
                 const payableNow = session.bookingData.paymentAmount || session.bookingData.totalAmount;
-                const reminderLink = await createPaymentLink({
-                    linkId: session.bookingData.orderId,
-                    amount: payableNow,
-                    customerPhone: customerPhone,
-                    customerName: session.bookingData.name,
-                    customerEmail: session.bookingData.email
-                });
+                let reminderLink = session.bookingData.paymentLink;
+
+                if (!reminderLink) {
+                    const newLinkId = `KP-WA-${Date.now()}`;
+                    session.bookingData.orderId = newLinkId;
+                    reminderLink = await createPaymentLink({
+                        linkId: newLinkId,
+                        amount: payableNow,
+                        customerPhone: customerPhone,
+                        customerName: session.bookingData.name,
+                        customerEmail: session.bookingData.email,
+                        returnUrl: `${process.env.FRONTEND_URL || 'https://khelopatna.in'}/book?order_id=${newLinkId}`
+                    });
+                    session.bookingData.paymentLink = reminderLink;
+                    if (typeof session.markModified === 'function') session.markModified('bookingData');
+                    await session.save();
+                }
+
                 await sendWhatsAppMessage(phone, 
-                    `Awaiting online payment of *₹${payableNow}*.\n🔗 Payment Link: ${reminderLink}\n\nIf you want to start over, type *Cancel*.`
+                    `Awaiting online payment of *₹${payableNow}*.\n\nPlease pay using this secure link:\n🔗 ${reminderLink}\n\n*Note*: If you want to change details or restart, reply with *Cancel*.`
                 );
             } catch (err) {
-                console.error('Error regenerating payment link:', err);
-                await sendWhatsAppMessage(phone, `⚠️ Could not generate the payment link right now. Please try again in a few minutes, or type *Cancel* to restart.`);
+                console.error('Error in AWAITING_PAYMENT state:', err);
+                await sendWhatsAppMessage(phone, `⚠️ Could not retrieve the payment link. Reply with *Cancel* to restart.`);
             }
             break;
     }
