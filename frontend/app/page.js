@@ -897,16 +897,17 @@ export default function HomePage() {
                                             width: '110px',
                                             height: '110px',
                                             borderRadius: '20px',
-                                            background: 'rgba(8, 16, 12, 0.9)',
-                                            border: '2px solid rgba(16, 185, 129, 0.4)',
+                                            background: '#FFFFFF',
+                                            border: '2px solid #00FF88',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justify: 'center',
-                                            padding: '12px',
-                                            boxShadow: '0 10px 30px rgba(0, 255, 136, 0.15)',
-                                            boxSizing: 'border-box'
+                                            padding: '8px',
+                                            boxShadow: '0 10px 30px rgba(0, 255, 136, 0.25)',
+                                            boxSizing: 'border-box',
+                                            overflow: 'hidden'
                                         }}>
-                                            <img src="/logo.png" alt="KheloPatna Elite Turf" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                            <img src="https://res.cloudinary.com/drx3kb809/image/upload/v1785153352/sdps/misc/p4p5crxay6qgqxr1wu3k.jpg" alt="KheloPatna Elite Turf Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }} />
                                         </div>
 
                                         {/* Center: Collaboration Badge */}
