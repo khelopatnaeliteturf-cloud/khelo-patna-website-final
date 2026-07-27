@@ -28,28 +28,28 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
     const formatActionBadge = (action) => {
         switch (action) {
             case 'CREATE_OFFLINE_BOOKING':
-                return <span style={{ background: 'rgba(0, 255, 136, 0.12)', color: '#00FF88', border: '1px solid rgba(0, 255, 136, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>🏏 Manual Booking</span>;
+                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🏏 Manual Booking</span>;
             case 'ONLINE_BOOKING':
-                return <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>🌐 Online Booking</span>;
+                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🌐 Online Booking</span>;
             case 'CANCEL_BOOKING':
-                return <span style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>❌ Cancelled Booking</span>;
+                return <span style={{ background: 'rgba(239, 68, 68, 0.14)', color: '#B91C1C', border: '1px solid rgba(239, 68, 68, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>❌ Cancelled Booking</span>;
             case 'CREATE_CLOSURE':
-                return <span style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>🔒 Turf Closed</span>;
+                return <span style={{ background: 'rgba(217, 119, 6, 0.14)', color: '#B45309', border: '1px solid rgba(217, 119, 6, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🔒 Turf Closed</span>;
             case 'DELETE_CLOSURE':
-                return <span style={{ background: 'rgba(148, 163, 184, 0.12)', color: '#94A3B8', border: '1px solid rgba(148, 163, 184, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>🔓 Block Removed</span>;
+                return <span style={{ background: 'rgba(100, 116, 139, 0.14)', color: '#334155', border: '1px solid rgba(100, 116, 139, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🔓 Block Removed</span>;
             case 'RECORD_FEE_PAYMENT':
             case 'PAY_FEE':
-                return <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>💳 Academy Fee Paid</span>;
+                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>💳 Academy Fee Paid</span>;
             case 'ADD_STUDENT':
             case 'ADMISSION':
-                return <span style={{ background: 'rgba(96, 165, 250, 0.12)', color: '#60A5FA', border: '1px solid rgba(96, 165, 250, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>👤 Student Admission</span>;
+                return <span style={{ background: 'rgba(37, 99, 235, 0.14)', color: '#1D4ED8', border: '1px solid rgba(37, 99, 235, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>👤 Student Admission</span>;
             case 'UPDATE_PRICING':
             case 'UPDATE_SETTINGS':
-                return <span style={{ background: 'rgba(99, 102, 241, 0.12)', color: '#6366F1', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>⚙️ Settings Updated</span>;
+                return <span style={{ background: 'rgba(79, 70, 229, 0.14)', color: '#4338CA', border: '1px solid rgba(79, 70, 229, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>⚙️ Settings Updated</span>;
             case 'TOGGLE_WHATSAPP_BOT':
-                return <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>🤖 WhatsApp Bot Toggled</span>;
+                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🤖 WhatsApp Bot Toggled</span>;
             default:
-                return <span style={{ background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-main)', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>{action ? action.replace(/_/g, ' ') : 'System Action'}</span>;
+                return <span style={{ background: 'rgba(100, 116, 139, 0.12)', color: '#1E293B', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{action ? action.replace(/_/g, ' ') : 'System Action'}</span>;
         }
     };
 
@@ -107,6 +107,12 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
             return `Removed custom closure block from calendar`;
         }
 
+        if (action === 'TOGGLE_WHATSAPP_BOT') {
+            const status = obj.status || (obj.enabled ? 'ENABLED' : 'DISABLED');
+            const user = obj.toggledBy || 'owner';
+            return `Toggled WhatsApp Auto-Bot to ${status} (by ${user})`;
+        }
+
         // Clean Key-Value sentence fallback without raw JSON braces
         return Object.entries(obj)
             .filter(([k]) => !['_id', 'tenantId', 'branchId', '__v', 'createdAt', 'updatedAt'].includes(k))
@@ -151,10 +157,14 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
                         ) : logs.length > 0 ? (
                             logs.map(log => (
                                 <tr key={log._id}>
-                                    <td style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                                    <td style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 500 }}>
                                         {new Date(log.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                     </td>
-                                    <td><strong className="text-warning" style={{ textTransform: 'capitalize' }}>{log.userId || 'System'}</strong></td>
+                                    <td>
+                                        <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#4338CA', border: '1px solid rgba(99, 102, 241, 0.25)', padding: '3px 9px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, textTransform: 'capitalize', display: 'inline-block' }}>
+                                            {log.userId || log.operator || 'Owner'}
+                                        </span>
+                                    </td>
                                     <td style={{ fontWeight: 600 }}>{log.module || 'Turf'}</td>
                                     <td>{formatActionBadge(log.action)}</td>
                                     <td style={{ fontSize: '0.84rem', fontWeight: 500, color: 'var(--text-main)' }}>
