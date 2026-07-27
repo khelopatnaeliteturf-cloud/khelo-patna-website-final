@@ -46,6 +46,8 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
             case 'UPDATE_PRICING':
             case 'UPDATE_SETTINGS':
                 return <span style={{ background: 'rgba(79, 70, 229, 0.14)', color: '#4338CA', border: '1px solid rgba(79, 70, 229, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>⚙️ Settings Updated</span>;
+            case 'TOGGLE_WHATSAPP_BOT':
+                return <span style={{ background: 'rgba(16, 185, 129, 0.14)', color: '#047857', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🤖 WhatsApp Bot Toggled</span>;
             case 'ADD_STAFF':
                 return <span style={{ background: 'rgba(37, 99, 235, 0.14)', color: '#1D4ED8', border: '1px solid rgba(37, 99, 235, 0.35)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 800, whiteSpace: 'nowrap' }}>🪪 New Staff Added</span>;
             case 'DELETE_STAFF':
