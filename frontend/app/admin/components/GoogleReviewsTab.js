@@ -27,14 +27,16 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
         setLoadingLog(true);
         try {
             const [revRes, statsRes] = await Promise.all([
-                fetch(`${backendUrl}/api/admin/maps-reviews`, { headers: getHeaders() }),
-                fetch(`${backendUrl}/api/admin/maps-reviews/stats`, { headers: getHeaders() })
+                fetch(`${backendUrl}/api/admin/maps-reviews`, { headers: getHeaders() }).catch(() => null),
+                fetch(`${backendUrl}/api/admin/maps-reviews/stats`, { headers: getHeaders() }).catch(() => null)
             ]);
             
-            if (revRes.ok && statsRes.ok) {
+            if (revRes && revRes.ok) {
                 const revData = await revRes.json();
+                setReviews(Array.isArray(revData) ? revData : []);
+            }
+            if (statsRes && statsRes.ok) {
                 const statsData = await statsRes.json();
-                setReviews(revData || []);
                 setStats(statsData || null);
             }
         } catch (err) {

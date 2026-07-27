@@ -289,7 +289,7 @@ ${isCricketNet ? '4. You may mention cricket practice nets or bowling machine fo
 });
 
 // GET /api/admin/maps-reviews (List all generated reviews logs)
-router.get('/admin/maps-reviews', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), async (req, res) => {
+router.get('/admin/maps-reviews', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'STAFF'), async (req, res) => {
     try {
         const reviews = await MapsReviewUsed.find().sort({ createdAt: -1 });
         res.json(reviews);
@@ -300,7 +300,7 @@ router.get('/admin/maps-reviews', authenticateToken, authorizeRoles('SUPER_ADMIN
 });
 
 // GET /api/admin/maps-reviews/stats (Fetch aggregated statistics)
-router.get('/api/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER'), async (req, res) => {
+router.get('/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'STAFF'), async (req, res) => {
     try {
         let total = 0;
         try {
