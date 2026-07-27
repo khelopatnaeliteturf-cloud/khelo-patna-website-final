@@ -91,7 +91,7 @@ export default function HomePage() {
         {
             name: "Farooque Khan",
             role: "Google Maps Reviewer • Patna",
-            quote: "Really relieved we chose Khelo Patna Elite Turf for our team event! Super cooperative staff made everything smooth, their bowling machine and high ceiling nets are a great touch. Kids are making new friends and improving their social circle in games thanks to their quality coaching techniques.",
+            quote: "Really relieved we chose Khelo Patna Elite Turf for our team event! Super cooperative staff made everything smooth, their high ceiling nets are a great touch. Kids are making new friends and improving their social circle in games thanks to their quality coaching techniques.",
             rating: 5,
             avatar: "FK",
             color: "#4285F4",
