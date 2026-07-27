@@ -211,8 +211,8 @@ async function initWhatsApp() {
             if (!botEnabled || m.type !== 'notify') return;
 
             for (const message of m.messages) {
-                const rawJid = message.key.remoteJid;
-                if (!rawJid || rawJid.endsWith('@g.us') || rawJid === 'status@broadcast') continue;
+                const rawJid = message.key.remoteJid || '';
+                if (!rawJid || rawJid.endsWith('@g.us') || rawJid.includes('@g.us') || rawJid.includes('-') || rawJid === 'status@broadcast' || message.key.participant) continue;
 
                 const phone = rawJid; // Keep full JID for accurate routing
                 const msg = message.message?.ephemeralMessage?.message || message.message?.viewOnceMessage?.message || message.message;

@@ -356,6 +356,12 @@ async function initWhatsApp() {
                 // Ignore outgoing messages sent by the bot itself
                 if (message.key.fromMe) continue;
                 
+                const jid = message.key.remoteJid || '';
+                // Strict Group Filter: Never respond to group chats (@g.us), status broadcasts, or group participant messages
+                if (!jid || jid.endsWith('@g.us') || jid.includes('@g.us') || jid.includes('-') || jid === 'status@broadcast' || message.key.participant) {
+                    continue;
+                }
+                
                 // Trigger bot callback
                 try {
                     await onMessageCallback(sock, message);

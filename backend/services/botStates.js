@@ -174,17 +174,18 @@ async function handleIncomingMessage(sockOrPayload, m) {
     if (sockOrPayload && typeof sockOrPayload === 'object' && sockOrPayload.phone && sockOrPayload.text) {
         // External microservice webhook payload — preserve full JID if present, or clean phone number
         const rawPhone = String(sockOrPayload.phone).trim();
+        if (!rawPhone || rawPhone.endsWith('@g.us') || rawPhone.includes('@g.us') || rawPhone.includes('-') || rawPhone === 'status@broadcast') return;
         phone = rawPhone.includes('@') ? rawPhone : rawPhone.replace(/\D/g, '');
         text = String(sockOrPayload.text).trim();
     } else if (m && m.key) {
         // Local Baileys socket message
         const phoneJid = m.key.remoteJid;
-        if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid === 'status@broadcast') return;
+        if (!phoneJid || phoneJid.endsWith('@g.us') || phoneJid.includes('@g.us') || phoneJid.includes('-') || phoneJid === 'status@broadcast' || m.key.participant) return;
         phone = phoneJid; // Keep full JID (e.g. 197753057391@lid or 917366963737@s.whatsapp.net)
         text = getMessageText(m).trim();
     }
 
-    if (!phone || !text) return; // Skip invalid or empty messages
+    if (!phone || !text || phone.includes('@g.us') || phone.includes('-')) return; // Skip invalid, group, or empty messages
 
     // In-memory session fallback cache to prevent database bottlenecks
     if (!globalThis.__botMemorySessions) {
