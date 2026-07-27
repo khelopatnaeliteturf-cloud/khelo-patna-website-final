@@ -911,20 +911,20 @@ export default function HomePage() {
 
                                         {/* Center: Collaboration Badge */}
                                         <div style={{
-                                            width: '46px',
-                                            height: '46px',
+                                            width: '44px',
+                                            height: '44px',
                                             borderRadius: '50%',
                                             background: 'linear-gradient(135deg, #00FF88, #10b981)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justify: 'center',
-                                            fontWeight: 900,
-                                            color: '#040609',
-                                            fontSize: '1.2rem',
                                             boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
                                             flexShrink: 0
                                         }}>
-                                            ✖️
+                                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#040609" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
                                         </div>
 
                                         {/* Right: SDPS School Logo Box */}
