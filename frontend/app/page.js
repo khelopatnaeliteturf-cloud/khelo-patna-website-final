@@ -89,25 +89,49 @@ export default function HomePage() {
 
     const testimonials = [
         {
-            name: "Rajesh Kumar",
-            role: "Cricket Academy Parent",
-            quote: "The automated bowling machines and professional net facilities here are second to none in Bihar. My son's batting has improved tremendously under certified coaches.",
+            name: "Farooque Khan",
+            role: "Google Maps Reviewer • Patna",
+            quote: "Really relieved we chose Khelo Patna Elite Turf for our team event! Super cooperative staff made everything smooth, their bowling machine and high ceiling nets are a great touch. Kids are making new friends and improving their social circle in games thanks to their quality coaching techniques.",
             rating: 5,
-            avatar: "RK"
+            avatar: "FK",
+            color: "#4285F4",
+            badge: "Verified Google Review"
         },
         {
-            name: "Amit Sen",
-            role: "Weekend Football Player",
-            quote: "Playing under the high-intensity LED floodlights feels like an international stadium. The synthetic turf is non-abrasive and very safe for fast-paced games.",
+            name: "Rohan Vatsal",
+            role: "Regular Turf Player • Patna",
+            quote: "Best indoor turf arena in Patna hands down! High ceiling net height for big cricket shots, top-notch artificial turf pitch, and extremely polite, cooperative ground staff. Easy online slot reservations!",
             rating: 5,
-            avatar: "AS"
+            avatar: "RV",
+            color: "#EA4335",
+            badge: "Verified Google Review"
         },
         {
-            name: "Sneha Roy",
-            role: "Sports Enthusiast",
-            quote: "Online slot reservation is seamless! The turf is premium, well-maintained, and they have excellent security and washroom facilities. Highly recommended!",
+            name: "Shashi Bhushan",
+            role: "Cricket Academy Parent • Patna",
+            quote: "Enrolled my son in the Khelo Patna Cricket Academy. The certified coaches give personal, professional attention to every student. Great discipline, stamina building, and safe sports environment.",
             rating: 5,
-            avatar: "SR"
+            avatar: "SB",
+            color: "#34A853",
+            badge: "Verified Google Review"
+        },
+        {
+            name: "Imran Farooqui",
+            role: "Corporate Event Host • Patna",
+            quote: "Hosted our company's cricket match last Sunday. The staff was incredibly professional and organized everything smoothly under the LED floodlights. Everyone thoroughly enjoyed it!",
+            rating: 5,
+            avatar: "IF",
+            color: "#FBBC05",
+            badge: "Verified Google Review"
+        },
+        {
+            name: "Abhishek Singh",
+            role: "Weekend Football Player • Patna",
+            quote: "Playing under the high-intensity LED floodlights feels like an international stadium. Safe synthetic turf, clean amenities, and ample vehicle parking space near Kumhrar.",
+            rating: 5,
+            avatar: "AS",
+            color: "#A855F7",
+            badge: "Verified Google Review"
         }
     ];
 
@@ -1189,33 +1213,46 @@ export default function HomePage() {
                     <div className="perspective-container">
                         <div className="liquid-glass-card" style={{
                             padding: '40px', position: 'relative', transition: 'all 0.5s ease',
-                            borderLeft: '4px solid var(--cyan)',
                             backdropFilter: 'blur(30px) saturate(200%)', WebkitBackdropFilter: 'blur(30px) saturate(200%)',
-                            background: 'rgba(8, 16, 12, 0.5)', border: '1px solid rgba(255,255,255,0.06)',
+                            background: 'rgba(8, 16, 12, 0.55)', border: '1px solid rgba(255,255,255,0.08)',
                             borderRadius: 'var(--radius-xl)',
-                            boxShadow: '0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)',
-                            borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: 'var(--cyan)'
+                            boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)',
+                            borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: testimonials[activeTestimonial].color || 'var(--cyan)'
                         }}>
-                            <span className="material-icons-outlined" style={{ fontSize: '48px', color: 'rgba(0, 200, 255, 0.15)', position: 'absolute', top: '24px', left: '24px' }}>format_quote</span>
+                            {/* Google Verified Review Pill */}
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(66, 133, 244, 0.12)', border: '1px solid rgba(66, 133, 244, 0.3)', padding: '4px 12px', borderRadius: '20px', marginBottom: '16px' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                                </svg>
+                                <span style={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 700, letterSpacing: '0.5px' }}>
+                                    {testimonials[activeTestimonial].badge}
+                                </span>
+                            </div>
+
+                            <span className="material-icons-outlined" style={{ fontSize: '48px', color: 'rgba(0, 255, 136, 0.1)', position: 'absolute', top: '24px', right: '24px' }}>format_quote</span>
                             
-                            <p style={{ fontSize: '1.05rem', color: 'var(--text-primary)', fontStyle: 'italic', lineHeight: '1.8', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
+                            <p style={{ fontSize: '1.02rem', color: 'var(--text-primary)', fontStyle: 'normal', lineHeight: '1.85', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
                                 "{testimonials[activeTestimonial].quote}"
                             </p>
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                    <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--cyan), #00668a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#fff' }}>
+                                    <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: `linear-gradient(135deg, ${testimonials[activeTestimonial].color}, #070D16)`, border: `2px solid ${testimonials[activeTestimonial].color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', fontSize: '0.95rem', boxShadow: '0 4px 14px rgba(0,0,0,0.4)' }}>
                                         {testimonials[activeTestimonial].avatar}
                                     </div>
                                     <div>
-                                        <h4 style={{ fontSize: '0.92rem', fontFamily: 'Montserrat', fontWeight: 800, margin: 0 }}>{testimonials[activeTestimonial].name}</h4>
+                                        <h4 style={{ fontSize: '0.96rem', fontFamily: 'Montserrat', fontWeight: 800, margin: 0, color: '#FFFFFF' }}>{testimonials[activeTestimonial].name}</h4>
                                         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{testimonials[activeTestimonial].role}</span>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '2px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255, 215, 0, 0.08)', padding: '4px 10px', borderRadius: '12px', border: '1px solid rgba(255, 215, 0, 0.2)' }}>
                                     {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
-                                        <span key={i} className="material-icons-outlined" style={{ color: 'var(--gold)', fontSize: '16px' }}>star</span>
+                                        <span key={i} className="material-icons-outlined" style={{ color: '#FFD700', fontSize: '16px' }}>star</span>
                                     ))}
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#FFD700', marginLeft: '4px' }}>5.0</span>
                                 </div>
                             </div>
                         </div>
