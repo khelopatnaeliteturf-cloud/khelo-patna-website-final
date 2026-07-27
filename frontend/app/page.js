@@ -857,10 +857,15 @@ export default function HomePage() {
                         {/* Right Content: Co-Branding Logo Lockup (Turf Logo ✖️ SDPS School Logo) */}
                         <div className="col-lg-6">
                             <div className="liquid-glass-card" style={{
-                                padding: '40px 32px',
+                                padding: '36px 28px',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
                                 borderRadius: 'var(--radius-xl)',
                                 border: '1px solid rgba(16, 185, 129, 0.25)',
-                                background: 'linear-gradient(135deg, rgba(8, 16, 12, 0.8), rgba(16, 185, 129, 0.08))',
+                                background: 'linear-gradient(135deg, rgba(8, 16, 12, 0.85), rgba(16, 185, 129, 0.08))',
                                 boxShadow: '0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
                                 backdropFilter: 'blur(30px) saturate(200%)',
                                 WebkitBackdropFilter: 'blur(30px) saturate(200%)',
@@ -875,7 +880,7 @@ export default function HomePage() {
                                     border: '1px solid rgba(16, 185, 129, 0.35)',
                                     padding: '6px 16px',
                                     borderRadius: '20px',
-                                    marginBottom: '32px'
+                                    marginBottom: '28px'
                                 }}>
                                     <span className="material-icons-outlined" style={{ fontSize: '15px', color: '#00FF88' }}>verified</span>
                                     <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#00FF88', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -883,17 +888,11 @@ export default function HomePage() {
                                     </span>
                                 </div>
 
-                                {/* Logo Lockup: Turf Logo | ✖️ | SDPS School Logo */}
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    justify: 'center',
-                                    gap: '20px',
-                                    marginBottom: '32px',
-                                    flexWrap: 'wrap'
-                                }}>
-                                    {/* Left: KheloPatna Turf Logo */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '135px' }}>
+                                {/* Logo Lockup Container */}
+                                <div style={{ width: '100%', marginBottom: '28px' }}>
+                                    {/* Row 1: The 3 Logos & Center Badge (Perfect Vertical Center) */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', marginBottom: '14px' }}>
+                                        {/* Left: KheloPatna Turf Logo Box */}
                                         <div style={{
                                             width: '110px',
                                             height: '110px',
@@ -909,16 +908,11 @@ export default function HomePage() {
                                         }}>
                                             <img src="/logo.png" alt="KheloPatna Elite Turf" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                         </div>
-                                        <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#00FF88', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', textAlign: 'center', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            KHELOPATNA TURF
-                                        </span>
-                                    </div>
 
-                                    {/* Center: Collaboration Cross - vertically centered with 110px logo boxes */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '60px', height: '110px' }}>
+                                        {/* Center: Collaboration Badge */}
                                         <div style={{
-                                            width: '42px',
-                                            height: '42px',
+                                            width: '46px',
+                                            height: '46px',
                                             borderRadius: '50%',
                                             background: 'linear-gradient(135deg, #00FF88, #10b981)',
                                             display: 'flex',
@@ -926,18 +920,14 @@ export default function HomePage() {
                                             justify: 'center',
                                             fontWeight: 900,
                                             color: '#040609',
-                                            fontSize: '1.1rem',
-                                            boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)'
+                                            fontSize: '1.2rem',
+                                            boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
+                                            flexShrink: 0
                                         }}>
                                             ✖️
                                         </div>
-                                        <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginTop: '6px' }}>
-                                            COLLAB
-                                        </span>
-                                    </div>
 
-                                    {/* Right: SDPS School Logo from Cloudinary */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '135px' }}>
+                                        {/* Right: SDPS School Logo Box */}
                                         <div style={{
                                             width: '110px',
                                             height: '110px',
@@ -954,14 +944,30 @@ export default function HomePage() {
                                         }}>
                                             <img src="https://res.cloudinary.com/drx3kb809/image/upload/v1782313772/sdps/misc/hffxigjkpw7cbc7cmdm5.jpg" alt="S.D. Public School Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }} />
                                         </div>
-                                        <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', textAlign: 'center', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            S.D. PUBLIC SCHOOL
-                                        </span>
+                                    </div>
+
+                                    {/* Row 2: Text Labels (Perfect Horizontal Baseline) */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+                                        <div style={{ width: '110px', textAlign: 'center' }}>
+                                            <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#00FF88', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
+                                                KHELOPATNA TURF
+                                            </span>
+                                        </div>
+                                        <div style={{ width: '46px', textAlign: 'center' }}>
+                                            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                                COLLAB
+                                            </span>
+                                        </div>
+                                        <div style={{ width: '110px', textAlign: 'center' }}>
+                                            <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif' }}>
+                                                S.D. PUBLIC SCHOOL
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Footer Note */}
-                                <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0, lineHeight: '1.6', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px' }}>
+                                <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0, lineHeight: '1.6', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px', width: '100%' }}>
                                     Official Sports Infrastructure Partner of S.D. Public School, Kumhrar, Sandalpur Road, Patna.
                                 </p>
                             </div>
