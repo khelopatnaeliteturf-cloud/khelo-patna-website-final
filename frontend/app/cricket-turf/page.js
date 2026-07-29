@@ -29,7 +29,7 @@ const T = {
 const FEATURES = [
   "Premium Indoor Turf Surface",
   "7v7 Match-Ready Capacity",
-  "Automatic Bowling Machine Access",
+  "High-Density Safety Net Enclosure",
   "LED Floodlight Arena Lighting",
   "Live Score Overlay System",
 ];
@@ -43,7 +43,7 @@ const OCCASIONS = [
   {
     icon: "sports_cricket",
     title: "Practice Nets",
-    desc: "Sharpen your batting and bowling with dedicated net sessions & bowling machine.",
+    desc: "Sharpen your batting and bowling with dedicated net sessions & professional pitch setup.",
   },
   {
     icon: "emoji_events",

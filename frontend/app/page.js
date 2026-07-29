@@ -982,19 +982,20 @@ export default function HomePage() {
             <section id="facilities" data-animate style={{ padding: '110px 0' }}>
                 <div className={`container ${sectionVisible('facilities')}`}>
                     <div className="section-header">
-                        <span>PREMIUM INFASTRUCTURE</span>
+                        <span>PREMIUM INFRASTRUCTURE</span>
                         <h2>World-Class Ground Facilities</h2>
                     </div>
 
                     <div className="row g-4 stagger-children">
                         {[
                             { title: "FIFA Turf Ground", desc: "Premium 50mm synthetic grass with underlying shock cushion padding.", icon: "grass", color: "var(--neon)" },
-                            { title: "Full net Cover", desc: "High-density nylon safety netting covering the entire play cage structure.", icon: "grid_view", color: "var(--cyan)" },
-                            { title: "Pro Bowling Machine", desc: "Automated speed-controlled ball feeder with spin variation controls.", icon: "speed", color: "var(--gold)" },
-                            { title: "CCTV secured", desc: "24/7 security recording coverage around fields and parking.", icon: "security", color: "#FF4D4D" },
+                            { title: "Full Net Cover", desc: "High-density nylon safety netting covering the entire play cage structure.", icon: "grid_view", color: "var(--cyan)" },
+                            { title: "Stadium Floodlights", desc: "High-lumen 500 Lux LED arena floodlighting for crystal-clear night matches.", icon: "lightbulb", color: "var(--gold)" },
+                            { title: "CCTV Secured", desc: "24/7 security recording coverage around fields, entry, and parking.", icon: "security", color: "#FF4D4D" },
                             { title: "Drinking Water", desc: "Fully filtered RO mineral water dispenser stations on both sides.", icon: "water_drop", color: "var(--cyan)" },
-                            { title: "Private washrooms", desc: "Clean changing rooms and restrooms for players and academy students.", icon: "wc", color: "var(--neon)" },
-                            { title: "Parking Area", desc: "Spacious vehicle parking slots directly inside the school campus.", icon: "local_parking", color: "var(--gold)" }
+                            { title: "Private Washrooms", desc: "Clean changing rooms and restrooms for players and academy students.", icon: "wc", color: "var(--neon)" },
+                            { title: "Player Dugouts", desc: "Covered team dugouts and shaded seating benches for players and officials.", icon: "event_seat", color: "var(--gold)" },
+                            { title: "Parking Area", desc: "Spacious vehicle parking slots directly inside the secure school campus.", icon: "local_parking", color: "var(--cyan)" }
                         ].map((facility, index) => (
                             <div key={index} className="col-lg-3 col-md-6 d-flex">
                                 <div className="liquid-glass-card w-100" style={{

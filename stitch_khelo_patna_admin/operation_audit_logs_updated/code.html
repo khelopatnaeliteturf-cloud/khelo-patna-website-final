@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System Audit Logs - KheloPatna Elite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#111417",
+                        "on-surface": "#e1e2e8",
+                        "tertiary-fixed": "#ffe16d",
+                        "surface": "#111417",
+                        "on-tertiary": "#3a3000",
+                        "outline": "#849585",
+                        "tertiary-fixed-dim": "#e9c400",
+                        "primary-container": "#00ff88",
+                        "secondary": "#97deff",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "secondary-fixed": "#bee9ff",
+                        "on-tertiary-container": "#746100",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#005228",
+                        "inverse-surface": "#e1e2e8",
+                        "on-secondary-fixed": "#001f2a",
+                        "secondary-fixed-dim": "#68d3ff",
+                        "surface-container-low": "#191c20",
+                        "tertiary": "#fffaf8",
+                        "on-secondary": "#003546",
+                        "on-tertiary-fixed": "#221b00",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "primary-fixed-dim": "#00e479",
+                        "on-primary-container": "#007139",
+                        "inverse-on-surface": "#2e3135",
+                        "primary-fixed": "#60ff99",
+                        "primary": "#f1ffef",
+                        "on-primary": "#003919",
+                        "on-primary-fixed": "#00210c",
+                        "surface-container-lowest": "#0b0e12",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#00c8fe",
+                        "on-surface-variant": "#b9cbb9",
+                        "on-background": "#e1e2e8",
+                        "inverse-primary": "#006d37",
+                        "surface-dim": "#111417",
+                        "outline-variant": "#3b4b3d",
+                        "on-secondary-fixed-variant": "#004d64",
+                        "surface-variant": "#323539",
+                        "surface-container-high": "#272a2e",
+                        "surface-tint": "#00e479",
+                        "surface-bright": "#37393e",
+                        "tertiary-container": "#ffdd4f",
+                        "surface-container-highest": "#323539",
+                        "surface-container": "#1d2024",
+                        "on-secondary-container": "#005068",
+                        "dark-indigo": "#1e1b4b",
+                        "cyan-electric": "#00f0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "container-padding": "20px",
+                        "element-gap": "12px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "h1-mobile": ["Montserrat"],
+                        "h1": ["Montserrat"],
+                        "metric-xl": ["Space Grotesk"],
+                        "h2": ["Montserrat"],
+                        "label-caps": ["Space Grotesk"],
+                        "body-sm": ["Inter"],
+                        "metric-md": ["Space Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1-mobile": ["26px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                        "h1": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "metric-xl": ["40px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "h2": ["20px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "metric-md": ["24px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(25, 28, 32, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .neon-border {
+            border: 1px solid transparent;
+            background-image: linear-gradient(rgba(25, 28, 32, 0.8), rgba(25, 28, 32, 0.8)), linear-gradient(90deg, rgba(0, 255, 136, 0.3), rgba(0, 240, 255, 0.3));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+        .glow-text-emerald {
+            text-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+        }
+        .glow-text-cyan {
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+        }
+        
+        /* Pull to refresh animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .refreshing .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Desktop Sidebar Navigation -->
+<nav class="hidden md:flex flex-col h-full py-xl bg-surface-dim/95 backdrop-blur-3xl h-full w-80 rounded-r-xl border-r border-outline-variant/30 shadow-[10px_0_30px_rgba(0,0,0,0.8)] fixed left-0 top-0 z-40">
+<div class="px-lg mb-xl">
+<h1 class="font-h1-mobile text-h1-mobile text-primary-fixed font-h1">KHELOPATNA<br/>ELITE</h1>
+</div>
+<div class="px-lg mb-lg flex items-center gap-md">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/50">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="A futuristic, neon-lit avatar portrait of an elite facility manager. Deep space background with cyan and emerald lighting reflecting on their face. Highly detailed, cyberpunk aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuuD-KNfobfL3DWRN6jsSSPbQSm7fQqeAiK5q9ugoKMWKtI8C0ydqjJFPr8mJmJsjATwZKxJwI_HKr1y3JGvq35rIoz2qjjc8RcStHDZueOHdzllM1_ijalXPDvLytpwzkeZ3iUXIX7YipjX9xn4hGuCwdoND3jCHKC8BeD6x217Qk_KzqR0SjpF9d8zSYw1UY_WQdTiDuzGj8FkJHmbhbi3V9O10gXp7KagZQrcv_I4jJs7bAMfVE9g"/>
+</div>
+<div>
+<p class="font-h2 text-h2 text-secondary-fixed-dim">Patna Main Branch</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Head Operator</p>
+<p class="font-label-caps text-label-caps text-outline mt-xs">v2.4.0-PRO</p>
+</div>
+</div>
+<div class="flex flex-col gap-sm mt-md flex-grow">
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">barcode_scanner</span>
+<span class="font-label-caps text-label-caps">Inventory &amp; POS</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">payments</span>
+<span class="font-label-caps text-label-caps">Financial Reports</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">badge</span>
+<span class="font-label-caps text-label-caps">Staff Management</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-label-caps text-label-caps">Customer DB</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">support_agent</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+<a class="flex items-center gap-md bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed py-md px-lg translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span class="font-label-caps text-label-caps">Logs</span>
+</a>
+</div>
+</nav>
+<!-- Mobile Top App Bar -->
+<header class="md:hidden fixed top-0 w-full z-50 flex justify-between items-center px-container-padding py-sm bg-background/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,255,136,0.1)]">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-primary-fixed-dim/30"><img alt="Elite Turf Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLvvTjEz-RmTBtNuMxp4Dddp3mKx-6UaiqBDW8dJkPy9LkXr1RX9f5T0kpwON4D4Vck1C_IdkdRQzSK-L8KhU7auU5ODnkN-vr2wn3-2KDGDcElAHxVQX3ZOa_hMrznw342pFGAhvPFCVOH-wncj6lcYWpssmg_Uxk1C6aMHQp9n7iZGt7ixd4UKqoGpnhDNzQyTHTUIgDnTNPGm-OarzHuetVmNoqasoAi3oXN_C-0YTiVhrhRxXmC9Kns"/></div>
+<h1 class="font-h2 text-h2 font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-container to-secondary-fixed-dim">KHELOPATNA ELITE</h1>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-variant/50 p-xs rounded-full transition-colors">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:ml-80 pt-[72px] md:pt-0 pb-[90px] md:pb-0 min-h-screen relative">
+<!-- Abstract Background Glow -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] bg-primary-fixed-dim/5 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+<div class="p-container-padding max-w-5xl mx-auto">
+<!-- Page Header & Controls -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl mt-md md:mt-xl">
+<div>
+<h2 class="font-h1-mobile md:font-h1 text-h1-mobile md:text-h1 text-on-surface mb-xs font-h1">Audit Logs</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">System-wide compliance trail and operator actions.</p>
+</div>
+<!-- Pull to Refresh Indicator (Simulated visual) -->
+<div class="flex items-center gap-sm bg-surface-container/50 border border-outline-variant/30 rounded-full px-lg py-sm self-start cursor-pointer hover:bg-surface-container transition-colors group" id="refreshBtn">
+<span class="material-symbols-outlined text-primary-fixed-dim group-hover:text-primary-fixed transition-colors refresh-icon text-[18px]">refresh</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-on-surface transition-colors">SYNCING LIVE</span>
+</div>
+</div>
+<!-- Log Stream -->
+<div class="flex flex-col gap-sm relative before:absolute before:inset-y-0 before:left-[19px] md:before:left-[43px] before:w-[2px] before:bg-gradient-to-b before:from-primary-fixed/20 before:via-secondary-fixed/10 before:to-transparent before:-z-10">
+<!-- Date Header -->
+<div class="sticky top-[72px] md:top-0 z-10 py-sm bg-background/90 backdrop-blur-md mb-xs -mx-container-padding px-container-padding md:mx-0 md:px-0">
+<div class="inline-block bg-surface-container border border-outline-variant/30 rounded-full px-md py-xs">
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">TODAY, OCT 24</span>
+</div>
+</div>
+<!-- Log Entry 1: Bot Toggle -->
+<div class="glass-card neon-border rounded-xl p-md flex gap-md items-start group hover:border-primary-fixed/50 transition-colors relative">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/50 shrink-0 z-10 relative">
+<span class="material-symbols-outlined text-cyan-electric text-[20px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<div class="absolute inset-0 bg-cyan-electric/20 rounded-full blur-md"></div>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<span class="font-metric-md text-body-sm font-bold text-on-surface">14:22:05</span>
+<span class="bg-dark-indigo text-white font-label-caps text-[10px] px-sm py-[2px] rounded-sm tracking-wider">OP-RAHUL</span>
+<span class="font-label-caps text-label-caps text-cyan-electric glow-text-cyan border border-cyan-electric/30 px-sm py-[2px] rounded-full">TOGGLE_BOT</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Automated lighting bot override initiated for Turf A.</p>
+</div>
+</div>
+<!-- Log Entry 2: Manual Booking -->
+<div class="glass-card rounded-xl p-md flex gap-md items-start group hover:border-outline-variant/50 transition-colors">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/50 shrink-0 z-10">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]" style="font-variation-settings: 'FILL' 1;">edit_calendar</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<span class="font-metric-md text-body-sm font-bold text-on-surface">13:45:12</span>
+<span class="bg-dark-indigo text-white font-label-caps text-[10px] px-sm py-[2px] rounded-sm tracking-wider">OP-SNEHA</span>
+<span class="font-label-caps text-label-caps text-primary-fixed glow-text-emerald border border-primary-fixed/30 px-sm py-[2px] rounded-full">MANUAL_BOOKING</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Created manual walk-in booking for ID: BK-8902.</p>
+<div class="mt-sm bg-surface-container-low rounded-lg p-sm border border-outline-variant/20 inline-block">
+<span class="font-label-caps text-[10px] text-outline block mb-xs">METADATA</span>
+<span class="font-metric-md text-[13px] text-on-surface">Turf B • 18:00-19:00 • ₹1200 Paid</span>
+</div>
+</div>
+</div>
+<!-- Log Entry 3: Security Alert -->
+<div class="glass-card border-l-2 border-l-error rounded-xl p-md flex gap-md items-start group hover:bg-error/5 transition-colors">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center border border-error/50 shrink-0 z-10">
+<span class="material-symbols-outlined text-error text-[20px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<span class="font-metric-md text-body-sm font-bold text-error">11:05:44</span>
+<span class="bg-surface-variant text-on-surface-variant font-label-caps text-[10px] px-sm py-[2px] rounded-sm tracking-wider">SYSTEM</span>
+<span class="font-label-caps text-label-caps text-error border border-error/30 px-sm py-[2px] rounded-full">AUTH_FAILURE</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Multiple failed terminal login attempts detected at Gate 2.</p>
+</div>
+</div>
+<!-- Date Header -->
+<div class="sticky top-[72px] md:top-0 z-10 py-sm bg-background/90 backdrop-blur-md mb-xs mt-md -mx-container-padding px-container-padding md:mx-0 md:px-0">
+<div class="inline-block bg-surface-container border border-outline-variant/30 rounded-full px-md py-xs">
+<span class="font-label-caps text-label-caps text-outline">YESTERDAY, OCT 23</span>
+</div>
+</div>
+<!-- Log Entry 4: Settings Change -->
+<div class="glass-card rounded-xl p-md flex gap-md items-start group hover:border-outline-variant/50 transition-colors opacity-70">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/50 shrink-0 z-10">
+<span class="material-symbols-outlined text-secondary-fixed text-[20px]">tune</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex flex-wrap items-center gap-sm mb-xs">
+<span class="font-metric-md text-body-sm font-bold text-on-surface-variant">22:15:00</span>
+<span class="bg-dark-indigo text-white font-label-caps text-[10px] px-sm py-[2px] rounded-sm tracking-wider">ADMIN</span>
+<span class="font-label-caps text-label-caps text-secondary-fixed border border-secondary-fixed/30 px-sm py-[2px] rounded-full">CONFIG_UPDATE</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Updated off-peak pricing tier multiplier to 0.8x.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation Shell -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-xs pb-md pt-sm bg-surface-container/60 backdrop-blur-2xl rounded-t-xl border-t border-outline-variant/20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed w-16" href="#">
+<span class="material-symbols-outlined mb-xs text-[24px]">analytics</span>
+<span class="font-label-caps text-[10px] tracking-wider">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed w-16" href="#">
+<span class="material-symbols-outlined mb-xs text-[24px]">sports_soccer</span>
+<span class="font-label-caps text-[10px] tracking-wider">Turf</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed w-16" href="#">
+<span class="material-symbols-outlined mb-xs text-[24px]">smart_toy</span>
+<span class="font-label-caps text-[10px] tracking-wider">Bot</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed w-16" href="#">
+<span class="material-symbols-outlined mb-xs text-[24px]">school</span>
+<span class="font-label-caps text-[10px] tracking-wider">Academy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim drop-shadow-[0_0_8px_rgba(0,228,121,0.6)] scale-110 duration-200 ease-out w-16" href="#">
+<span class="material-symbols-outlined mb-xs text-[24px]" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span class="font-label-caps text-[10px] tracking-wider text-primary-fixed">Logs</span>
+</a>
+</nav>
+<script>
+        // Simple pull to refresh visual feedback
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            this.classList.add('refreshing');
+            setTimeout(() => {
+                this.classList.remove('refreshing');
+            }, 1000);
+        });
+    </script>
+</body></html>

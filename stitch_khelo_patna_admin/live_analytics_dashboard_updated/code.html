@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KheloPatna Elite - Live Analytics</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@700;800;900&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Design System Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#111417",
+                        "on-surface": "#e1e2e8",
+                        "tertiary-fixed": "#ffe16d",
+                        "surface": "#111417",
+                        "on-tertiary": "#3a3000",
+                        "outline": "#849585",
+                        "tertiary-fixed-dim": "#e9c400",
+                        "primary-container": "#00ff88",
+                        "secondary": "#97deff",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "secondary-fixed": "#bee9ff",
+                        "on-tertiary-container": "#746100",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#005228",
+                        "inverse-surface": "#e1e2e8",
+                        "on-secondary-fixed": "#001f2a",
+                        "secondary-fixed-dim": "#68d3ff",
+                        "surface-container-low": "#191c20",
+                        "tertiary": "#fffaf8",
+                        "on-secondary": "#003546",
+                        "on-tertiary-fixed": "#221b00",
+                        "error-container": "#93000a",
+                        "on-error": "#690005",
+                        "primary-fixed-dim": "#00e479",
+                        "on-primary-container": "#007139",
+                        "inverse-on-surface": "#2e3135",
+                        "primary-fixed": "#60ff99",
+                        "primary": "#f1ffef",
+                        "on-primary": "#003919",
+                        "on-primary-fixed": "#00210c",
+                        "surface-container-lowest": "#0b0e12",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#00c8fe",
+                        "on-surface-variant": "#b9cbb9",
+                        "on-background": "#e1e2e8",
+                        "inverse-primary": "#006d37",
+                        "surface-dim": "#111417",
+                        "outline-variant": "#3b4b3d",
+                        "on-secondary-fixed-variant": "#004d64",
+                        "surface-variant": "#323539",
+                        "surface-container-high": "#272a2e",
+                        "surface-tint": "#00e479",
+                        "surface-bright": "#37393e",
+                        "tertiary-container": "#ffdd4f",
+                        "surface-container-highest": "#323539",
+                        "surface-container": "#1d2024",
+                        "on-secondary-container": "#005068"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "container-padding": "20px",
+                        "element-gap": "12px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "h1-mobile": ["Montserrat"],
+                        "h1": ["Montserrat"],
+                        "metric-xl": ["Space Grotesk"],
+                        "h2": ["Montserrat"],
+                        "label-caps": ["Space Grotesk"],
+                        "body-sm": ["Inter"],
+                        "metric-md": ["Space Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1-mobile": ["26px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                        "h1": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "metric-xl": ["40px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "h2": ["20px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "metric-md": ["24px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base Glass Card Style */
+        .glass-card {
+            background: rgba(25, 28, 32, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Neon Glow utility */
+        .neon-glow-primary {
+            box-shadow: 0 0 12px rgba(0, 228, 121, 0.2);
+        }
+        
+        /* Sub-surface noise for deep void effect */
+        .bg-void {
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+                              radial-gradient(circle at 100% 100%, rgba(104, 211, 255, 0.02) 0%, transparent 40%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background bg-void text-on-surface font-body-lg min-h-screen flex flex-col md:flex-row overflow-x-hidden selection:bg-primary-fixed-dim/30">
+<!-- Desktop Sidebar (Hidden on Mobile) -->
+<aside class="hidden md:flex NavigationDrawer h-full w-80 rounded-r-xl border-r border-outline-variant/30 shadow-[10px_0_30px_rgba(0,0,0,0.8)] bg-surface-dim/95 backdrop-blur-3xl flex-col py-xl fixed left-0 top-0 z-40">
+<!-- Header -->
+<div class="px-lg pb-xl border-b border-outline-variant/20 mb-md">
+<div class="flex items-center gap-element-gap">
+<div class="w-12 h-12 rounded-full bg-surface-container-high border border-outline flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div>
+<h2 class="font-h2 text-h2 text-secondary-fixed-dim">Patna Main Branch</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Head Operator</p>
+</div>
+</div>
+<div class="mt-sm">
+<span class="font-label-caps text-label-caps text-outline">v2.4.0-PRO</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 overflow-y-auto">
+<ul class="space-y-xs">
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">barcode_scanner</span>
+<span class="font-label-caps text-label-caps">Inventory &amp; POS</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-caps text-label-caps">Financial Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-label-caps text-label-caps">Staff Management</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-caps text-label-caps">Customer DB</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-element-gap text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</li>
+</ul>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 w-full md:ml-80 flex flex-col relative pb-32 md:pb-lg">
+<!-- TopAppBar -->
+<header class="TopAppBar fixed top-0 w-full md:w-[calc(100%-20rem)] z-50 flex justify-between items-center px-container-padding py-sm bg-background/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,255,136,0.1)]">
+<div class="flex items-center gap-element-gap font-h1">
+<!-- Mobile Menu Icon (simulated leading avatar) -->
+<button class="md:hidden text-primary-fixed-dim p-2 -ml-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<img alt="KheloPatna Elite Turf Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLvvTjEz-RmTBtNuMxp4Dddp3mKx-6UaiqBDW8dJkPy9LkXr1RX9f5T0kpwON4D4Vck1C_IdkdRQzSK-L8KhU7auU5ODnkN-vr2wn3-2KDGDcElAHxVQX3ZOa_hMrznw342pFGAhvPFCVOH-wncj6lcYWpssmg_Uxk1C6aMHQp9n7iZGt7ixd4UKqoGpnhDNzQyTHTUIgDnTNPGm-OarzHuetVmNoqasoAi3oXN_C-0YTiVhrhRxXmC9Kns"/>
+</div>
+<div class="flex items-center gap-md text-on-surface-variant">
+<span class="material-symbols-outlined hover:bg-surface-variant/50 p-2 rounded-full cursor-pointer transition-all">location_on</span>
+</div>
+</header>
+<!-- Sub-header: Mission Control Context -->
+<div class="mt-[72px] px-container-padding py-md flex flex-wrap justify-between items-end gap-element-gap border-b border-white/5 bg-surface-container-low/20 backdrop-blur-sm">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-xs">ACTIVE SECTOR</p>
+<div class="flex items-center gap-sm cursor-pointer group">
+<h2 class="font-h1-mobile md:font-h1 text-h1-mobile md:text-h1 text-on-surface group-hover:text-primary-fixed transition-colors">Kumhrar Campus</h2>
+<span class="material-symbols-outlined text-outline group-hover:text-primary-fixed transition-colors">expand_more</span>
+</div>
+</div>
+<!-- Server Health Indicator -->
+<div class="flex items-center gap-sm bg-surface-container/50 border border-outline-variant/30 px-md py-sm rounded-full backdrop-blur-md">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim animate-pulse shadow-[0_0_8px_rgba(0,228,121,0.6)]"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">SERVER HEALTH: OPTIMAL</span>
+</div>
+</div>
+<!-- Dashboard Canvas -->
+<div class="p-container-padding flex-1">
+<!-- Bento Grid Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-element-gap">
+<!-- Revenue Card -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between group hover:border-primary-fixed-dim/50 transition-colors duration-300">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">TODAY'S REVENUE</span>
+<span class="material-symbols-outlined text-primary-fixed-dim/50">payments</span>
+</div>
+<div>
+<div class="font-metric-xl text-metric-xl text-primary-fixed drop-shadow-[0_0_12px_rgba(96,255,153,0.3)] tracking-tight">₹45,200</div>
+<div class="flex items-center gap-xs mt-sm text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="font-body-sm text-body-sm font-medium">+12.4% vs 24h</span>
+</div>
+</div>
+</div>
+<!-- Occupancy Card -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between group hover:border-secondary-fixed-dim/50 transition-colors duration-300">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">TURF OCCUPANCY</span>
+<span class="material-symbols-outlined text-secondary-fixed-dim/50">sports_soccer</span>
+</div>
+<div>
+<div class="flex items-end gap-xs">
+<span class="font-metric-xl text-metric-xl text-secondary-fixed-dim tracking-tight">82</span>
+<span class="font-metric-md text-metric-md text-on-surface-variant mb-1">%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-md overflow-hidden">
+<div class="bg-gradient-to-r from-secondary-container to-secondary-fixed-dim h-full rounded-full" style="width: 82%"></div>
+</div>
+</div>
+</div>
+<!-- Academy Students -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between group hover:border-tertiary-fixed-dim/50 transition-colors duration-300">
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ACTIVE STUDENTS</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim/50">school</span>
+</div>
+<div>
+<div class="font-metric-xl text-metric-xl text-on-surface tracking-tight">145</div>
+<div class="flex items-center gap-xs mt-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">group_add</span>
+<span class="font-body-sm text-body-sm">3 new enrollments</span>
+</div>
+</div>
+</div>
+<!-- Bot Status Card -->
+<div class="glass-card rounded-xl p-lg flex flex-col justify-between relative overflow-hidden">
+<!-- Subtle background glow -->
+<div class="absolute -right-10 -bottom-10 w-32 h-32 bg-primary-fixed/10 blur-[40px] rounded-full pointer-events-none"></div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">WHATSAPP BOT</span>
+<span class="material-symbols-outlined text-primary-fixed-dim">smart_toy</span>
+</div>
+<div class="flex flex-col items-start gap-md">
+<div class="flex items-center gap-sm bg-primary-container/10 border border-primary-fixed-dim/50 px-md py-sm rounded-full neon-glow-primary">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></div>
+<span class="font-label-caps text-label-caps text-primary-fixed">ENABLED</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Processing 42 msgs/min</span>
+</div>
+</div>
+</div>
+<!-- Contextual Visual Area (Placeholder for deeper analytics charts) -->
+<div class="mt-element-gap h-64 glass-card rounded-xl border-dashed border-outline-variant/40 flex items-center justify-center opacity-50">
+<p class="font-label-caps text-label-caps text-outline">LIVE FEED VISUALIZATION CANVAS</p>
+</div>
+</div>
+<!-- Floating Action Buttons (Contextual Mission Control Actions) -->
+<div class="fixed bottom-24 md:bottom-lg right-container-padding flex flex-col gap-sm items-end z-40">
+<button class="glass-card bg-surface-container-high/80 hover:bg-surface-variant border border-outline-variant/50 text-on-surface rounded-full px-lg py-sm flex items-center gap-sm transition-all shadow-lg backdrop-blur-xl">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+<span class="font-label-caps text-label-caps">Toggle Bot</span>
+</button>
+<button class="glass-card bg-surface-container-high/80 hover:bg-surface-variant border border-outline-variant/50 text-on-surface rounded-full px-lg py-sm flex items-center gap-sm transition-all shadow-lg backdrop-blur-xl">
+<span class="material-symbols-outlined text-[18px]">point_of_sale</span>
+<span class="font-label-caps text-label-caps">+ POS Sale</span>
+</button>
+<button class="bg-gradient-to-r from-primary-fixed-dim to-secondary-fixed-dim text-surface rounded-full px-xl py-md flex items-center gap-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(0,255,136,0.3)]">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+<span class="font-label-caps text-label-caps font-bold tracking-wider">+ NEW SLOT</span>
+</button>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (Hidden on Desktop) -->
+<nav class="BottomNavBar md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-xs pb-md pt-sm bg-surface-container/60 backdrop-blur-2xl border-t border-outline-variant/20 rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim drop-shadow-[0_0_8px_rgba(0,228,121,0.6)] scale-110 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-caps text-label-caps mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">sports_soccer</span>
+<span class="font-label-caps text-label-caps mt-1">Turf</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-label-caps mt-1">Bot</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="font-label-caps text-label-caps mt-1">Academy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-caps text-label-caps mt-1">Logs</span>
+</a>
+</nav>
+</body></html>

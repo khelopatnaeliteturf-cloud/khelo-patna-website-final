@@ -9,15 +9,15 @@ if (!globalThis.crypto) {
     globalThis.crypto = require('crypto').webcrypto;
 }
 
-// Load environment variables first
-require('dotenv').config();
+const path = require('path');
+// Load environment variables first from backend/.env
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('./lib/mongoose-pg-bridge');
-const path = require('path');
 const { bootstrapDatabase } = require('./lib/bootstrap');
 
 

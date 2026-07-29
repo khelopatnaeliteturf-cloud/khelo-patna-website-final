@@ -1,5 +1,5 @@
 // API Service for KheloPatna Admin Native App
-const BASE_URL = 'https://app.khelopatna.in';
+const BASE_URL = 'http://192.168.29.89:5001';
 
 let authToken = '';
 
@@ -10,6 +10,7 @@ export const setAuthToken = (token) => {
 export const apiFetch = async (endpoint, options = {}) => {
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         ...(options.headers || {})
     };
@@ -19,7 +20,15 @@ export const apiFetch = async (endpoint, options = {}) => {
             ...options,
             headers
         });
-        const data = await response.json();
+        
+        const contentType = response.headers.get('content-type') || '';
+        let data = {};
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const rawText = await response.text();
+            data = { rawText };
+        }
         return { ok: response.ok, status: response.status, data };
     } catch (error) {
         console.error(`API Error [${endpoint}]:`, error);

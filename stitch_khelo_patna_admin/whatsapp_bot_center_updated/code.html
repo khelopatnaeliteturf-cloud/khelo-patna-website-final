@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhatsApp Bot Control</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#111417",
+                      "on-surface": "#e1e2e8",
+                      "tertiary-fixed": "#ffe16d",
+                      "surface": "#111417",
+                      "on-tertiary": "#3a3000",
+                      "outline": "#849585",
+                      "tertiary-fixed-dim": "#e9c400",
+                      "primary-container": "#00ff88",
+                      "secondary": "#97deff",
+                      "on-tertiary-fixed-variant": "#544600",
+                      "secondary-fixed": "#bee9ff",
+                      "on-tertiary-container": "#746100",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed-variant": "#005228",
+                      "inverse-surface": "#e1e2e8",
+                      "on-secondary-fixed": "#001f2a",
+                      "secondary-fixed-dim": "#68d3ff",
+                      "surface-container-low": "#191c20",
+                      "tertiary": "#fffaf8",
+                      "on-secondary": "#003546",
+                      "on-tertiary-fixed": "#221b00",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "primary-fixed-dim": "#00e479",
+                      "on-primary-container": "#007139",
+                      "inverse-on-surface": "#2e3135",
+                      "primary-fixed": "#60ff99",
+                      "primary": "#f1ffef",
+                      "on-primary": "#003919",
+                      "on-primary-fixed": "#00210c",
+                      "surface-container-lowest": "#0b0e12",
+                      "on-error-container": "#ffdad6",
+                      "secondary-container": "#00c8fe",
+                      "on-surface-variant": "#b9cbb9",
+                      "on-background": "#e1e2e8",
+                      "inverse-primary": "#006d37",
+                      "surface-dim": "#111417",
+                      "outline-variant": "#3b4b3d",
+                      "on-secondary-fixed-variant": "#004d64",
+                      "surface-variant": "#323539",
+                      "surface-container-high": "#272a2e",
+                      "surface-tint": "#00e479",
+                      "surface-bright": "#37393e",
+                      "tertiary-container": "#ffdd4f",
+                      "surface-container-highest": "#323539",
+                      "surface-container": "#1d2024",
+                      "on-secondary-container": "#005068"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "xs": "4px",
+                      "container-padding": "20px",
+                      "element-gap": "12px",
+                      "base": "4px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "h1-mobile": [
+                              "Montserrat"
+                      ],
+                      "h1": [
+                              "Montserrat"
+                      ],
+                      "metric-xl": [
+                              "Space Grotesk"
+                      ],
+                      "h2": [
+                              "Montserrat"
+                      ],
+                      "label-caps": [
+                              "Space Grotesk"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "metric-md": [
+                              "Space Grotesk"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "h1-mobile": [
+                              "26px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "h1": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "metric-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "h2": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "metric-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pt-16 pb-24 md:pb-0 md:pl-80 font-h1">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-padding py-sm bg-background/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,255,136,0.1)]">
+<div class="flex items-center gap-sm"><img alt="Khelopatna Elite Turf Logo" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLvvTjEz-RmTBtNuMxp4Dddp3mKx-6UaiqBDW8dJkPy9LkXr1RX9f5T0kpwON4D4Vck1C_IdkdRQzSK-L8KhU7auU5ODnkN-vr2wn3-2KDGDcElAHxVQX3ZOa_hMrznw342pFGAhvPFCVOH-wncj6lcYWpssmg_Uxk1C6aMHQp9n7iZGt7ixd4UKqoGpnhDNzQyTHTUIgDnTNPGm-OarzHuetVmNoqasoAi3oXN_C-0YTiVhrhRxXmC9Kns"/></div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-primary-fixed-dim">location_on</span>
+</button>
+</header>
+<!-- NavigationDrawer (Desktop) -->
+<nav class="hidden md:flex flex-col h-full py-xl bg-surface-dim/95 backdrop-blur-3xl border-r border-outline-variant/30 shadow-[10px_0_30px_rgba(0,0,0,0.8)] h-full w-80 rounded-r-xl fixed left-0 top-0 z-40 pt-24">
+<div class="px-container-padding mb-xl">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="A futuristic neon-lit profile avatar of an elite athletic facility manager, featuring glowing green and cyan accents against a deep void background. High-tech, sleek, 8k resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5LaRWNDquk_SsBacoqbvclYnE4sAEIsDRdqukm9g0fgvWe3Jfz1zs_L57cGCH6GcjlgZH3sXol4vpytm8lTDKFr16y0aNr7SqaoAUAFcf7NSx3sSz9VkQbYe-eB15Lnl9_4HadhQAlfvsuKvdKetCQNRDoMrOWu6xWM3cSCFy8lSOfBL6fIVTVHf7Nw6jZ7lZceGQfGKHs99K-R5halq5KnYrCDLwkb1ND_8o-xbEU3jAwqI-b2pJXw"/>
+</div>
+<div>
+<h2 class="font-h2 text-h2 text-secondary-fixed-dim">Patna Main Branch</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Head Operator</p>
+<span class="font-label-caps text-label-caps text-primary-fixed/50 mt-1 block">v2.4.0-PRO</span>
+</div>
+</div>
+</div>
+<ul class="flex-1 space-y-2">
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">barcode_scanner</span><span class="font-label-caps text-label-caps">Inventory &amp; POS</span></a></li>
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">payments</span><span class="font-label-caps text-label-caps">Financial Reports</span></a></li>
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">badge</span><span class="font-label-caps text-label-caps">Staff Management</span></a></li>
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">group</span><span class="font-label-caps text-label-caps">Customer DB</span></a></li>
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">settings</span><span class="font-label-caps text-label-caps">Settings</span></a></li>
+<li><a class="flex items-center gap-md text-on-surface-variant py-md px-lg hover:bg-white/5 transition-colors" href="#"><span class="material-symbols-outlined">support_agent</span><span class="font-label-caps text-label-caps">Support</span></a></li>
+</ul>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 px-container-padding py-lg w-full max-w-7xl mx-auto overflow-y-auto">
+<header class="mb-lg">
+<h1 class="font-metric-xl text-metric-xl text-on-surface mb-xs">WhatsApp AI Bot</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage automated responses and session connectivity.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Master Control Panel -->
+<section class="lg:col-span-2 space-y-lg">
+<!-- Status & Toggle Card -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container/30 backdrop-blur-xl border border-outline-variant/30 p-lg shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<!-- Subtle top light source -->
+<div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md mb-lg">
+<div>
+<div class="flex items-center gap-sm mb-sm">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary-fixed-dim shadow-[0_0_12px_rgba(104,211,255,0.8)]"></span>
+</span>
+<h3 class="font-label-caps text-label-caps text-secondary-fixed-dim tracking-wider">SESSION LIVE</h3>
+</div>
+<h2 class="font-metric-md text-metric-md text-on-surface">System Connected</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Handling incoming queries for Turf #1 &amp; #2</p>
+</div>
+<!-- Master Toggle -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-20 h-10 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-8 after:w-8 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-primary-container peer-checked:to-secondary-fixed-dim shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] peer-checked:shadow-[0_0_20px_rgba(0,255,136,0.4)]"></div>
+</label>
+</div>
+<!-- Exclusivity Info -->
+<div class="bg-surface-container-high/50 rounded-lg p-md border border-outline-variant/20 flex items-start gap-md">
+<span class="material-symbols-outlined text-tertiary-fixed-dim mt-xs">info</span>
+<div>
+<h4 class="font-body-sm text-body-sm font-semibold text-on-surface">Direct Chat Exclusivity Active</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Bot is configured to ignore group chats (@g.us) to prevent spam. Only responding to direct messages.</p>
+</div>
+</div>
+</div>
+<!-- Audit Log -->
+<div class="rounded-xl bg-surface-container/30 backdrop-blur-xl border border-outline-variant/30 p-lg shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+<h3 class="font-h2 text-h2 text-on-surface mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-fixed-dim">history</span>
+                        Recent Activity
+                    </h3>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-sm rounded bg-surface-variant/20 border border-outline-variant/10">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">check_circle</span>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Booking Confirmed: Rahul M.</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-xs">Turf 1 • 18:00 - 19:00</p>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">2m ago</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded bg-surface-variant/20 border border-outline-variant/10">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary-fixed-dim text-[20px]">chat</span>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface">Pricing Inquiry Answered</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-xs">+91 98765 43210</p>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">15m ago</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded bg-error-container/20 border border-error/20">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<div>
+<p class="font-body-sm text-body-sm text-error">Unrecognized Command</p>
+<p class="font-label-caps text-label-caps text-on-error-container mt-xs">Escalated to human staff</p>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-error/70">1h ago</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Side Panel: Auth -->
+<section class="space-y-lg">
+<!-- QR Re-auth -->
+<div class="rounded-xl bg-surface-container/30 backdrop-blur-xl border border-outline-variant/30 p-lg shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex flex-col items-center text-center">
+<h3 class="font-h2 text-h2 text-on-surface mb-sm">Session Auth</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Scan to re-link device</p>
+<div class="w-48 h-48 bg-white rounded-lg p-sm mb-md relative group overflow-hidden">
+<!-- Scanner line effect -->
+<div class="absolute top-0 left-0 w-full h-[2px] bg-primary-container shadow-[0_0_10px_rgba(0,255,136,0.8)] animate-[scan_2s_ease-in-out_infinite]"></div>
+<img alt="QR Code" class="w-full h-full object-contain" data-alt="A high-contrast stylized QR code graphic meant for scanning, designed with a dark futuristic background and bright glowing cyan and green data modules. Cyberpunk, technical, sharp." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJCmaxHralwmgRK54suxcc1r5WS0lR4SKQkvHO0yDo6drv95jtfRIg6y-OdROIwDTr9GMraUzvFasmEnTDFuco2K_NmUDAVhaNQDnvod0sk7P0BRv3qgQNJiK6uUZOZ9sBYxsqco9Nl4k5Dn0aC_z-Hz_SOCb8xAIg9AV4PJV5HTRYv9xyey0nSvwC4gT5AZWg6SSLJ8iJ9wSxF9lKUWCQfpJhN_SsvvIFUwAZE7n-se37IIh5SKKM5A"/>
+</div>
+<button class="w-full py-md px-lg rounded bg-gradient-to-r from-surface-variant to-surface-container-high border border-outline-variant/50 font-label-caps text-label-caps text-on-surface hover:border-primary-fixed-dim/50 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                        GENERATE NEW QR
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-xs pb-md pt-sm bg-surface-container/60 backdrop-blur-2xl border-t border-outline-variant/20 rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined mb-1">analytics</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined mb-1">sports_soccer</span>
+<span class="font-label-caps text-label-caps">Turf</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim drop-shadow-[0_0_8px_rgba(0,228,121,0.6)] scale-110 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="font-label-caps text-label-caps">Bot</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined mb-1">school</span>
+<span class="font-label-caps text-label-caps">Academy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined mb-1">history_edu</span>
+<span class="font-label-caps text-label-caps">Logs</span>
+</a>
+</nav>
+<style>
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+    </style>
+</body></html>

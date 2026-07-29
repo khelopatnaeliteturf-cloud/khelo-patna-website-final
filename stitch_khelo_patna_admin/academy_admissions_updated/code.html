@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Academy &amp; Admission Management - KheloPatna Elite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#111417",
+                      "on-surface": "#e1e2e8",
+                      "tertiary-fixed": "#ffe16d",
+                      "surface": "#111417",
+                      "on-tertiary": "#3a3000",
+                      "outline": "#849585",
+                      "tertiary-fixed-dim": "#e9c400",
+                      "primary-container": "#00ff88",
+                      "secondary": "#97deff",
+                      "on-tertiary-fixed-variant": "#544600",
+                      "secondary-fixed": "#bee9ff",
+                      "on-tertiary-container": "#746100",
+                      "error": "#ffb4ab",
+                      "on-primary-fixed-variant": "#005228",
+                      "inverse-surface": "#e1e2e8",
+                      "on-secondary-fixed": "#001f2a",
+                      "secondary-fixed-dim": "#68d3ff",
+                      "surface-container-low": "#191c20",
+                      "tertiary": "#fffaf8",
+                      "on-secondary": "#003546",
+                      "on-tertiary-fixed": "#221b00",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "primary-fixed-dim": "#00e479",
+                      "on-primary-container": "#007139",
+                      "inverse-on-surface": "#2e3135",
+                      "primary-fixed": "#60ff99",
+                      "primary": "#f1ffef",
+                      "on-primary": "#003919",
+                      "on-primary-fixed": "#00210c",
+                      "surface-container-lowest": "#0b0e12",
+                      "on-error-container": "#ffdad6",
+                      "secondary-container": "#00c8fe",
+                      "on-surface-variant": "#b9cbb9",
+                      "on-background": "#e1e2e8",
+                      "inverse-primary": "#006d37",
+                      "surface-dim": "#111417",
+                      "outline-variant": "#3b4b3d",
+                      "on-secondary-fixed-variant": "#004d64",
+                      "surface-variant": "#323539",
+                      "surface-container-high": "#272a2e",
+                      "surface-tint": "#00e479",
+                      "surface-bright": "#37393e",
+                      "tertiary-container": "#ffdd4f",
+                      "surface-container-highest": "#323539",
+                      "surface-container": "#1d2024",
+                      "on-secondary-container": "#005068"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "xs": "4px",
+                      "container-padding": "20px",
+                      "element-gap": "12px",
+                      "base": "4px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "h1-mobile": [
+                              "Montserrat"
+                      ],
+                      "h1": [
+                              "Montserrat"
+                      ],
+                      "metric-xl": [
+                              "Space Grotesk"
+                      ],
+                      "h2": [
+                              "Montserrat"
+                      ],
+                      "label-caps": [
+                              "Space Grotesk"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "metric-md": [
+                              "Space Grotesk"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "h1-mobile": [
+                              "26px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "h1": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "metric-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "h2": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "metric-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-panel {
+            background: rgba(25, 28, 32, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        .neon-border {
+            border: 1px solid transparent;
+            background: linear-gradient(to right, #191c20, #191c20) padding-box,
+                        linear-gradient(to right, rgba(0, 255, 136, 0.3), rgba(0, 200, 254, 0.3)) border-box;
+        }
+        .glow-active {
+            box-shadow: 0 0 12px rgba(0, 228, 121, 0.2);
+        }
+        .haptic-btn {
+            background: linear-gradient(to right, #00ff88, #00c8fe);
+            color: #00210c;
+            transition: all 0.2s ease;
+        }
+        .haptic-btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Custom Scrollbar for data-dense areas */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen flex flex-col md:flex-row antialiased overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container font-h1">
+<!-- TopAppBar (Mobile & Web Header) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-padding py-sm bg-background/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_15px_rgba(0,255,136,0.1)] h-[64px]">
+<div class="flex items-center gap-md">
+<div class="md:hidden">
+<!-- Hamburger for mobile (trigger for drawer if implemented) -->
+<button class="p-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-full transition-colors flex items-center justify-center h-[44px] w-[44px]">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div><div class="md:hidden flex items-center justify-center h-10 w-10 rounded-lg bg-surface-container border border-outline-variant/50 overflow-hidden">
+<img alt="Elite Turf Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLvvTjEz-RmTBtNuMxp4Dddp3mKx-6UaiqBDW8dJkPy9LkXr1RX9f5T0kpwON4D4Vck1C_IdkdRQzSK-L8KhU7auU5ODnkN-vr2wn3-2KDGDcElAHxVQX3ZOa_hMrznw342pFGAhvPFCVOH-wncj6lcYWpssmg_Uxk1C6aMHQp9n7iZGt7ixd4UKqoGpnhDNzQyTHTUIgDnTNPGm-OarzHuetVmNoqasoAi3oXN_C-0YTiVhrhRxXmC9Kns"/>
+</div>
+<div class="flex items-center justify-center h-12 w-12 rounded-lg bg-surface-container border border-outline-variant/50 overflow-hidden shadow-[0_0_15px_rgba(0,255,136,0.15)]">
+<img alt="Elite Turf Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLvvTjEz-RmTBtNuMxp4Dddp3mKx-6UaiqBDW8dJkPy9LkXr1RX9f5T0kpwON4D4Vck1C_IdkdRQzSK-L8KhU7auU5ODnkN-vr2wn3-2KDGDcElAHxVQX3ZOa_hMrznw342pFGAhvPFCVOH-wncj6lcYWpssmg_Uxk1C6aMHQp9n7iZGt7ixd4UKqoGpnhDNzQyTHTUIgDnTNPGm-OarzHuetVmNoqasoAi3oXN_C-0YTiVhrhRxXmC9Kns"/>
+</div>
+<h1 class="font-h2 text-h2 font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-container to-secondary-fixed-dim hidden sm:block">KHELOPATNA ELITE</h1>
+</div>
+<!-- Desktop Navigation Cluster (Hidden on Mobile) -->
+<nav class="hidden md:flex items-center gap-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-xs">analytics</span>
+<span>Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-xs">sports_soccer</span>
+<span>Turf</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-xs">smart_toy</span>
+<span>Bot</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim drop-shadow-[0_0_8px_rgba(0,228,121,0.6)] font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-xs" style="font-variation-settings: 'FILL' 1;">school</span>
+<span>Academy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-xs">history_edu</span>
+<span>Logs</span>
+</a>
+</nav>
+<button class="p-xs text-primary-fixed-dim hover:bg-surface-variant/50 rounded-full transition-colors flex items-center justify-center h-[44px] w-[44px]">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</header>
+<!-- NavigationDrawer (Web SideNav) -->
+<aside class="hidden xl:flex flex-col h-full py-xl w-80 rounded-r-xl bg-surface-dim/95 backdrop-blur-3xl border-r border-outline-variant/30 shadow-[10px_0_30px_rgba(0,0,0,0.8)] fixed left-0 top-[64px] z-40 overflow-y-auto" style="height: calc(100vh - 64px);">
+<div class="px-lg mb-xl flex items-center gap-md">
+<div class="h-12 w-12 rounded-full overflow-hidden border-2 border-outline-variant/50 flex-shrink-0">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a facility administrator in a modern, dark-themed control room setting, with subtle neon green backlighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6yZyWp4x7KeUDqeERs4kXOs2vzDQ2coGuOpqWaApQ4ueeLLaWCGwD-Y_Ie6VIlkrW5mMwB7yKur0hLeASybglso_GgzbYs4kKx1lB1dlROcEyUjsL7A5-W06dupOjCW6H01vRxPaAEtKlcqxakMs2AqZgJJOd6uuDJoECxU9XucKz9vY8hk_NnoGdQtZlVC37Fu4scWp2ZqpitNC82teKbgbhPMbTfIg4DVTO0xKmxbRn1NDW0MJFRg"/>
+</div>
+<div>
+<h2 class="font-h2 text-h2 text-secondary-fixed-dim truncate">Patna Main Branch</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Head Operator</p>
+<span class="inline-block mt-xs px-2 py-0.5 rounded text-[10px] font-label-caps bg-surface-variant text-on-surface-variant border border-outline-variant/30">v2.4.0-PRO</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-sm">
+<a class="flex items-center gap-md py-md px-lg text-on-surface-variant hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-fixed transition-colors">barcode_scanner</span>
+<span class="font-label-caps text-label-caps tracking-widest">Inventory &amp; POS</span>
+</a>
+<a class="flex items-center gap-md py-md px-lg text-on-surface-variant hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-fixed transition-colors">payments</span>
+<span class="font-label-caps text-label-caps tracking-widest">Financial Reports</span>
+</a>
+<a class="flex items-center gap-md py-md px-lg text-on-surface-variant hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-fixed transition-colors">badge</span>
+<span class="font-label-caps text-label-caps tracking-widest">Staff Management</span>
+</a>
+<a class="flex items-center gap-md py-md px-lg bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed group glow-active" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-caps text-label-caps tracking-widest">Customer DB</span>
+</a>
+<a class="flex items-center gap-md py-md px-lg text-on-surface-variant hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-fixed transition-colors">settings</span>
+<span class="font-label-caps text-label-caps tracking-widest">Settings</span>
+</a>
+<a class="flex items-center gap-md py-md px-lg text-on-surface-variant hover:bg-white/5 transition-colors group mt-auto" href="#">
+<span class="material-symbols-outlined group-hover:text-primary-fixed transition-colors">support_agent</span>
+<span class="font-label-caps text-label-caps tracking-widest">Support</span>
+</a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col pt-[84px] pb-[100px] md:pb-xl xl:pl-80 px-container-padding gap-lg max-w-[1600px] mx-auto w-full">
+<!-- Page Header & Global Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="px-2 py-1 rounded bg-[#001f2a] text-secondary-fixed font-label-caps text-label-caps border border-secondary-fixed/20 tracking-wider">ACADEMY OPS</span>
+<span class="h-2 w-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Live System</span>
+</div>
+<h2 class="font-h1-mobile md:font-h1 text-h1-mobile md:text-h1 text-on-surface">Admissions Management</h2>
+</div>
+<!-- Global Search -->
+<div class="w-full md:w-auto relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary-container transition-colors">search</span>
+</div>
+<input class="w-full md:w-[300px] bg-surface-container/50 border border-outline-variant text-on-surface rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-all font-body-sm text-body-sm placeholder:text-outline-variant h-[44px]" placeholder="Search ID (e.g. KPC005)" type="text"/>
+</div>
+</div>
+<!-- Sub-Tabs Navigation -->
+<div class="flex gap-md border-b border-outline-variant/30 overflow-x-auto pb-sm no-scrollbar">
+<button class="px-4 py-2 text-primary-fixed border-b-2 border-primary-fixed font-label-caps text-label-caps whitespace-nowrap transition-colors glow-active flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+                ONLINE APPLICATIONS
+                <span class="bg-primary-container text-on-primary-container px-1.5 py-0.5 rounded text-[10px]">12</span>
+</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-on-surface border-b-2 border-transparent font-label-caps text-label-caps whitespace-nowrap transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+                ACTIVE STUDENTS
+            </button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-on-surface border-b-2 border-transparent font-label-caps text-label-caps whitespace-nowrap transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">groups</span>
+                BATCHES
+            </button>
+</div>
+<!-- Bento Grid Layout for Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg items-start">
+<!-- Applications List (Left Col) -->
+<div class="lg:col-span-8 flex flex-col gap-md">
+<div class="flex justify-between items-center mb-xs">
+<h3 class="font-h2 text-h2 text-on-surface">Recent Applications</h3>
+<button class="text-secondary-fixed-dim hover:text-secondary-fixed font-label-caps text-label-caps flex items-center gap-1 transition-colors">
+                        FILTER <span class="material-symbols-outlined text-[16px]">filter_list</span>
+</button>
+</div>
+<!-- Application Card 1 -->
+<div class="glass-panel rounded-xl p-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md neon-border relative overflow-hidden group">
+<!-- Accent Left Border -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed shadow-[0_0_8px_rgba(255,225,109,0.5)]"></div>
+<div class="flex items-center gap-md pl-2">
+<div class="h-12 w-12 rounded-lg bg-surface-container-high border border-outline-variant/50 flex items-center justify-center text-on-surface font-metric-md text-metric-md">
+                            AR
+                        </div>
+<div>
+<div class="flex items-center gap-sm">
+<h4 class="font-bold text-lg text-on-surface">Aryan Raj</h4>
+<span class="bg-tertiary-fixed/10 border border-tertiary-fixed/30 text-tertiary-fixed px-2 py-0.5 rounded text-xs font-label-caps tracking-wide flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> ₹1,000 PAID
+                                </span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm flex items-center gap-3 mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">sports_cricket</span> Cricket</span>
+<span>•</span>
+<span>Age: 14</span>
+<span>•</span>
+<span class="font-mono text-outline">ID: APP-9021</span>
+</div>
+</div>
+</div>
+<div class="flex gap-sm w-full sm:w-auto mt-2 sm:mt-0">
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors font-label-caps text-label-caps h-[44px] flex items-center justify-center">
+                            REVIEW
+                        </button>
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg haptic-btn font-label-caps text-label-caps h-[44px] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span> APPROVE
+                        </button>
+</div>
+</div>
+<!-- Application Card 2 -->
+<div class="glass-panel rounded-xl p-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md relative">
+<div class="flex items-center gap-md">
+<div class="h-12 w-12 rounded-lg bg-surface-container-high border border-outline-variant/50 flex items-center justify-center text-on-surface font-metric-md text-metric-md">
+                            SK
+                        </div>
+<div>
+<div class="flex items-center gap-sm">
+<h4 class="font-bold text-lg text-on-surface">Sneha Kumari</h4>
+<span class="bg-surface-variant border border-outline-variant/30 text-on-surface-variant px-2 py-0.5 rounded text-xs font-label-caps tracking-wide">
+                                    PAYMENT PENDING
+                                </span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm flex items-center gap-3 mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">sports_tennis</span> Tennis</span>
+<span>•</span>
+<span>Age: 12</span>
+<span>•</span>
+<span class="font-mono text-outline">ID: APP-9022</span>
+</div>
+</div>
+</div>
+<div class="flex gap-sm w-full sm:w-auto mt-2 sm:mt-0">
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors font-label-caps text-label-caps h-[44px] flex items-center justify-center">
+                            REVIEW
+                        </button>
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-surface-container border border-primary-container/30 text-primary-container hover:bg-primary-container/10 transition-colors font-label-caps text-label-caps h-[44px] flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">check_circle</span> APPROVE
+                        </button>
+</div>
+</div>
+<!-- Application Card 3 -->
+<div class="glass-panel rounded-xl p-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md relative">
+<!-- Accent Left Border -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed shadow-[0_0_8px_rgba(255,225,109,0.5)]"></div>
+<div class="flex items-center gap-md pl-2">
+<div class="h-12 w-12 rounded-lg bg-surface-container-high border border-outline-variant/50 flex items-center justify-center text-on-surface font-metric-md text-metric-md">
+                            VK
+                        </div>
+<div>
+<div class="flex items-center gap-sm">
+<h4 class="font-bold text-lg text-on-surface">Vikash Kumar</h4>
+<span class="bg-tertiary-fixed/10 border border-tertiary-fixed/30 text-tertiary-fixed px-2 py-0.5 rounded text-xs font-label-caps tracking-wide flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> ₹1,000 PAID
+                                </span>
+</div>
+<div class="text-on-surface-variant font-body-sm text-body-sm flex items-center gap-3 mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">sports_soccer</span> Football</span>
+<span>•</span>
+<span>Age: 16</span>
+<span>•</span>
+<span class="font-mono text-outline">ID: APP-9023</span>
+</div>
+</div>
+</div>
+<div class="flex gap-sm w-full sm:w-auto mt-2 sm:mt-0">
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors font-label-caps text-label-caps h-[44px] flex items-center justify-center">
+                            REVIEW
+                        </button>
+<button class="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-surface-container border border-primary-container/50 text-primary-fixed hover:bg-primary-container/10 transition-colors font-label-caps text-label-caps h-[44px] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span> APPROVE
+                        </button>
+</div>
+</div>
+</div>
+<!-- Fee Collection Widget (Right Col) -->
+<div class="lg:col-span-4 flex flex-col gap-md">
+<div class="glass-panel rounded-xl p-md border-t-2 border-t-secondary-fixed">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-secondary-fixed">point_of_sale</span>
+<h3 class="font-h2 text-h2 text-on-surface">Quick Fee Collection</h3>
+</div>
+<form class="flex flex-col gap-md">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">STUDENT ID OR NAME</label>
+<input class="w-full bg-surface-container/50 border-b border-secondary-fixed/50 text-on-surface px-3 py-2 focus:outline-none focus:border-secondary-fixed focus:bg-surface-container transition-all font-mono text-body-sm h-[44px] placeholder:text-outline-variant placeholder:font-sans" placeholder="Scan or type..." type="text"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">AMOUNT (₹)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-metric-md">₹</span>
+<input class="w-full bg-surface-container/50 border-b border-outline-variant text-on-surface pl-8 pr-3 py-2 focus:outline-none focus:border-primary-container transition-all font-metric-md text-metric-md h-[52px]" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">PAYMENT METHOD</label>
+<div class="grid grid-cols-2 gap-sm">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="payment_method" type="radio" value="upi"/>
+<div class="px-3 py-2 rounded-lg border border-outline-variant text-center font-label-caps text-label-caps text-on-surface-variant peer-checked:border-secondary-fixed peer-checked:text-secondary-fixed peer-checked:bg-secondary-fixed/10 transition-all h-[44px] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">qr_code_scanner</span> UPI
+                                    </div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="payment_method" type="radio" value="cash"/>
+<div class="px-3 py-2 rounded-lg border border-outline-variant text-center font-label-caps text-label-caps text-on-surface-variant peer-checked:border-primary-fixed peer-checked:text-primary-fixed peer-checked:bg-primary-container/10 transition-all h-[44px] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">payments</span> CASH
+                                    </div>
+</label>
+</div>
+</div>
+<button class="mt-sm w-full rounded-lg bg-[#005228] text-primary-fixed font-label-caps text-label-caps h-[52px] flex items-center justify-center gap-2 hover:bg-[#007139] transition-colors border border-primary-fixed/30 shadow-[0_0_15px_rgba(0,255,136,0.15)]" type="button">
+<span class="material-symbols-outlined">receipt_long</span>
+                            RECORD PAYMENT
+                        </button>
+</form>
+</div>
+<!-- Mini Stats / Activity -->
+<div class="glass-panel rounded-xl p-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-md">TODAY'S METRICS</h4>
+<div class="flex justify-between items-end mb-sm">
+<span class="text-on-surface font-body-sm">Applications Received</span>
+<span class="font-metric-md text-metric-md text-tertiary-fixed">12</span>
+</div>
+<div class="flex justify-between items-end mb-sm">
+<span class="text-on-surface font-body-sm">Fees Collected</span>
+<span class="font-metric-md text-metric-md text-primary-fixed">₹ 14,500</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mt-xs">
+<div class="bg-gradient-to-r from-primary-container to-secondary-fixed h-full w-[65%] shadow-[0_0_8px_rgba(0,255,136,0.5)]"></div>
+</div>
+<p class="text-xs text-outline mt-2 text-right">65% of daily target</p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Footer) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-xs pb-md pt-sm bg-surface-container/60 backdrop-blur-2xl border-t border-outline-variant/20 rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">analytics</span>
+<span class="font-label-caps text-label-caps text-[10px]">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">sports_soccer</span>
+<span class="font-label-caps text-label-caps text-[10px]">Turf</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">smart_toy</span>
+<span class="font-label-caps text-label-caps text-[10px]">Bot</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary-fixed-dim drop-shadow-[0_0_8px_rgba(0,228,121,0.6)] scale-110 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-caps text-label-caps text-[10px]">Academy</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/70 hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">history_edu</span>
+<span class="font-label-caps text-label-caps text-[10px]">Logs</span>
+</a>
+</nav>
+</body></html>
