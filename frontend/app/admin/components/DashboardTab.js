@@ -145,23 +145,6 @@ export default function DashboardTab(props) {
 
         return (
             <div className="dashboard-next bg-background text-on-surface font-body-lg" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {/* Mission Control Sub-header Context */}
-                <div className="flex flex-wrap justify-between items-center gap-4 p-4 rounded-xl border border-white/5 bg-surface-container-low/40 backdrop-blur-md shadow-lg">
-                    <div>
-                        <p className="font-label-caps text-xs text-on-surface-variant mb-1 tracking-wider uppercase">ACTIVE SECTOR</p>
-                        <div className="flex items-center gap-2 cursor-pointer group">
-                            <h2 className="text-2xl font-extrabold text-on-surface group-hover:text-primary-fixed transition-colors">Kumhrar Campus</h2>
-                            <span className="material-symbols-outlined text-outline group-hover:text-primary-fixed transition-colors">expand_more</span>
-                        </div>
-                    </div>
-
-                    {/* Server Health Indicator */}
-                    <div className="flex items-center gap-2 bg-surface-container/60 border border-outline-variant/30 px-4 py-2 rounded-full backdrop-blur-md">
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#00e479] animate-pulse shadow-[0_0_8px_rgba(0,228,121,0.6)]"></div>
-                        <span className="text-xs font-semibold tracking-wider text-on-surface-variant">SERVER HEALTH: OPTIMAL</span>
-                    </div>
-                </div>
-
                 {/* Welcome Banner + Quick Actions */}
                 <div className="dashboard-hero" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <div>

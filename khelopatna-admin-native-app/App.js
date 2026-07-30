@@ -337,19 +337,6 @@ export default function App() {
         {/* SCREEN 2: LIVE ANALYTICS DASHBOARD */}
         {activeTab === 'dashboard' && (
           <View style={styles.tabSection}>
-            {/* Active Sector Header */}
-            <View style={styles.sectorBar}>
-              <View>
-                <Text style={styles.sectorLabel}>ACTIVE SECTOR</Text>
-                <Text style={styles.sectorTitle}>Kumhrar Campus ▾</Text>
-              </View>
-
-              <View style={styles.serverHealthBadge}>
-                <View style={[styles.dot, { backgroundColor: COLORS.neonEmerald }]} />
-                <Text style={styles.serverHealthText}>SERVER: OPTIMAL</Text>
-              </View>
-            </View>
-
             {/* Quick Metrics HUD Grid */}
             <View style={styles.metricsGrid}>
               <View style={[styles.metricCard, { borderColor: 'rgba(0, 255, 136, 0.25)' }]}>
