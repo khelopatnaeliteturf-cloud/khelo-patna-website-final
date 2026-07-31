@@ -9,6 +9,7 @@ export default function DashboardTab(props) {
         stats = {}, 
         allStudents = [], 
         username = 'Admin', 
+        userDisplayName = '',
         setActiveTab = () => {}, 
         setActiveSidebarKey = () => {}, 
         setShowOfflineBookingModal = () => {}, 
@@ -16,6 +17,8 @@ export default function DashboardTab(props) {
         formatSlotTo12Hr = (s) => s, 
         formatMultipleSlots = (s) => s 
     } = props || {};
+
+    const displayName = userDisplayName || (username ? username.charAt(0).toUpperCase() + username.slice(1) : 'Admin');
     
     const [newBookings, setNewBookings] = React.useState([]);
     const [showNotification, setShowNotification] = React.useState(false);
@@ -148,7 +151,7 @@ export default function DashboardTab(props) {
                 {/* Welcome Banner + Quick Actions */}
                 <div className="dashboard-hero" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                     <div>
-                        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 4px 0', letterSpacing: '-0.03em' }}>Welcome back, {username || 'Admin'}</h1>
+                        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0 0 4px 0', letterSpacing: '-0.03em' }}>Welcome back, {displayName}</h1>
                         <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0, fontWeight: 400 }}>Live pulse for turf operations, academy movement, collections, and service readiness.</p>
                     </div>
                     <div className="dashboard-action-grid" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

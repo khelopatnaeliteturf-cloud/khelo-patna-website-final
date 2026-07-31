@@ -107,6 +107,7 @@ export default function AdminDashboard() {
     const [role, setRole] = useState('');
     const [permissions, setPermissions] = useState([]);
     const [username, setUsername] = useState('');
+    const [userDisplayName, setUserDisplayName] = useState('');
     const [authenticated, setAuthenticated] = useState(false);
     const [theme, setTheme] = useState('light');
     
@@ -681,6 +682,8 @@ export default function AdminDashboard() {
             }
         }, 30000);
 
+        const storedName = localStorage.getItem('user_name');
+
         if (storedToken) {
             setToken(storedToken);
         }
@@ -689,6 +692,9 @@ export default function AdminDashboard() {
         }
         if (storedUser) {
             setUsername(storedUser);
+        }
+        if (storedName || storedUser) {
+            setUserDisplayName(storedName || (storedUser ? storedUser.charAt(0).toUpperCase() + storedUser.slice(1) : ''));
         }
 
         const verifySession = async () => {
@@ -706,14 +712,21 @@ export default function AdminDashboard() {
 
                 const verifiedRole = profile.role;
                 const verifiedUsername = profile.username;
+                const rawName = profile.name || profile.displayName || profile.fullName;
+                const verifiedName = rawName && rawName.trim() 
+                    ? rawName.trim() 
+                    : (verifiedUsername ? verifiedUsername.charAt(0).toUpperCase() + verifiedUsername.slice(1) : 'Admin');
                 const verifiedPermissions = profile.permissions || [];
+
                 setToken(storedToken || '');
                 setRole(verifiedRole);
                 setUsername(verifiedUsername);
+                setUserDisplayName(verifiedName);
                 setPermissions(verifiedPermissions);
                 if (storedToken) localStorage.setItem('token', storedToken);
                 localStorage.setItem('user_role', verifiedRole);
                 localStorage.setItem('username', verifiedUsername);
+                localStorage.setItem('user_name', verifiedName);
                 setAuthenticated(true);
 
                 let defaultTab = getDefaultTabForRole(verifiedRole);
@@ -6629,7 +6642,7 @@ export default function AdminDashboard() {
                         />
                     )}
                     {activeTab === 'academy-management' && <AcademyTab backendUrl={BACKEND_URL} getHeaders={getHeaders} academySubTab={academySubTab} setAcademySubTab={setAcademySubTab} customerSearchQuery={customerSearchQuery} setCustomerSearchQuery={setCustomerSearchQuery} allStudents={allStudents} selectedCrmStudent={selectedCrmStudent} setSelectedCrmStudent={setSelectedCrmStudent} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setPaymentsSubTab={setPaymentsSubTab} setPaymentSearchId={setPaymentSearchId} setSelectedStudentForPayment={setSelectedStudentForPayment} setShowEnquiryModal={setShowEnquiryModal} enquirySearchQuery={enquirySearchQuery} setEnquirySearchQuery={setEnquirySearchQuery} enquiriesList={enquiriesList} handleConvertEnquiry={handleConvertEnquiry} handleSaveAttendance={handleSaveAttendance} attendanceSport={attendanceSport} setAttendanceSport={setAttendanceSport} studentsList={studentsList} attendanceGrid={attendanceGrid} toggleStudentAttendance={toggleStudentAttendance} />}
-                    {activeTab === 'dashboard' && <DashboardTab revenueAnalytics={revenueAnalytics} bookingsLog={bookingsLog} formatINR={formatINR} stats={stats} allStudents={allStudents} username={username} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setShowOfflineBookingModal={setShowOfflineBookingModal} pendingFeesAmount={pendingFeesAmount} formatSlotTo12Hr={formatSlotTo12Hr} formatMultipleSlots={formatMultipleSlots} />}
+                    {activeTab === 'dashboard' && <DashboardTab revenueAnalytics={revenueAnalytics} bookingsLog={bookingsLog} formatINR={formatINR} stats={stats} allStudents={allStudents} username={username} userDisplayName={userDisplayName} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setShowOfflineBookingModal={setShowOfflineBookingModal} pendingFeesAmount={pendingFeesAmount} formatSlotTo12Hr={formatSlotTo12Hr} formatMultipleSlots={formatMultipleSlots} />}
                     {activeTab === 'turf-management' && <TurfTab activeSidebarKey={activeSidebarKey} bookingsLog={bookingsLog} selectedBooking={selectedBooking} generateCustomerId={generateCustomerId} bookingsFilter={bookingsFilter} setBookingsFilter={setBookingsFilter} bookingsDateRange={bookingsDateRange} setBookingsDateRange={setBookingsDateRange} bookingsCustomStartDate={bookingsCustomStartDate} setBookingsCustomStartDate={setBookingsCustomStartDate} bookingsCustomEndDate={bookingsCustomEndDate} setBookingsCustomEndDate={setBookingsCustomEndDate} setShowOfflineBookingModal={setShowOfflineBookingModal} setShowBookingsReportModal={setShowBookingsReportModal} formatINR={formatINR} formatSlotTo12Hr={formatSlotTo12Hr} formatMultipleSlots={formatMultipleSlots} setSelectedBookingState={setSelectedBookingState} turfSettings={turfSettings} closuresList={closuresList} handleSaveSettings={handleSaveSettings} setTurfSettings={setTurfSettings} handleCreateClosure={handleCreateClosure} newClosure={newClosure} setNewClosure={setNewClosure} handleDeleteClosure={handleDeleteClosure} />}
                     {activeTab === 'membership-management' && (
                         <MembershipTab 
