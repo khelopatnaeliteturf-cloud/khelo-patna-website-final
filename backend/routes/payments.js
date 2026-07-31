@@ -1439,7 +1439,7 @@ router.post('/admin/bookings/:id/resend-whatsapp', authenticateToken, authorizeR
             return res.status(404).json({ error: 'Booking not found.' });
         }
 
-        await sendBookingConfirmationWhatsApp(booking);
+        await sendBookingNotifications(booking);
         res.json({ success: true, message: `WhatsApp booking confirmation sent to ${booking.customerPhone}.` });
     } catch (err) {
         console.error('Resend WhatsApp error:', err);
