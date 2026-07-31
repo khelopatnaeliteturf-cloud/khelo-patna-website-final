@@ -256,8 +256,15 @@ async function initWhatsApp() {
 
     try {
         const baileys = await import('@whiskeysockets/baileys');
-        makeWASocket = baileys.default;
-        DisconnectReason = baileys.DisconnectReason;
+        makeWASocket = baileys.default?.default || baileys.default || baileys.makeWASocket;
+        DisconnectReason = baileys.DisconnectReason || baileys.default?.DisconnectReason;
+        const Browsers = baileys.Browsers || baileys.default?.Browsers;
+
+        const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({
+            version: [2, 3000, 1017531287],
+            isLatest: false
+        }));
+        console.log(`[WhatsApp] Using Baileys WA Web Version: ${version.join('.')} (isLatest: ${isLatest})`);
 
         const dbPool = getPgPool();
         const { state, saveCreds } = await useSupabaseAuthState(dbPool);
@@ -281,6 +288,8 @@ async function initWhatsApp() {
         }
 
         sock = makeWASocket({
+            version,
+            browser: Browsers ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '20.0.04'],
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
@@ -316,7 +325,7 @@ async function initWhatsApp() {
                 const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401 || statusCode === 403;
                 const shouldReconnect = !isLoggedOut;
                 const reason = lastDisconnect?.error?.message || 'Unknown';
-                console.log(`WhatsApp connection closed. Reason: ${reason}. Will retry: ${shouldReconnect && retryCount < MAX_RETRIES}`);
+                console.log(`WhatsApp connection closed. Reason: ${reason}. Full Error:`, lastDisconnect?.error);
 
                 if (shouldReconnect) {
                     if (retryCount >= MAX_RETRIES) {

@@ -1384,6 +1384,88 @@ router.put('/admin/bookings/:id/reschedule', authenticateToken, authorizeRoles('
     }
 });
 
+// PUT /api/admin/bookings/:id/edit
+router.put('/admin/bookings/:id/edit', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'RECEPTIONIST'), async (req, res) => {
+    const bookingId = req.params.id;
+    const { customerName, customerPhone, customerEmail, sport, date, timeSlots, totalAmount, paidAmount, paymentStatus, paymentMethod } = req.body;
+
+    try {
+        const booking = await Booking.findOne({ _id: bookingId, tenantId: req.user.tenantId });
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found.' });
+        }
+
+        if (customerName !== undefined) booking.customerName = customerName;
+        if (customerPhone !== undefined) booking.customerPhone = customerPhone;
+        if (customerEmail !== undefined) booking.customerEmail = customerEmail;
+        if (sport !== undefined) booking.sport = sport;
+        if (date !== undefined) booking.date = date;
+        if (timeSlots !== undefined && Array.isArray(timeSlots)) booking.timeSlots = timeSlots;
+        if (totalAmount !== undefined) booking.totalAmount = Number(totalAmount);
+        if (paidAmount !== undefined) booking.paidAmount = Number(paidAmount);
+        if (paymentStatus !== undefined) booking.paymentStatus = paymentStatus;
+        if (paymentMethod !== undefined) booking.paymentMethod = paymentMethod;
+
+        await booking.save();
+
+        // Write Audit Log
+        try {
+            const AuditLog = require('../models/AuditLog');
+            await new AuditLog({
+                tenantId: booking.tenantId || req.user.tenantId,
+                userId: req.user.username,
+                module: 'Turf',
+                action: 'EDIT_BOOKING',
+                newData: { bookingId: booking._id, orderId: booking.orderId, customerName, customerPhone, date, timeSlots }
+            }).save();
+        } catch (auditErr) {
+            console.error('Error logging audit for edit:', auditErr);
+        }
+
+        res.json({ success: true, message: 'Booking details updated successfully.', booking });
+    } catch (err) {
+        console.error('Edit booking error:', err);
+        res.status(500).json({ error: 'Server error updating booking details.' });
+    }
+});
+
+// POST /api/admin/bookings/:id/resend-whatsapp
+router.post('/admin/bookings/:id/resend-whatsapp', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'RECEPTIONIST'), async (req, res) => {
+    const bookingId = req.params.id;
+
+    try {
+        const booking = await Booking.findOne({ _id: bookingId, tenantId: req.user.tenantId });
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found.' });
+        }
+
+        await sendBookingConfirmationWhatsApp(booking);
+        res.json({ success: true, message: `WhatsApp booking confirmation sent to ${booking.customerPhone}.` });
+    } catch (err) {
+        console.error('Resend WhatsApp error:', err);
+        res.status(500).json({ error: 'Failed to send WhatsApp message: ' + (err.message || err) });
+    }
+});
+
+// POST /api/admin/bookings/:id/resend-email
+router.post('/admin/bookings/:id/resend-email', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN', 'RECEPTIONIST'), async (req, res) => {
+    const bookingId = req.params.id;
+
+    try {
+        const booking = await Booking.findOne({ _id: bookingId, tenantId: req.user.tenantId });
+        if (!booking) {
+            return res.status(404).json({ error: 'Booking not found.' });
+        }
+
+        const { sendBookingInvoiceEmail } = require('../services/mailercloud');
+        await sendBookingInvoiceEmail(booking);
+        res.json({ success: true, message: `Email confirmation sent to ${booking.customerEmail || 'customer'}.` });
+    } catch (err) {
+        console.error('Resend Email error:', err);
+        res.status(500).json({ error: 'Failed to send email confirmation: ' + (err.message || err) });
+    }
+});
+
 // POST /api/admin/bookings/:id/cancel-refund
 // Refunds move real money — restricted to management roles (not RECEPTIONIST).
 router.post('/admin/bookings/:id/cancel-refund', authenticateToken, authorizeRoles('SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'ADMIN'), async (req, res) => {

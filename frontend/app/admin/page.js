@@ -253,14 +253,111 @@ export default function AdminDashboard() {
     const [bookingsCustomEndDate, setBookingsCustomEndDate] = useState('');
     const [showBookingsReportModal, setShowBookingsReportModal] = useState(false);
 
+    const [isEditingBooking, setIsEditingBooking] = useState(false);
+    const [editBookingForm, setEditBookingForm] = useState({
+        customerName: '',
+        customerPhone: '',
+        customerEmail: '',
+        sport: 'cricket',
+        date: '',
+        totalAmount: 0,
+        paidAmount: 0,
+        paymentStatus: 'SUCCESS',
+        paymentMethod: 'cash'
+    });
+    const [bookingActionStatus, setBookingActionStatus] = useState(null);
+    const [bookingActionLoading, setBookingActionLoading] = useState(null);
+
     useEffect(() => {
         if (selectedBooking) {
             setIsRescheduling(false);
+            setIsEditingBooking(false);
+            setBookingActionStatus(null);
+            setBookingActionLoading(null);
             setRescheduleDate(selectedBooking.date || '');
             setRescheduleSlots(selectedBooking.timeSlots || []);
             setRescheduleAvailableSlots([]);
+            setEditBookingForm({
+                customerName: selectedBooking.customerName || '',
+                customerPhone: selectedBooking.customerPhone || '',
+                customerEmail: selectedBooking.customerEmail || '',
+                sport: selectedBooking.sport || 'cricket',
+                date: selectedBooking.date || '',
+                totalAmount: selectedBooking.totalAmount || 0,
+                paidAmount: selectedBooking.paidAmount || 0,
+                paymentStatus: selectedBooking.paymentStatus || 'SUCCESS',
+                paymentMethod: selectedBooking.paymentMethod || 'cash'
+            });
         }
     }, [selectedBooking]);
+
+    const handleSaveEditedBooking = async (e) => {
+        if (e) e.preventDefault();
+        if (!selectedBooking) return;
+        setBookingActionLoading('saving');
+        setBookingActionStatus(null);
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/admin/bookings/${selectedBooking._id}/edit`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(editBookingForm)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update booking');
+
+            setBookingActionStatus({ type: 'success', text: '✅ Booking details updated successfully!' });
+            setIsEditingBooking(false);
+            setSelectedBookingState(data.booking);
+            loadBookingsLog(); // Refresh list
+        } catch (err) {
+            console.error('Error saving edited booking:', err);
+            setBookingActionStatus({ type: 'error', text: err.message });
+        } finally {
+            setBookingActionLoading(null);
+        }
+    };
+
+    const handleResendWhatsApp = async () => {
+        if (!selectedBooking) return;
+        setBookingActionLoading('whatsapp');
+        setBookingActionStatus(null);
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/admin/bookings/${selectedBooking._id}/resend-whatsapp`, {
+                method: 'POST',
+                headers: getHeaders()
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to send WhatsApp message');
+
+            setBookingActionStatus({ type: 'success', text: `✅ ${data.message || 'WhatsApp message sent!'}` });
+        } catch (err) {
+            console.error('Error resending WhatsApp:', err);
+            setBookingActionStatus({ type: 'error', text: `❌ ${err.message}` });
+        } finally {
+            setBookingActionLoading(null);
+        }
+    };
+
+    const handleResendEmail = async () => {
+        if (!selectedBooking) return;
+        setBookingActionLoading('email');
+        setBookingActionStatus(null);
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/admin/bookings/${selectedBooking._id}/resend-email`, {
+                method: 'POST',
+                headers: getHeaders()
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to send email');
+
+            setBookingActionStatus({ type: 'success', text: `✅ ${data.message || 'Email confirmation sent!'}` });
+        } catch (err) {
+            console.error('Error resending Email:', err);
+            setBookingActionStatus({ type: 'error', text: `❌ ${err.message}` });
+        } finally {
+            setBookingActionLoading(null);
+        }
+    };
 
     useEffect(() => {
         if (!selectedBooking || !isRescheduling || !rescheduleDate) return;
@@ -2879,26 +2976,190 @@ export default function AdminDashboard() {
         return (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10050, padding: '20px' }} onClick={() => setSelectedBookingState(null)}>
                 <div style={{ background: 'var(--card-bg)', borderRadius: '20px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', border: '1px solid var(--border-color)' }} onClick={e => e.stopPropagation()}>
-                    {/* Modal Header - Customer Profile */}
+                    {/* Modal Header - Customer Profile & Action Buttons */}
                     <div style={{ padding: '28px 28px 20px', borderBottom: '1px solid var(--border-color)', position: 'relative' }}>
                         <button onClick={() => setSelectedBookingState(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)', transition: 'all 0.2s' }}>
                             <span className="material-icons-outlined" style={{ fontSize: '18px' }}>close</span>
                         </button>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'var(--gradient-1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 6px 20px rgba(99,102,241,0.3)' }}>
-                                {initials}
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em' }}>{b.customerName || 'Walk-in Customer'}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 600, background: 'rgba(99,102,241,0.08)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '5px', fontFamily: 'monospace' }}>{custId}</span>
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                        <span className="material-icons-outlined" style={{ fontSize: '13px' }}>lock</span> Admin Only
-                                    </span>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', paddingRight: '40px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'var(--gradient-1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 6px 20px rgba(99,102,241,0.3)' }}>
+                                    {initials}
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em' }}>{b.customerName || 'Walk-in Customer'}</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 600, background: 'rgba(99,102,241,0.08)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '5px', fontFamily: 'monospace' }}>{custId}</span>
+                                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <span className="material-icons-outlined" style={{ fontSize: '13px' }}>lock</span> Admin Only
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Quick Action Buttons */}
+                            <div style={{ display: 'flex', itemsAlign: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={handleResendWhatsApp}
+                                    disabled={bookingActionLoading === 'whatsapp'}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
+                                        background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)',
+                                        borderRadius: '10px', color: '#10B981', fontSize: '0.78rem', fontWeight: 700,
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>chat</span>
+                                    {bookingActionLoading === 'whatsapp' ? 'Sending...' : 'Resend WA'}
+                                </button>
+
+                                <button
+                                    onClick={handleResendEmail}
+                                    disabled={bookingActionLoading === 'email'}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
+                                        background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)',
+                                        borderRadius: '10px', color: '#3B82F6', fontSize: '0.78rem', fontWeight: 700,
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>email</span>
+                                    {bookingActionLoading === 'email' ? 'Sending...' : 'Resend Email'}
+                                </button>
+
+                                <button
+                                    onClick={() => setIsEditingBooking(!isEditingBooking)}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px',
+                                        background: isEditingBooking ? 'var(--primary)' : 'var(--bg-color)',
+                                        border: '1px solid var(--border-color)', borderRadius: '10px',
+                                        color: isEditingBooking ? '#fff' : 'var(--text-main)', fontSize: '0.78rem', fontWeight: 700,
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }}
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>{isEditingBooking ? 'close' : 'edit'}</span>
+                                    {isEditingBooking ? 'Cancel Edit' : 'Edit Booking'}
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Status Feedback Toast */}
+                        {bookingActionStatus && (
+                            <div style={{
+                                marginTop: '16px', padding: '10px 14px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 600,
+                                background: bookingActionStatus.type === 'success' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                                border: `1px solid ${bookingActionStatus.type === 'success' ? '#10B981' : '#EF4444'}`,
+                                color: bookingActionStatus.type === 'success' ? '#10B981' : '#EF4444'
+                            }}>
+                                {bookingActionStatus.text}
+                            </div>
+                        )}
                     </div>
+
+                    {/* Inline Edit Form Mode */}
+                    {isEditingBooking ? (
+                        <form onSubmit={handleSaveEditedBooking} style={{ padding: '24px 28px', borderBottom: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '0.88rem', fontWeight: 800, marginBottom: '16px', color: 'var(--primary)' }}>
+                                Edit Booking Details
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>CUSTOMER NAME</label>
+                                    <input
+                                        type="text" className="input-premium w-100" required
+                                        value={editBookingForm.customerName}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, customerName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>CUSTOMER PHONE</label>
+                                    <input
+                                        type="text" className="input-premium w-100" required
+                                        value={editBookingForm.customerPhone}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, customerPhone: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>CUSTOMER EMAIL</label>
+                                    <input
+                                        type="email" className="input-premium w-100"
+                                        value={editBookingForm.customerEmail}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, customerEmail: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>SPORT</label>
+                                    <select
+                                        className="input-premium w-100"
+                                        value={editBookingForm.sport}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, sport: e.target.value })}
+                                    >
+                                        <option value="cricket">Cricket</option>
+                                        <option value="football">Football</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>BOOKING DATE</label>
+                                    <input
+                                        type="date" className="input-premium w-100" required
+                                        value={editBookingForm.date}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, date: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>TOTAL AMOUNT (₹)</label>
+                                    <input
+                                        type="number" className="input-premium w-100" required
+                                        value={editBookingForm.totalAmount}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, totalAmount: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>PAID AMOUNT (₹)</label>
+                                    <input
+                                        type="number" className="input-premium w-100" required
+                                        value={editBookingForm.paidAmount}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, paidAmount: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>PAYMENT STATUS</label>
+                                    <select
+                                        className="input-premium w-100"
+                                        value={editBookingForm.paymentStatus}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, paymentStatus: e.target.value })}
+                                    >
+                                        <option value="SUCCESS">SUCCESS</option>
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="CANCELLED">CANCELLED</option>
+                                        <option value="FAILED">FAILED</option>
+                                    </select>
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>PAYMENT METHOD</label>
+                                    <select
+                                        className="input-premium w-100"
+                                        value={editBookingForm.paymentMethod}
+                                        onChange={e => setEditBookingForm({ ...editBookingForm, paymentMethod: e.target.value })}
+                                    >
+                                        <option value="cash">CASH</option>
+                                        <option value="upi">UPI</option>
+                                        <option value="pos">POS Machine</option>
+                                        <option value="cashfree">Cashfree Gateway</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button type="submit" className="btn-primary-stripe" disabled={bookingActionLoading === 'saving'}>
+                                    {bookingActionLoading === 'saving' ? 'Saving...' : 'Save Booking Changes'}
+                                </button>
+                                <button type="button" className="btn-secondary-stripe" onClick={() => setIsEditingBooking(false)}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    ) : null}
 
                     {/* Customer Contact Info */}
                     <div style={{ padding: '18px 28px', borderBottom: '1px solid var(--border-color)' }}>
