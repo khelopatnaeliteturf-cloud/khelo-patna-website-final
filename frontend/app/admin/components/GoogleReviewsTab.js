@@ -1104,11 +1104,11 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
 
                                 {loadingLog ? (
                                     <div className="text-muted text-center py-4">Loading leaderboard...</div>
-                                ) : !stats || stats.top_ips?.length === 0 ? (
+                                ) : !stats || !Array.isArray(stats?.top_ips) || stats.top_ips.length === 0 ? (
                                     <div className="text-muted text-center py-4 italic" style={{ fontSize: '0.8rem' }}>No IP leaderboard records found yet.</div>
                                 ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        {stats.top_ips.map((item, idx) => (
+                                        {(stats.top_ips || []).map((item, idx) => (
                                             <div key={idx} className="d-flex justify-content-between align-items-center py-2 border-bottom" style={{ borderColor: '#e2e8f0', fontSize: '0.78rem' }}>
                                                 <div className="d-flex align-items-center gap-2 min-w-0">
                                                     <span style={{ width: '20px', height: '20px', borderRadius: '4px', background: '#f1f5f9', fontSize: '0.65rem', fontWeight: 'bold', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

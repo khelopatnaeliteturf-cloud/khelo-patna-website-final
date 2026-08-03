@@ -321,9 +321,36 @@ router.get('/admin/maps-reviews/stats', authenticateToken, authorizeRoles('SUPER
             console.warn('Ratings aggregate warning:', e.message);
         }
 
+        let top_ips = [];
+        try {
+            const topIpRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$ip", count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 }
+            ]);
+            top_ips = topIpRes.map(item => ({ ip: item._id || 'Unknown', count: item.count }));
+        } catch (e) {
+            console.warn('Top IPs aggregate warning:', e.message);
+        }
+
+        let devices = { Mobile: 0, Desktop: 0, Tablet: 0 };
+        try {
+            const devRes = await MapsReviewUsed.aggregate([
+                { $group: { _id: "$device", count: { $sum: 1 } } }
+            ]);
+            devRes.forEach(d => {
+                const name = d._id || 'Mobile';
+                devices[name] = d.count;
+            });
+        } catch (e) {
+            console.warn('Devices aggregate warning:', e.message);
+        }
+
         res.json({
             totalReviews: total,
-            ratings
+            ratings,
+            top_ips,
+            devices
         });
     } catch (err) {
         console.error('Error computing maps reviews stats:', err);
