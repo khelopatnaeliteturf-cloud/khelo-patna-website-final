@@ -421,8 +421,11 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
         }
     };
 
-    const filteredReviews = reviews.filter(rev => {
-        const textMatch = rev.text?.toLowerCase().includes(searchQuery.toLowerCase());
+    const safeReviews = Array.isArray(reviews) ? reviews : [];
+
+    const filteredReviews = safeReviews.filter(rev => {
+        if (!rev) return false;
+        const textMatch = rev.text?.toLowerCase().includes((searchQuery || '').toLowerCase());
         const ratingMatch = selectedRating === 'all' || String(rev.rating) === selectedRating;
         return textMatch && ratingMatch;
     });
@@ -430,26 +433,26 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
     const mockQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(reviewUrl || 'https://khelopatna.com/review')}`;
 
     // Compute real statistics from database reviews logs
-    const totalReviews = reviews.length;
+    const totalReviews = safeReviews.length;
 
     // Calculate today's reviews
-    const todayReviewsCount = reviews.filter(r => {
-        const d = r.createdAt || r.created_at;
+    const todayReviewsCount = safeReviews.filter(r => {
+        const d = r?.createdAt || r?.created_at;
         if (!d) return false;
         return new Date(d).toDateString() === new Date().toDateString();
     }).length;
 
     // Calculate reviews this month vs last month to show a real percentage
     const now = new Date();
-    const thisMonthReviews = reviews.filter(r => {
-        const d = r.createdAt || r.created_at;
+    const thisMonthReviews = safeReviews.filter(r => {
+        const d = r?.createdAt || r?.created_at;
         if (!d) return false;
         const date = new Date(d);
         return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
     }).length;
 
-    const lastMonthReviews = reviews.filter(r => {
-        const d = r.createdAt || r.created_at;
+    const lastMonthReviews = safeReviews.filter(r => {
+        const d = r?.createdAt || r?.created_at;
         if (!d) return false;
         const date = new Date(d);
         const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
@@ -472,8 +475,8 @@ export default function GoogleReviewsTab({ backendUrl, getHeaders }) {
     // Today's growth vs yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayReviewsCount = reviews.filter(r => {
-        const d = r.createdAt || r.created_at;
+    const yesterdayReviewsCount = safeReviews.filter(r => {
+        const d = r?.createdAt || r?.created_at;
         if (!d) return false;
         return new Date(d).toDateString() === yesterday.toDateString();
     }).length;

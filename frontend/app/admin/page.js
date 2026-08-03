@@ -3280,7 +3280,7 @@ export default function AdminDashboard() {
                             <div style={{ marginTop: '14px', background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                 <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Gateway Metadata</div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.76rem' }}>
-                                    {Object.entries(b.paymentDetails).map(([key, val]) => {
+                                    {Object.entries(b.paymentDetails || {}).map(([key, val]) => {
                                         if (typeof val === 'object') return null; // Skip nested objects like refund info
                                         return (
                                             <div key={key} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: '4px' }}>
@@ -3626,7 +3626,7 @@ export default function AdminDashboard() {
                                                                 <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                                     <span>📅 {b.date}</span>
                                                                     <span>•</span>
-                                                                    <span>⏰ {b.timeSlots.map(s => formatSlotTo12Hr(s)).join(', ')}</span>
+                                                                    <span>⏰ {(b.timeSlots || []).map(s => formatSlotTo12Hr(s)).join(', ')}</span>
                                                                 </div>
                                                             </div>
                                                             <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end' }}>
@@ -4246,13 +4246,13 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {activeReceipt.breakdown?.breakdown.map((item, idx) => (
+                            {(activeReceipt.breakdown?.breakdown || []).map((item, idx) => (
                                 <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ color: '#333', padding: '8px' }}>{item.name}</td>
                                     <td style={{ textAlign: 'right', color: '#000', padding: '8px' }}>₹{item.amount.toLocaleString('en-IN')}</td>
                                 </tr>
                             ))}
-                            {activeReceipt.breakdown?.appliedRebates.map((item, idx) => (
+                            {(activeReceipt.breakdown?.appliedRebates || []).map((item, idx) => (
                                 <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ color: '#10b981', fontStyle: 'italic', padding: '8px' }}>{item.name}</td>
                                     <td style={{ textAlign: 'right', color: '#10b981', padding: '8px' }}>-₹{Math.abs(item.amount).toLocaleString('en-IN')}</td>

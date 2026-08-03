@@ -445,7 +445,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedCustomers.map((cust, idx) => (
+                                {(sortedCustomers || []).map((cust, idx) => (
                                     <tr 
                                         key={idx} 
                                         onClick={() => handleViewHistory(cust)}
@@ -535,7 +535,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                         Suspected Duplicates Detected ({suggestions.length})
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        {suggestions.map((sug, idx) => (
+                                        {(suggestions || []).map((sug, idx) => (
                                             <div 
                                                 key={idx} 
                                                 onClick={() => {
@@ -789,7 +789,7 @@ export default function CustomersTab({ backendUrl, getHeaders }) {
                                             </div>
                                         ) : (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '40vh', overflowY: 'auto', paddingRight: '4px' }}>
-                                                {customerHistory.bookings.map((booking, idx) => {
+                                                {(customerHistory?.bookings || []).map((booking, idx) => {
                                                     const balance = (booking.totalAmount || 0) - (booking.paidAmount || 0);
                                                     return (
                                                         <div key={idx} style={{ 

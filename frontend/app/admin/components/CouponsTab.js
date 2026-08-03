@@ -170,7 +170,7 @@ export default function CouponsTab({ backendUrl, getHeaders, notifySuccess, noti
                                 </tr>
                             </thead>
                             <tbody>
-                                {coupons.map((coupon) => {
+                                {(coupons || []).map((coupon) => {
                                     const isExpired = coupon.expiryDate && new Date(coupon.expiryDate) < new Date();
                                     const isLimitReached = coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit;
                                     const statusLabel = !coupon.isActive ? 'Inactive' : isExpired ? 'Expired' : isLimitReached ? 'Limit Reached' : 'Active';

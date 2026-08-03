@@ -65,7 +65,7 @@ export default function FinanceTab({
 
     useEffect(() => {
         if (feeStudentData && feeDues) {
-            const rows = feeDues.map(d => {
+            const rows = (feeDues || []).map(d => {
                 const amountDue = Number(d.amountDue) || 0;
                 const amountPaid = Number(d.amountPaid) || 0;
                 const balanceDue = Math.max(0, amountDue - amountPaid);
@@ -737,7 +737,7 @@ export default function FinanceTab({
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {feeHistory.length > 0 ? (
+                                                {Array.isArray(feeHistory) && feeHistory.length > 0 ? (
                                                     feeHistory.slice((currentPage - 1) * 5, currentPage * 5).map((row, idx) => (
                                                         <tr key={row._id}>
                                                             <td>
@@ -840,7 +840,7 @@ export default function FinanceTab({
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {feeDues.map((row) => {
+                                                {(feeDues || []).map((row) => {
                                                     const bal = Number(row.amountDue) - Number(row.amountPaid);
                                                     return (
                                                         <tr key={row._id}>
@@ -1059,7 +1059,7 @@ export default function FinanceTab({
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {paymentRows.map((row, idx) => (
+                                                    {(paymentRows || []).map((row, idx) => (
                                                         <tr key={row.feeId}>
                                                             <td style={{ fontWeight: 700 }}>{row.monthFor}</td>
                                                             <td>{formatCurrency(row.amountDue)}</td>
@@ -1264,7 +1264,7 @@ export default function FinanceTab({
                                 </tr>
                             </thead>
                             <tbody>
-                                {transactions.length > 0 ? (
+                                {Array.isArray(transactions) && transactions.length > 0 ? (
                                     transactions.map((t, idx) => (
                                         <tr key={idx}>
                                             <td>{new Date(t.date).toLocaleString('en-IN')}</td>

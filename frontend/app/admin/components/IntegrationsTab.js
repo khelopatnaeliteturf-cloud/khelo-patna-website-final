@@ -105,7 +105,7 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
             ) : (
                 <div className="row g-4">
                     {/* Diagnostic list */}
-                    {integrations.map((item, idx) => {
+                    {(Array.isArray(integrations) ? integrations : []).map((item, idx) => {
                         const isWhatsApp = item.name.includes('WhatsApp');
                         
                         let badgeBg = 'rgba(16, 185, 129, 0.15)';

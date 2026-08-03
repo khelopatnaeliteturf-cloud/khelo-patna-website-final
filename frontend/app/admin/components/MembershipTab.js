@@ -850,7 +850,7 @@ export default function MembershipTab({
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {selectedMemberFees.map(f => (
+                                                    {(selectedMemberFees || []).map(f => (
                                                         <tr key={f._id}>
                                                             <td style={{ fontWeight: 700 }}>{f.monthFor}</td>
                                                             <td>₹{f.amountDue}</td>
@@ -923,7 +923,7 @@ export default function MembershipTab({
                         <div className="col-12 mt-4">
                             <h5>Select Active Members to Rollover</h5>
                             <div className="border rounded p-3 bg-opacity-10 bg-white" style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                                {students.filter(s => (s.status || 'ACTIVE') === 'ACTIVE').map(student => (
+                                {students.filter(s => (s?.status || 'ACTIVE') === 'ACTIVE').map(student => (
                                     <div key={student._id} className="d-flex align-items-center gap-2 mb-2">
                                         <input 
                                             type="checkbox"

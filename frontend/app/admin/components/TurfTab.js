@@ -246,7 +246,7 @@ export default function TurfTab(props) {
                                             </div>
                                         </td></tr>
                                     ) : (
-                                        bookingsLog.map((b, idx) => {
+                                        (bookingsLog || []).map((b, idx) => {
                                             const custId = generateCustomerId(b.customerName, b.customerPhone);
                                             const initials = (b.customerName || 'W').substring(0, 2).toUpperCase();
                                             const balance = (b.totalAmount || 0) - (b.discountAmount || 0) - (b.paidAmount || 0);
@@ -735,7 +735,7 @@ export default function TurfTab(props) {
                                         No active custom closures scheduled.
                                     </div>
                                 ) : (
-                                    closuresList.map(c => {
+                                    (closuresList || []).map(c => {
                                         const startStr = new Date(c.startDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
                                         const endStr = new Date(c.endDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
                                         return (
