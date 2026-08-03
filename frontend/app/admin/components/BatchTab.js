@@ -165,7 +165,7 @@ export default function BatchTab({
                                 </tr>
                             </thead>
                             <tbody>
-                                {batchesList.length > 0 ? (
+                                {Array.isArray(batchesList) && batchesList.length > 0 ? (
                                     batchesList.map(b => (
                                         <tr key={b._id}>
                                             <td><strong>{b.name}</strong></td>
@@ -223,7 +223,7 @@ export default function BatchTab({
                                 </tr>
                             </thead>
                             <tbody>
-                                {selectedBatch.members && selectedBatch.members.length > 0 ? (
+                                {Array.isArray(selectedBatch?.members) && selectedBatch.members.length > 0 ? (
                                     selectedBatch.members.map(m => (
                                         <tr key={m._id}>
                                             <td><strong style={{ color: 'var(--primary)' }}>{m.membershipId}</strong></td>

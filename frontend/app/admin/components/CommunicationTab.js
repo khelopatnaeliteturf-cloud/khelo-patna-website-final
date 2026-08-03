@@ -130,8 +130,8 @@ export default function CommunicationTab(props) {
                             required
                         >
                             <option value="">Select recipient...</option>
-                            {allStudents.map(s => (
-                                <option key={s._id} value={s._id}>{s.name} ({s.sport.toUpperCase()} | {s.phone || s.fatherMobile})</option>
+                            {(allStudents || []).map(s => (
+                                <option key={s._id} value={s._id}>{s.name} ({s.sport?.toUpperCase()} | {s.phone || s.fatherMobile})</option>
                             ))}
                         </select>
                     </div>
@@ -326,7 +326,7 @@ export default function CommunicationTab(props) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {logs.map((log) => {
+                                    {(logs || []).map((log) => {
                                         const isEmail = log.type === 'EMAIL';
                                         return (
                                             <tr key={log._id}>

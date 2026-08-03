@@ -83,8 +83,12 @@ export default function DashboardTab(props) {
             }
         };
 
-        const chartData = revenueAnalytics.length > 0 ? revenueAnalytics.map(item => item.total) : [0, 0, 0, 0, 0, 0];
-        const chartLabels = revenueAnalytics.length > 0 ? revenueAnalytics.map(item => item.month.split(' ')[0]) : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        const safeRevenueAnalytics = Array.isArray(revenueAnalytics) ? revenueAnalytics : [];
+        const safeBookingsLog = Array.isArray(bookingsLog) ? bookingsLog : [];
+        const safeAllStudents = Array.isArray(allStudents) ? allStudents : [];
+
+        const chartData = safeRevenueAnalytics.length > 0 ? safeRevenueAnalytics.map(item => item.total) : [0, 0, 0, 0, 0, 0];
+        const chartLabels = safeRevenueAnalytics.length > 0 ? safeRevenueAnalytics.map(item => item.month.split(' ')[0]) : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         const maxVal = Math.max(...chartData);
         const chartMax = maxVal > 0 ? maxVal * 1.15 : 10000;
         const chartW = 500;
@@ -99,7 +103,7 @@ export default function DashboardTab(props) {
         const lineStr = chartPoints.map(p => `${p.x},${p.y}`).join(' ');
         const areaStr = `${chartPad.left},${chartPad.top + plotH} ${lineStr} ${chartPad.left + plotW},${chartPad.top + plotH}`;
 
-        const todayBookings = bookingsLog.filter(b => b.date === todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED');
+        const todayBookings = safeBookingsLog.filter(b => b && b.date === todayStr && b.paymentStatus !== 'CANCELLED' && b.paymentStatus !== 'FAILED');
         const todaySchedule = todayBookings.map(b => ({
             time: b.timeSlots?.[0] ? b.timeSlots[0].split('-')[0] : '06:00 AM',
             title: `${(b.sport || 'Turf').charAt(0).toUpperCase() + (b.sport || 'turf').slice(1)} Booking`,
@@ -110,7 +114,7 @@ export default function DashboardTab(props) {
         const statusColor = (s) => s === 'CONFIRMED' ? 'var(--success)' : s === 'ONGOING' ? 'var(--warning)' : 'var(--primary)';
         const statusBg = (s) => s === 'CONFIRMED' ? 'rgba(16,185,129,0.08)' : s === 'ONGOING' ? 'rgba(245,158,11,0.08)' : 'rgba(37,99,235,0.06)';
 
-        const bookingActivities = bookingsLog.slice(0, 5).map(b => ({
+        const bookingActivities = safeBookingsLog.slice(0, 5).map(b => ({
             icon: 'event_available',
             text: `Turf Booking: ${b.customerName || 'Walk-in'}`,
             sub: `${(b.sport || 'Turf').toUpperCase()} Turf · ${formatINR(b.paidAmount || b.totalPrice || 0)} paid`,
@@ -131,13 +135,13 @@ export default function DashboardTab(props) {
             .slice(0, 5);
 
         const studentColors = ['var(--info)', 'var(--success)', 'var(--warning)', 'var(--purple)'];
-        const recentAdmissions = [...allStudents]
+        const recentAdmissions = [...safeAllStudents]
             .sort((a, b) => new Date(b.admissionDate || 0) - new Date(a.admissionDate || 0))
             .slice(0, 4);
 
-        const alerts = stats?.critical_stock_items || [];
+        const alerts = Array.isArray(stats?.critical_stock_items) ? stats.critical_stock_items : [];
 
-        const barData = revenueAnalytics.length > 0 ? revenueAnalytics.map(item => item.total) : [0, 0, 0, 0, 0, 0];
+        const barData = safeRevenueAnalytics.length > 0 ? safeRevenueAnalytics.map(item => item.total) : [0, 0, 0, 0, 0, 0];
         const maxBarVal = Math.max(...barData);
 
         const statGradients = ['var(--gradient-1)', 'var(--gradient-2)', 'var(--gradient-3)', 'var(--gradient-4)', 'var(--gradient-5)'];

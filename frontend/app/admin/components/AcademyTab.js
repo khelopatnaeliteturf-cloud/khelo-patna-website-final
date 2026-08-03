@@ -92,7 +92,7 @@ export default function AcademyTab(props) {
                         <div className="card-premium">
                             <input type="text" placeholder="Search students..." className="input-premium w-100 mb-3" value={customerSearchQuery} onChange={(e) => setCustomerSearchQuery(e.target.value)} />
                             <div className="d-flex flex-column gap-2" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                                {allStudents.filter(s => s.name.toLowerCase().includes(customerSearchQuery.toLowerCase())).map(s => (
+                                {(allStudents || []).filter(s => (s?.name || '').toLowerCase().includes((customerSearchQuery || '').toLowerCase())).map(s => (
                                     <button key={s._id} className={`student-crm-list-item ${selectedCrmStudent?._id === s._id ? 'active' : ''}`} onClick={() => setSelectedCrmStudent(s)}>
                                         <div className="text-start">
                                             <strong>{s.name}</strong>
@@ -178,7 +178,7 @@ export default function AcademyTab(props) {
                             <tbody>
                                 {loadingApps ? (
                                     <tr><td colSpan="7" className="text-center p-4">Loading applications...</td></tr>
-                                ) : applications.length > 0 ? (
+                                ) : Array.isArray(applications) && applications.length > 0 ? (
                                     applications.filter(a => (a.studentName || '').toLowerCase().includes(appSearch.toLowerCase()) || (a.parentPhone || '').includes(appSearch)).map(a => (
                                         <tr key={a._id}>
                                             <td style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
@@ -247,7 +247,7 @@ export default function AcademyTab(props) {
                             <tr><th>Date</th><th>Student</th><th>Mobile</th><th>Sport</th><th>Status</th><th>Source</th><th>Action</th></tr>
                         </thead>
                         <tbody>
-                            {enquiriesList.filter(e => (e.studentName || '').toLowerCase().includes(enquirySearchQuery.toLowerCase())).map(e => (
+                            {(enquiriesList || []).filter(e => (e.studentName || '').toLowerCase().includes((enquirySearchQuery || '').toLowerCase())).map(e => (
                                 <tr key={e._id}>
                                     <td>{new Date(e.createdAt).toLocaleDateString('en-IN')}</td>
                                     <td>{e.studentName}</td>
@@ -282,7 +282,7 @@ export default function AcademyTab(props) {
                             <tr><th>Student Name</th><th>Batch Time</th><th>Status</th></tr>
                         </thead>
                         <tbody>
-                            {studentsList.map(s => (
+                            {(studentsList || []).map(s => (
                                 <tr key={s._id}>
                                     <td>{s.name}</td>
                                     <td>{s.batchTime}</td>

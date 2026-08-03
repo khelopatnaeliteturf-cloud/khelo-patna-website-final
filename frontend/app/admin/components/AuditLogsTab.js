@@ -158,7 +158,7 @@ export default function AuditLogsTab({ backendUrl, getHeaders }) {
                             <tr>
                                 <td colSpan="5" className="text-center p-4">Loading audit activity logs...</td>
                             </tr>
-                        ) : logs.length > 0 ? (
+                        ) : Array.isArray(logs) && logs.length > 0 ? (
                             logs.map(log => (
                                 <tr key={log._id}>
                                     <td style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 500 }}>

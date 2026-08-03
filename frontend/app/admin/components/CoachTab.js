@@ -107,14 +107,14 @@ export default function CoachTab({
                                 </tr>
                             </thead>
                             <tbody>
-                                {coachesList.length > 0 ? (
+                                {Array.isArray(coachesList) && coachesList.length > 0 ? (
                                     coachesList.map(c => (
                                         <tr key={c._id}>
                                             <td><strong>{c.name}</strong></td>
                                             <td>{c.phone}</td>
                                             <td>{c.email || 'N/A'}</td>
                                             <td>
-                                                {c.sports.map(s => (
+                                                {(c.sports || []).map(s => (
                                                     <span key={s} className="badge-pill bg-opacity-10 bg-info text-info me-1" style={{ textTransform: 'capitalize' }}>
                                                         {s}
                                                     </span>
