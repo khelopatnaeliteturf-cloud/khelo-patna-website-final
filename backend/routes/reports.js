@@ -31,6 +31,8 @@ router.get('/reports/dashboard', authenticateToken, authorizeRoles('RECEPTIONIST
         const branchId = req.user.branchId;
         const { start: todayStart, end: todayEnd } = getTodayRange();
         const todayStr = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
         const [
             todayBookingsCount,
