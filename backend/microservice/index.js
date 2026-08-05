@@ -149,12 +149,12 @@ async function initWhatsApp() {
 
         const { state, saveCreds } = await useSupabaseAuthState();
         const baileys = await import('@whiskeysockets/baileys');
-        const makeWASocket = baileys.default;
-        const DisconnectReason = baileys.DisconnectReason;
+        const makeWASocket = baileys.default?.default || baileys.default || baileys.makeWASocket;
+        const DisconnectReason = baileys.DisconnectReason || baileys.default?.DisconnectReason;
         const { Boom } = await import('@hapi/boom');
         const Browsers = baileys.Browsers || baileys.default?.Browsers;
 
-        const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1015901307], isLatest: false }));
+        const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1017531287], isLatest: false }));
         console.log(`Using WhatsApp Web Version: ${Array.isArray(version) ? version.join('.') : version} (isLatest: ${isLatest})`);
 
         const msgStore = new Map();
@@ -185,9 +185,9 @@ async function initWhatsApp() {
 
             if (connection === 'close') {
                 const statusCode = (lastDisconnect?.error instanceof Boom) ? lastDisconnect.error.output?.statusCode : lastDisconnect?.error?.output?.statusCode;
-                const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+                const isLoggedOut = statusCode === DisconnectReason?.loggedOut || statusCode === 401 || statusCode === 403 || statusCode === 405 || statusCode === 408;
                 
-                console.log(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${!shouldReconnect}`);
+                console.log(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${isLoggedOut}`);
                 connectionStatus = 'DISCONNECTED';
 
                 if (isLoggedOut || statusCode === 405) {

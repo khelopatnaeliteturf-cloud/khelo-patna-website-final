@@ -362,10 +362,15 @@ async function initWhatsApp() {
             if (m.type !== 'notify') return;
 
             for (const message of m.messages) {
-                // Ignore outgoing messages sent by the bot itself
-                if (message.key.fromMe) continue;
-                
                 const jid = message.key.remoteJid || '';
+                const msg = message.message?.ephemeralMessage?.message || message.message?.viewOnceMessage?.message || message.message;
+                const text = (msg?.conversation || msg?.extendedTextMessage?.text || msg?.imageMessage?.caption || '').trim();
+
+                // Ignore outgoing messages sent by the bot itself, unless it's a staff dot override command (. / .. / ...)
+                if (message.key.fromMe && text !== '.' && text !== '..' && text !== '...') {
+                    continue;
+                }
+                
                 // Strict Group Filter: Never respond to group chats (@g.us), status broadcasts, or group participant messages
                 if (!jid || jid.endsWith('@g.us') || jid.includes('@g.us') || jid.includes('-') || jid === 'status@broadcast' || message.key.participant) {
                     continue;
