@@ -372,11 +372,12 @@ app.post('/disconnect', authSecret, async (req, res) => {
     try {
         console.log('Resetting WhatsApp session credentials...');
         await dbPool.query('DELETE FROM whatsapp_session');
+        botEnabled = true; // Ensure AI Auto-Reply Bot is ALWAYS ACTIVE on reconnect
         if (sock) {
             try { sock.end(); } catch (e) {}
         }
         initWhatsApp();
-        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.' });
+        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.', bot_enabled: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

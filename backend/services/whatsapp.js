@@ -405,6 +405,7 @@ async function initWhatsApp() {
  * Useful for the admin dashboard "Reconnect" button.
  */
 function forceReconnect() {
+    botEnabled = true; // Ensure AI Auto-Reply Bot is ALWAYS ACTIVE on reconnect
     if (process.env.WA_SERVICE_URL) {
         lastReconnectTime = new Date().toISOString();
         console.log('[WhatsApp Service] Triggering remote disconnect/reconnect via microservice...');
