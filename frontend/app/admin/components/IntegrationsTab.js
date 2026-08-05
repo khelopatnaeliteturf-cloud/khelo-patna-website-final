@@ -16,6 +16,13 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
     useEffect(() => {
         loadIntegrations();
         loadWhatsAppStatus();
+
+        // Poll WhatsApp status every 3 seconds to keep QR code live and fresh
+        const interval = setInterval(() => {
+            loadWhatsAppStatus();
+        }, 3000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const loadIntegrations = async () => {

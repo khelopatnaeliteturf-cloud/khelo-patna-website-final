@@ -116,10 +116,10 @@ async function useSupabaseAuthState(dbPool) {
         }
     };
 
-    let creds = await readData('creds');
+    let creds = await readData('creds:main') || await readData('creds');
     if (!creds || !creds.registered) {
         creds = initAuthCreds();
-        await writeData('creds', creds);
+        await writeData('creds:main', creds);
     }
 
     return {
@@ -129,7 +129,7 @@ async function useSupabaseAuthState(dbPool) {
                 get: async (type, ids) => {
                     const data = {};
                     for (const id of ids) {
-                        let value = await readData(`${type}-${id}`);
+                        let value = await readData(`${type}:${id}`) || await readData(`${type}-${id}`);
                         if (value) {
                             if (type === 'app-state-sync-key') {
                                 const baileys = await import('@whiskeysockets/baileys');
@@ -144,7 +144,7 @@ async function useSupabaseAuthState(dbPool) {
                     for (const type in data) {
                         for (const id in data[type]) {
                             const value = data[type][id];
-                            const fileKey = `${type}-${id}`;
+                            const fileKey = `${type}:${id}`;
                             if (value) {
                                 await writeData(fileKey, value);
                             } else {
@@ -156,7 +156,7 @@ async function useSupabaseAuthState(dbPool) {
             }
         },
         saveCreds: async () => {
-            await writeData('creds', creds);
+            await writeData('creds:main', creds);
         }
     };
 }
