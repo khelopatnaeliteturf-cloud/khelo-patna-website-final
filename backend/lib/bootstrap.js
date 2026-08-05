@@ -203,7 +203,8 @@ async function ensureDefaultTenant() {
             ADD COLUMN IF NOT EXISTS coupon_code VARCHAR(50) DEFAULT NULL,
             ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00,
             ADD COLUMN IF NOT EXISTS payment_link TEXT DEFAULT NULL,
-            ADD COLUMN IF NOT EXISTS booked_by VARCHAR(255) DEFAULT 'Online / WhatsApp Bot';
+            ADD COLUMN IF NOT EXISTS booked_by VARCHAR(255) DEFAULT 'Online / WhatsApp Bot',
+            ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT FALSE;
         `);
         console.log('  Bootstrap: bookings table columns checked/added');
 

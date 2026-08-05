@@ -13,14 +13,25 @@ async function checkAndSendBookingReminders() {
         const currentHour = now.getHours();
 
         // Fetch today's active bookings that haven't received a reminder yet
-        const upcomingBookings = await Booking.find({
-            date: todayStr,
-            paymentStatus: { $in: ['SUCCESS', 'COMPLETED'] },
-            reminderSent: { $ne: true }
-        });
+        let upcomingBookings = [];
+        try {
+            upcomingBookings = await Booking.find({
+                date: todayStr,
+                paymentStatus: { $in: ['SUCCESS', 'COMPLETED'] },
+                reminderSent: { $ne: true }
+            });
+        } catch (queryErr) {
+            // Fallback if reminderSent column doesn't exist yet on PostgreSQL table
+            const allTodayBookings = await Booking.find({
+                date: todayStr,
+                paymentStatus: { $in: ['SUCCESS', 'COMPLETED'] }
+            });
+            upcomingBookings = (allTodayBookings || []).filter(b => !b.reminderSent && !b.paymentDetails?.reminderSent);
+        }
 
         for (const b of upcomingBookings) {
-            if (!b.timeSlots || b.timeSlots.length === 0 || !b.customerPhone) continue;
+            if (!b || !b.timeSlots || b.timeSlots.length === 0 || !b.customerPhone) continue;
+            if (b.reminderSent || b.paymentDetails?.reminderSent) continue;
 
             // Parse earliest slot starting hour (e.g. "20-21" -> 20)
             const firstSlot = b.timeSlots[0];
@@ -36,7 +47,7 @@ async function checkAndSendBookingReminders() {
                 
                 // Format slots to human readable
                 const slotText = (b.timeSlots || []).map(s => {
-                    const parts = s.split('-');
+                    const parts = String(s).split('-');
                     const start = parseInt(parts[0], 10);
                     const end = parseInt(parts[1], 10);
                     const formatH = (h) => {
@@ -57,8 +68,13 @@ async function checkAndSendBookingReminders() {
                             `Please reach 10 minutes prior to your slot time. Have a great match! 🏆`;
 
                 await whatsappService.sendMessage(b.customerPhone, msg);
-                b.reminderSent = true;
-                await b.save();
+                try {
+                    b.reminderSent = true;
+                    b.paymentDetails = { ...(b.paymentDetails || {}), reminderSent: true };
+                    await b.save();
+                } catch (saveErr) {
+                    console.warn('[Reminder Service] Flag set note:', saveErr.message);
+                }
                 console.log(`[Reminder Service] Sent 2-hour WhatsApp reminder to ${b.customerName} (${b.customerPhone}) for slot ${slotText}.`);
             }
         }
