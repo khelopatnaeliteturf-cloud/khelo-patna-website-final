@@ -164,7 +164,7 @@ async function initWhatsApp() {
             logger: pino({ level: 'silent' }),
             printQRInTerminal: false,
             auth: state,
-            browser: (Browsers && Browsers.ubuntu) ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '110.0.5563.146'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '124.0.0.0'],
             syncFullHistory: false,
             getMessage: async (key) => {
                 if (key?.id && msgStore.has(key.id)) {

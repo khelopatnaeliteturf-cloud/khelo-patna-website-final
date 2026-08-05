@@ -289,7 +289,7 @@ async function initWhatsApp() {
 
         sock = makeWASocket({
             version,
-            browser: Browsers ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '20.0.04'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '124.0.0.0'],
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
