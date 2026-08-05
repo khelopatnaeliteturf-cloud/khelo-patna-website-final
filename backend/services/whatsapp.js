@@ -117,7 +117,7 @@ async function useSupabaseAuthState(dbPool) {
     };
 
     let creds = await readData('creds');
-    if (!creds) {
+    if (!creds || !creds.registered) {
         creds = initAuthCreds();
         await writeData('creds', creds);
     }
@@ -289,11 +289,15 @@ async function initWhatsApp() {
 
         sock = makeWASocket({
             version,
-            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '124.0.0.0'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Chrome') : ['Mac OS', 'Chrome', '14.4.1'],
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
-            defaultQueryTimeoutMs: undefined,
+            connectTimeoutMs: 60000,
+            defaultQueryTimeoutMs: 60000,
+            keepAliveIntervalMs: 30000,
+            markOnlineOnConnect: true,
+            syncFullHistory: false,
             agent: agent,
             fetchAgent: agent
         });

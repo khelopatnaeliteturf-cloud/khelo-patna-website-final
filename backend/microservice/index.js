@@ -104,7 +104,7 @@ async function useSupabaseAuthState() {
     };
 
     const credsData = await readData('creds', 'main');
-    const creds = credsData || initAuthCreds();
+    const creds = (credsData && credsData.registered) ? credsData : initAuthCreds();
 
     return {
         state: {
@@ -142,10 +142,21 @@ async function useSupabaseAuthState() {
     };
 }
 
+async function loadBotSetting() {
+    try {
+        const res = await dbPool.query("SELECT value FROM whatsapp_session WHERE key = 'setting:bot_enabled'");
+        if (res.rows.length > 0) {
+            botEnabled = res.rows[0].value === 'true';
+            console.log(`🤖 Loaded AI Bot setting from DB: ${botEnabled ? 'ENABLED' : 'DISABLED'}`);
+        }
+    } catch (e) {}
+}
+
 async function initWhatsApp() {
     try {
         console.log('Initializing Standalone Baileys WhatsApp Service...');
         connectionStatus = 'CONNECTING';
+        await loadBotSetting();
 
         const { state, saveCreds } = await useSupabaseAuthState();
         const baileys = await import('@whiskeysockets/baileys');
@@ -164,7 +175,11 @@ async function initWhatsApp() {
             logger: pino({ level: 'silent' }),
             printQRInTerminal: false,
             auth: state,
-            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '124.0.0.0'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Chrome') : ['Mac OS', 'Chrome', '14.4.1'],
+            connectTimeoutMs: 60000,
+            defaultQueryTimeoutMs: 60000,
+            keepAliveIntervalMs: 30000,
+            markOnlineOnConnect: true,
             syncFullHistory: false,
             getMessage: async (key) => {
                 if (key?.id && msgStore.has(key.id)) {
