@@ -341,7 +341,7 @@ async function initWhatsApp() {
                     // Logged out: clean session from DB and reset
                     console.log('Logged out from WhatsApp. Resetting session credentials...');
                     try {
-                        await dbPool.query('DELETE FROM whatsapp_session');
+                        await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
                     } catch (e) {
                         console.error('Error cleaning session from Supabase:', e);
                     }
@@ -405,7 +405,6 @@ async function initWhatsApp() {
  * Useful for the admin dashboard "Reconnect" button.
  */
 function forceReconnect() {
-    botEnabled = true; // Ensure AI Auto-Reply Bot is ALWAYS ACTIVE on reconnect
     if (process.env.WA_SERVICE_URL) {
         lastReconnectTime = new Date().toISOString();
         console.log('[WhatsApp Service] Triggering remote disconnect/reconnect via microservice...');

@@ -185,15 +185,17 @@ async function initWhatsApp() {
 
             if (connection === 'close') {
                 const statusCode = (lastDisconnect?.error instanceof Boom) ? lastDisconnect.error.output?.statusCode : lastDisconnect?.error?.output?.statusCode;
-                const isLoggedOut = statusCode === DisconnectReason?.loggedOut || statusCode === 401 || statusCode === 403 || statusCode === 405 || statusCode === 408;
+                // Only 401 (Logged Out) and 403 (Forbidden) mean true session invalidation.
+                // 408 (Timeout), 428 (Connection Closed), 515 (Restart Required) are temporary network drops.
+                const isLoggedOut = statusCode === DisconnectReason?.loggedOut || statusCode === 401 || statusCode === 403;
                 
                 console.log(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${isLoggedOut}`);
                 connectionStatus = 'DISCONNECTED';
 
-                if (isLoggedOut || statusCode === 405) {
-                    console.log(`StatusCode ${statusCode} detected. Cleaning stale session credentials from database...`);
+                if (isLoggedOut) {
+                    console.log(`StatusCode ${statusCode} detected (Logged Out). Cleaning auth session credentials from database...`);
                     try {
-                        await dbPool.query('DELETE FROM whatsapp_session');
+                        await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
                     } catch (e) {
                         console.error('Error wiping session:', e);
                     }
@@ -284,10 +286,19 @@ app.get('/status', authSecret, (req, res) => {
     });
 });
 
-app.post('/toggle-bot', authSecret, (req, res) => {
+app.post('/toggle-bot', authSecret, async (req, res) => {
     const { enabled } = req.body;
     botEnabled = Boolean(enabled);
     console.log(`🤖 [WhatsApp Microservice] Auto-Bot toggled to: ${botEnabled ? 'ENABLED' : 'DISABLED'}`);
+    try {
+        await dbPool.query(
+            `INSERT INTO whatsapp_session (key, value) VALUES ('setting:bot_enabled', $1)
+             ON CONFLICT (key) DO UPDATE SET value = $1`,
+            [String(botEnabled)]
+        );
+    } catch (e) {
+        console.error('Error saving bot setting to DB:', e);
+    }
     res.json({ success: true, bot_enabled: botEnabled });
 });
 
@@ -342,13 +353,12 @@ app.post('/send-text', authSecret, async (req, res) => {
 app.post('/disconnect', authSecret, async (req, res) => {
     try {
         console.log('Resetting WhatsApp session credentials...');
-        await dbPool.query('DELETE FROM whatsapp_session');
-        botEnabled = true; // Ensure AI Auto-Reply Bot is ALWAYS ACTIVE on reconnect
+        await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
         if (sock) {
             try { sock.end(); } catch (e) {}
         }
         initWhatsApp();
-        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.', bot_enabled: true });
+        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.', bot_enabled: botEnabled });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
