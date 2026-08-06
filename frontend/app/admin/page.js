@@ -553,6 +553,14 @@ export default function AdminDashboard() {
     const [newAdjustmentRequest, setNewAdjustmentRequest] = useState({ studentId: '', amount: '', reason: '' });
     const [activeReceipt, setActiveReceipt] = useState(null);
 
+    // Sub-tab & CRM states
+    const [academySubTab, setAcademySubTab] = useState('students');
+    const [paymentsSubTab, setPaymentsSubTab] = useState('all');
+    const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+    const [selectedCrmStudent, setSelectedCrmStudent] = useState(null);
+    const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+    const [enquirySearchQuery, setEnquirySearchQuery] = useState('');
+
     // Manage Members States
     const [allStudents, setAllStudents] = useState([]);
     const [memberFilters, setMemberFilters] = useState({
