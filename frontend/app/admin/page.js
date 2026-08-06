@@ -529,10 +529,7 @@ export default function AdminDashboard() {
             const saved = localStorage.getItem('kp_adjustment_requests');
             if (saved) return JSON.parse(saved);
         }
-        return [
-            { id: 'adj1', studentId: 'default_stud_1', studentName: 'Aarav Sharma', amount: 500, reason: 'Late admission waiver request', status: 'PENDING' },
-            { id: 'adj2', studentId: 'default_stud_2', studentName: 'Kabir Verma', amount: 300, reason: 'Medical absence credit', status: 'APPROVED' }
-        ];
+        return [];
     });
 
     const [feeRemindersLog, setFeeRemindersLog] = useState(() => {
@@ -4314,8 +4311,9 @@ export default function AdminDashboard() {
         );
     }
 
-    const pendingWaivers = adjustmentRequests.filter(r => r.status === 'PENDING').length;
-    const totalNotifications = (stats?.critical_stock_count || 0) + pendingWaivers;
+    const actualLowStockCount = Array.isArray(inventoryItems) ? inventoryItems.filter(item => (item.availableQuantity || 0) <= 5).length : 0;
+    const pendingWaivers = Array.isArray(adjustmentRequests) ? adjustmentRequests.filter(r => r.status === 'PENDING').length : 0;
+    const totalNotifications = actualLowStockCount + pendingWaivers;
     const pageMeta = {
         dashboard: {
             title: 'Operations Command',
@@ -6491,7 +6489,22 @@ export default function AdminDashboard() {
                             <span>WA BOT</span>
                         </div>
 
-                        <button className="topbar-notification" title="Notifications" onClick={() => { setActiveTab('inventory-management'); setActiveSidebarKey('stock-alerts'); }}>
+                        <button 
+                            className="topbar-notification" 
+                            title={totalNotifications > 0 ? `${totalNotifications} active alert(s)` : "No active alerts"} 
+                            onClick={() => {
+                                if (actualLowStockCount > 0) {
+                                    setActiveTab('inventory-management');
+                                    setActiveSidebarKey('stock-alerts');
+                                } else if (pendingWaivers > 0) {
+                                    setActiveTab('academy-management');
+                                    setActiveSidebarKey('fee-waivers');
+                                } else {
+                                    setActiveTab('inventory-management');
+                                    setActiveSidebarKey('stock-alerts');
+                                }
+                            }}
+                        >
                             <span className="material-icons-outlined" style={{ fontSize: '20px' }}>notifications</span>
                             {totalNotifications > 0 && <span className="notification-badge">{totalNotifications}</span>}
                         </button>
