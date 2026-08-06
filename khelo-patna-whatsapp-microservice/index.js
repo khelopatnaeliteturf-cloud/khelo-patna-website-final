@@ -187,12 +187,14 @@ async function initWhatsApp() {
             logger: pino({ level: 'silent' }),
             printQRInTerminal: false,
             auth: state,
-            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Chrome') : ['Mac OS', 'Chrome', '14.4.1'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '14.4.1'],
             connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 60000,
             keepAliveIntervalMs: 30000,
             markOnlineOnConnect: true,
             syncFullHistory: false,
+            shouldSyncHistory: () => false,
+            fireInitQueries: true,
             getMessage: async (key) => {
                 if (key?.id && msgStore.has(key.id)) {
                     return msgStore.get(key.id)?.message;

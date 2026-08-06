@@ -289,7 +289,7 @@ async function initWhatsApp() {
 
         sock = makeWASocket({
             version,
-            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Chrome') : ['Mac OS', 'Chrome', '14.4.1'],
+            browser: (Browsers && Browsers.macOS) ? Browsers.macOS('Desktop') : ['Mac OS', 'Chrome', '14.4.1'],
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress detailed logs
@@ -298,6 +298,8 @@ async function initWhatsApp() {
             keepAliveIntervalMs: 30000,
             markOnlineOnConnect: true,
             syncFullHistory: false,
+            shouldSyncHistory: () => false,
+            fireInitQueries: true,
             agent: agent,
             fetchAgent: agent
         });
