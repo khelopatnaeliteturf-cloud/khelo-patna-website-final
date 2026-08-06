@@ -6503,11 +6503,10 @@ export default function AdminDashboard() {
                                     setActiveTab('inventory-management');
                                     setActiveSidebarKey('stock-alerts');
                                 } else if (pendingWaivers > 0) {
-                                    setActiveTab('academy-management');
-                                    setActiveSidebarKey('fee-waivers');
+                                    setActiveTab('membership-billing');
+                                    setPaymentsSubTab('waivers');
                                 } else {
-                                    setActiveTab('inventory-management');
-                                    setActiveSidebarKey('stock-alerts');
+                                    setSuccessMessage("No active alerts requiring attention.");
                                 }
                             }}
                         >
@@ -6619,7 +6618,20 @@ export default function AdminDashboard() {
                                 <span className={`status-dot ${whatsappStatus.status === 'CONNECTED' ? 'bg-success' : 'bg-danger'}`}></span>
                                 WhatsApp {whatsappStatus.status === 'CONNECTED' ? 'online' : 'offline'}
                             </span>
-                            <span className="workspace-chip">
+                            <span 
+                                className="workspace-chip" 
+                                style={{ cursor: 'pointer' }}
+                                title="Click to view active alert details"
+                                onClick={() => {
+                                    if (actualLowStockCount > 0) {
+                                        setActiveTab('inventory-management');
+                                        setActiveSidebarKey('stock-alerts');
+                                    } else if (pendingWaivers > 0) {
+                                        setActiveTab('membership-billing');
+                                        setPaymentsSubTab('waivers');
+                                    }
+                                }}
+                            >
                                 <span className="material-icons-outlined" style={{ fontSize: '16px' }}>notifications</span>
                                 <strong>{totalNotifications}</strong> alerts
                             </span>
