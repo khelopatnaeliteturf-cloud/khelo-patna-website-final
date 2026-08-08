@@ -22,7 +22,7 @@ import AdmissionStudio from './components/AdmissionStudio';
 import CouponsTab from './components/CouponsTab';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
-import { APP_VERSION, BUILD_NUMBER, GIT_COMMIT_HASH, RELEASE_NAME, LAST_UPDATED } from '../config/version';
+import { APP_VERSION } from '../config/version';
 import DashboardTab from './components/DashboardTab';
 import TurfTab from './components/TurfTab';
 import AcademyTab from './components/AcademyTab';
@@ -6458,8 +6458,8 @@ export default function AdminDashboard() {
                 <div className="sidebar-footer">
                     {!sidebarCollapsed && (
                         <div style={{ padding: '0 4px 8px 4px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span>System Release</span>
-                            <span style={{ fontWeight: 700, color: 'var(--emerald)', fontFamily: 'monospace' }}>{APP_VERSION} ({GIT_COMMIT_HASH})</span>
+                            <span>System Version</span>
+                            <span style={{ fontWeight: 700, color: 'var(--emerald)', fontFamily: 'monospace' }}>{APP_VERSION}</span>
                         </div>
                     )}
                     {sidebarCollapsed ? (
@@ -6502,7 +6502,7 @@ export default function AdminDashboard() {
                             <span>WA BOT</span>
                         </div>
 
-                        <div className="status-badge d-none d-md-flex" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', color: 'var(--emerald)', cursor: 'pointer' }} title={`System Release: ${RELEASE_NAME} (${LAST_UPDATED}) | Commit: ${GIT_COMMIT_HASH}`} onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }}>
+                        <div className="status-badge d-none d-md-flex" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', color: 'var(--emerald)', cursor: 'pointer' }} title={`System Version: ${APP_VERSION}`} onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }}>
                             <span className="material-icons-outlined" style={{ fontSize: '13px' }}>verified</span>
                             <span>{APP_VERSION}</span>
                         </div>
@@ -6630,9 +6630,9 @@ export default function AdminDashboard() {
                                 <span className={`status-dot ${whatsappStatus.status === 'CONNECTED' ? 'bg-success' : 'bg-danger'}`}></span>
                                 WhatsApp {whatsappStatus.status === 'CONNECTED' ? 'online' : 'offline'}
                             </span>
-                            <span className="workspace-chip" title={`Build #${BUILD_NUMBER} • Git Commit: ${GIT_COMMIT_HASH}`} onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }} style={{ cursor: 'pointer' }}>
+                            <span className="workspace-chip" title="System Version" onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }} style={{ cursor: 'pointer' }}>
                                 <span className="material-icons-outlined" style={{ fontSize: '15px', color: 'var(--emerald)' }}>verified</span>
-                                <strong>{APP_VERSION}</strong> ({GIT_COMMIT_HASH})
+                                <strong>{APP_VERSION}</strong>
                             </span>
                             <span 
                                 className="workspace-chip" 
