@@ -1,6 +1,5 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
+import { APP_VERSION, BUILD_NUMBER, GIT_COMMIT_HASH, RELEASE_NAME, LAST_UPDATED } from '../../config/version';
 
 export default function IntegrationsTab({ backendUrl, getHeaders }) {
     const [integrations, setIntegrations] = useState([]);
@@ -285,6 +284,50 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                             </div>
                         </div>
                     )}
+
+                    {/* System Version & Deployment Metadata Panel */}
+                    <div className="col-12 mt-4">
+                        <div className="card-premium" style={{ background: 'rgba(16, 185, 129, 0.03)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div>
+                                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--emerald)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                        <span className="material-icons-outlined">verified</span>
+                                        <span>System Version & Build Info</span>
+                                    </h4>
+                                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                                        Production build details and deployed GitHub commit specifications.
+                                    </p>
+                                </div>
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="badge-stripe badge-success" style={{ fontSize: '0.78rem', padding: '6px 12px', fontWeight: 700 }}>
+                                        {APP_VERSION}
+                                    </span>
+                                    <span className="badge-stripe" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-main)', fontSize: '0.78rem', padding: '6px 12px', fontFamily: 'monospace' }}>
+                                        Commit: {GIT_COMMIT_HASH}
+                                    </span>
+                                </div>
+                            </div>
+                            <hr style={{ borderColor: 'rgba(255,255,255,0.08)', margin: '14px 0' }} />
+                            <div className="row g-3" style={{ fontSize: '0.82rem' }}>
+                                <div className="col-md-3 col-6">
+                                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Release Channel</span>
+                                    <strong style={{ color: 'var(--text-main)' }}>{RELEASE_NAME}</strong>
+                                </div>
+                                <div className="col-md-3 col-6">
+                                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Build Number</span>
+                                    <strong style={{ color: 'var(--text-main)' }}>#{BUILD_NUMBER}</strong>
+                                </div>
+                                <div className="col-md-3 col-6">
+                                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Deployment Date</span>
+                                    <strong style={{ color: 'var(--text-main)' }}>{LAST_UPDATED}</strong>
+                                </div>
+                                <div className="col-md-3 col-6">
+                                    <span style={{ color: 'var(--text-muted)', display: 'block' }}>Environment</span>
+                                    <strong style={{ color: 'var(--emerald)' }}>Vercel Production (Live)</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

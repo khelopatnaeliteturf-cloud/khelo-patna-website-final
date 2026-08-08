@@ -22,6 +22,7 @@ import AdmissionStudio from './components/AdmissionStudio';
 import CouponsTab from './components/CouponsTab';
 import { getBackendUrl } from '../lib/backendUrl';
 import { getDefaultTabForRole, ROLE_LABELS, ROLE_PERMISSIONS, canRegisterStaff } from '../../lib/roles';
+import { APP_VERSION, BUILD_NUMBER, GIT_COMMIT_HASH, RELEASE_NAME, LAST_UPDATED } from '../config/version';
 import DashboardTab from './components/DashboardTab';
 import TurfTab from './components/TurfTab';
 import AcademyTab from './components/AcademyTab';
@@ -6455,8 +6456,14 @@ export default function AdminDashboard() {
                 )}
 
                 <div className="sidebar-footer">
+                    {!sidebarCollapsed && (
+                        <div style={{ padding: '0 4px 8px 4px', fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span>System Release</span>
+                            <span style={{ fontWeight: 700, color: 'var(--emerald)', fontFamily: 'monospace' }}>{APP_VERSION} ({GIT_COMMIT_HASH})</span>
+                        </div>
+                    )}
                     {sidebarCollapsed ? (
-                        <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', width: '48px', height: '48px' }} onClick={handleSignOut} title="Sign Out">
+                        <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', width: '48px', height: '48px' }} onClick={handleSignOut} title={`Sign Out (${APP_VERSION})`}>
                             <span className="material-icons-outlined" style={{ fontSize: '18px' }}>logout</span>
                         </button>
                     ) : (
@@ -6493,6 +6500,11 @@ export default function AdminDashboard() {
                         <div className="status-badge">
                             <span className={`status-dot ${whatsappStatus.status === 'CONNECTED' ? 'bg-success' : 'bg-danger'}`}></span>
                             <span>WA BOT</span>
+                        </div>
+
+                        <div className="status-badge d-none d-md-flex" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', color: 'var(--emerald)', cursor: 'pointer' }} title={`System Release: ${RELEASE_NAME} (${LAST_UPDATED}) | Commit: ${GIT_COMMIT_HASH}`} onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }}>
+                            <span className="material-icons-outlined" style={{ fontSize: '13px' }}>verified</span>
+                            <span>{APP_VERSION}</span>
                         </div>
 
                         <button 
@@ -6617,6 +6629,10 @@ export default function AdminDashboard() {
                             <span className="workspace-chip">
                                 <span className={`status-dot ${whatsappStatus.status === 'CONNECTED' ? 'bg-success' : 'bg-danger'}`}></span>
                                 WhatsApp {whatsappStatus.status === 'CONNECTED' ? 'online' : 'offline'}
+                            </span>
+                            <span className="workspace-chip" title={`Build #${BUILD_NUMBER} • Git Commit: ${GIT_COMMIT_HASH}`} onClick={() => { setActiveTab('integrations'); setActiveSidebarKey('integrations'); }} style={{ cursor: 'pointer' }}>
+                                <span className="material-icons-outlined" style={{ fontSize: '15px', color: 'var(--emerald)' }}>verified</span>
+                                <strong>{APP_VERSION}</strong> ({GIT_COMMIT_HASH})
                             </span>
                             <span 
                                 className="workspace-chip" 
