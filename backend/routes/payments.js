@@ -9,6 +9,7 @@ const Tenant = require('../models/Tenant');
 const Branch = require('../models/Branch');
 const AuditLog = require('../models/AuditLog');
 const Coupon = require('../models/Coupon');
+const TurfSettings = require('../models/TurfSettings');
 const { createOrder, verifyPayment: verifyCFPayment } = require('../services/cashfree');
 const { createPhonePeOrder, verifyPhonePePayment, verifyChecksum: verifyPPChecksum } = require('../services/phonepe');
 const { sendWhatsAppMessage } = require('../services/whatsapp');
@@ -131,6 +132,38 @@ Thank you for choosing KheloPatna! 🏆`;
         await sendBookingInvoiceEmail(booking);
     } catch (e) {
         console.error('Error sending booking email:', e);
+    }
+
+    // Live Admin Mobile Notification (WhatsApp Alert to Turf Owner / Admin)
+    try {
+        let adminPhone = process.env.ADMIN_ALERT_PHONE || process.env.LOW_STOCK_ALERT_PHONE;
+        if (!adminPhone) {
+            const settings = await TurfSettings.findOne({ tenantId: booking.tenantId || 'default' });
+            adminPhone = settings?.contactPhone || settings?.whatsappPhone || '9709701400';
+        }
+        if (adminPhone) {
+            const adminAlertText = `🚨 *NEW TURF BOOKING ALERT!* 🚨
+
+A new booking has just been confirmed!
+
+👤 *Customer*: ${booking.customerName} (${booking.customerPhone || 'N/A'})
+🏟️ *Sport*: ${booking.sport ? booking.sport.toUpperCase() : 'TURF'}
+📅 *Date*: ${booking.date}
+⏰ *Slots*: ${formattedTiming}
+💰 *Paid*: ₹${advancePaid} (Balance Due: ₹${balanceDue})
+💳 *Payment Mode*: ${booking.paymentMethod || (booking.paymentStatus === 'PAID' ? 'Online' : 'Advance')}
+🆔 *Order ID*: ${booking.orderId}
+
+View in Admin Portal: https://khelopatna.in/admin`;
+
+            const cleanAdminPhone = String(adminPhone).replace(/\D/g, '').slice(-10);
+            const cleanCustomerPhone = String(booking.customerPhone || '').replace(/\D/g, '').slice(-10);
+            if (cleanAdminPhone !== cleanCustomerPhone) {
+                await sendWhatsAppMessage(adminPhone, adminAlertText);
+            }
+        }
+    } catch (adminWaErr) {
+        console.error('Error sending Admin Live WhatsApp Booking Alert:', adminWaErr);
     }
 }
 
