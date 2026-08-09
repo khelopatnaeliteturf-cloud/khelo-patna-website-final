@@ -98,9 +98,12 @@ async function sendLiveBookingPushNotification(booking) {
             }
         });
 
-        await Promise.allSettled(pushPromises);
+        const results = await Promise.allSettled(pushPromises);
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        return { success: true, totalSubscriptions: subscriptions.length, successCount };
     } catch (error) {
         console.error('[WebPush] Failed to dispatch push notifications:', error);
+        return { success: false, error: error.message };
     }
 }
 

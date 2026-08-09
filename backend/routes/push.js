@@ -32,7 +32,7 @@ router.post('/push/subscribe', async (req, res) => {
 // POST /api/push/test — send test push notification
 router.post('/push/test', async (req, res) => {
     try {
-        await sendLiveBookingPushNotification({
+        const result = await sendLiveBookingPushNotification({
             customerName: 'Test Booking',
             customerPhone: '9709701400',
             sport: 'cricket',
@@ -41,7 +41,7 @@ router.post('/push/test', async (req, res) => {
             paidAmount: 1200,
             orderId: 'TEST_' + Date.now()
         });
-        res.json({ success: true, message: 'Test push notification dispatched!' });
+        res.json({ success: true, message: 'Test push notification dispatched!', result });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

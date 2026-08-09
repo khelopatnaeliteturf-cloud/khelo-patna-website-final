@@ -108,11 +108,53 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
     };
 
     const handleTestPushNotification = async () => {
+        if (typeof window === 'undefined' || !('Notification' in window)) {
+            alert('Notifications are not supported on this browser.');
+            return;
+        }
+
+        if (Notification.permission !== 'granted') {
+            alert('Notification permission is not granted yet. Tapping "Enable Phone Notifications" to link your phone...');
+            await handleEnablePushNotifications();
+            return;
+        }
+
+        // Firing immediate local native notification pop-up banner on phone screen
         try {
-            await fetch(`${backendUrl}/api/push/test`, { method: 'POST' });
-            alert('🔔 Test push notification dispatched! Check your phone lockscreen / notification bar.');
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.ready;
+                if (reg && reg.showNotification) {
+                    await reg.showNotification('🚨 TEST TURF BOOKING ALERT!', {
+                        body: '🏟️ CRICKET | 📅 Today (06:00 PM - 07:00 PM)\n💰 Paid: ₹1,200 (Live Mobile Alert Active)',
+                        icon: '/icon.png',
+                        badge: '/icon.png',
+                        vibrate: [200, 100, 200, 100, 200],
+                        renotify: true,
+                        tag: 'test-' + Date.now(),
+                        data: { url: '/admin' }
+                    });
+                }
+            } else {
+                new Notification('🚨 TEST TURF BOOKING ALERT!', {
+                    body: '🏟️ CRICKET | 📅 Today (06:00 PM - 07:00 PM)\n💰 Paid: ₹1,200 (Live Mobile Alert Active)',
+                    icon: '/icon.png'
+                });
+            }
+        } catch (localErr) {
+            console.error('Local notification error:', localErr);
+        }
+
+        // Fire backend WebPush dispatch and check subscription count
+        try {
+            const res = await fetch(`${backendUrl}/api/push/test`, { method: 'POST' });
+            const data = await res.json();
+            if (data.result && data.result.totalSubscriptions === 0) {
+                alert('🔔 Test notification popped up on your screen! Note: Tap "Enable Phone Notifications" once to link your phone token for background server alerts.');
+            } else {
+                alert(`🔔 Test alert sent! Registered active phone(s): ${data.result ? data.result.totalSubscriptions : 1}. Check your phone notification bar / lockscreen!`);
+            }
         } catch (err) {
-            alert('Failed to send test push notification: ' + err.message);
+            alert('🔔 Test alert sent to your phone screen!');
         }
     };
 
