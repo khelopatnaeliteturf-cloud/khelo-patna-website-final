@@ -171,6 +171,7 @@ const financeRoutes = require('./routes/finance');
 const reviewsRoutes = require('./routes/reviews');
 const scoreboardsRoutes = require('./routes/scoreboards');
 const tournamentsRoutes = require('./routes/tournaments');
+const pushRoutes = require('./routes/push');
 
 // Apply Routes
 app.use('/api', authRoutes);
@@ -178,6 +179,7 @@ app.use('/api', slotsRoutes);
 app.use('/api', paymentsRoutes);
 app.use('/api', academyRoutes);
 app.use('/api', inventoryRoutes);
+app.use('/api', pushRoutes);
 app.use('/api', checkinRoutes);
 app.use('/api', reportsRoutes);
 app.use('/api', uploadRoutes);

@@ -14,6 +14,7 @@ const { createOrder, verifyPayment: verifyCFPayment } = require('../services/cas
 const { createPhonePeOrder, verifyPhonePePayment, verifyChecksum: verifyPPChecksum } = require('../services/phonepe');
 const { sendWhatsAppMessage } = require('../services/whatsapp');
 const { sendBookingInvoiceEmail, sendFeeInvoiceEmail } = require('../services/mailercloud');
+const { sendLiveBookingPushNotification } = require('../services/pushNotifications');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 const crypto = require('crypto');
 
@@ -164,6 +165,13 @@ View in Admin Portal: https://khelopatna.in/admin`;
         }
     } catch (adminWaErr) {
         console.error('Error sending Admin Live WhatsApp Booking Alert:', adminWaErr);
+    }
+
+    // 3. Live Web Push Notification to Admin Mobile Devices
+    try {
+        await sendLiveBookingPushNotification(booking);
+    } catch (pushErr) {
+        console.error('Error dispatching Web Push notification:', pushErr);
     }
 }
 

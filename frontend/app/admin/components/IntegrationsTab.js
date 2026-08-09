@@ -12,9 +12,14 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
     const [botEnabled, setBotEnabled] = useState(true);
     const [waLoading, setWaLoading] = useState(false);
 
+    // Live Mobile Push Notifications state
+    const [pushStatus, setPushStatus] = useState('CHECKING'); // 'ACTIVE', 'NOT_SUBSCRIBED', 'UNSUPPORTED', 'DENIED'
+    const [pushLoading, setPushLoading] = useState(false);
+
     useEffect(() => {
         loadIntegrations();
         loadWhatsAppStatus();
+        checkPushSubscription();
 
         // Poll WhatsApp status every 3 seconds to keep QR code live and fresh
         const interval = setInterval(() => {
@@ -23,6 +28,93 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
 
         return () => clearInterval(interval);
     }, []);
+
+    const checkPushSubscription = async () => {
+        if (typeof window === 'undefined') return;
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            setPushStatus('UNSUPPORTED');
+            return;
+        }
+        if (Notification.permission === 'denied') {
+            setPushStatus('DENIED');
+            return;
+        }
+        try {
+            const reg = await navigator.serviceWorker.getRegistration('/sw.js');
+            if (reg) {
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                    setPushStatus('ACTIVE');
+                    return;
+                }
+            }
+            setPushStatus('NOT_SUBSCRIBED');
+        } catch (e) {
+            setPushStatus('NOT_SUBSCRIBED');
+        }
+    };
+
+    const handleEnablePushNotifications = async () => {
+        setPushLoading(true);
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert('Push notifications are not supported on this browser.');
+                setPushStatus('UNSUPPORTED');
+                return;
+            }
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                alert('Permission denied for notifications.');
+                setPushStatus('DENIED');
+                return;
+            }
+            const reg = await navigator.serviceWorker.register('/sw.js');
+            await navigator.serviceWorker.ready;
+
+            const res = await fetch(`${backendUrl}/api/push/public-key`);
+            const data = await res.json();
+            if (!data.publicKey) throw new Error('VAPID public key not found');
+
+            const urlBase64ToUint8Array = (base64String) => {
+                const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            };
+
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(data.publicKey)
+            });
+
+            await fetch(`${backendUrl}/api/push/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscription: sub })
+            });
+
+            setPushStatus('ACTIVE');
+            alert('🎉 Live Mobile Push Notifications Enabled! You will get native phone alerts whenever a turf is booked!');
+        } catch (err) {
+            console.error('Error enabling push notifications:', err);
+            alert('Could not enable push notifications: ' + err.message);
+        } finally {
+            setPushLoading(false);
+        }
+    };
+
+    const handleTestPushNotification = async () => {
+        try {
+            await fetch(`${backendUrl}/api/push/test`, { method: 'POST' });
+            alert('🔔 Test push notification dispatched! Check your phone lockscreen / notification bar.');
+        } catch (err) {
+            alert('Failed to send test push notification: ' + err.message);
+        }
+    };
 
     const loadIntegrations = async () => {
         setRefreshing(true);
@@ -284,6 +376,43 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                             </div>
                         </div>
                     )}
+
+                    {/* Mobile App Push Notifications Panel */}
+                    <div className="col-12 mt-4">
+                        <div className="card-premium" style={{ background: 'rgba(59, 130, 246, 0.03)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div>
+                                    <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#60A5FA', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                        <span className="material-icons-outlined">notifications_active</span> Live Mobile App Push Notifications
+                                    </h4>
+                                    <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                                        Receive native phone app notifications with sound & pop-up banners on your mobile phone screen whenever someone books a turf slot!
+                                    </p>
+                                </div>
+                                <div className="d-flex align-items-center gap-2">
+                                    {pushStatus === 'ACTIVE' ? (
+                                        <>
+                                            <span className="badge-stripe badge-success d-inline-flex align-items-center gap-1" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
+                                                <span className="status-dot bg-success"></span> Phone Alerts Active
+                                            </span>
+                                            <button className="btn-secondary-stripe py-1 px-3" style={{ fontSize: '0.8rem' }} onClick={handleTestPushNotification}>
+                                                Send Test Alert
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button 
+                                            disabled={pushLoading}
+                                            onClick={handleEnablePushNotifications}
+                                            className="btn-primary-stripe"
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#2563EB', borderColor: '#3B82F6' }}
+                                        >
+                                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>phonelink_ring</span> Enable Phone Notifications
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* System Version Panel */}
                     <div className="col-12 mt-4">
