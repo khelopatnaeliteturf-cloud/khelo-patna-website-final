@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dns = require('dns');
-const axios = require('axios');
+
 const pino = require('pino');
 const qrcode = require('qrcode');
 const { Pool } = require('pg');
@@ -23,7 +23,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 const WA_API_SECRET = process.env.WA_API_SECRET || '';
-const MAIN_BACKEND_URL = process.env.MAIN_BACKEND_URL || 'https://api.khelopatna.in';
 const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
 
 if (!SUPABASE_DB_URL) {
@@ -39,7 +38,7 @@ const dbPool = new Pool({
 let sock = null;
 let qrCodeImage = null;
 let connectionStatus = 'DISCONNECTED';
-let botEnabled = true;
+
 
 async function ensureSessionTable() {
     try {
@@ -152,15 +151,7 @@ async function useSupabaseAuthState() {
     };
 }
 
-async function loadBotSetting() {
-    try {
-        const res = await dbPool.query("SELECT value FROM whatsapp_session WHERE key = 'setting:bot_enabled'");
-        if (res.rows.length > 0) {
-            botEnabled = res.rows[0].value === 'true';
-            console.log(`🤖 Loaded AI Bot setting from DB: ${botEnabled ? 'ENABLED' : 'DISABLED'}`);
-        }
-    } catch (e) {}
-}
+
 
 /**
  * Initialize Baileys WhatsApp Socket Connection
@@ -169,7 +160,7 @@ async function initWhatsApp() {
     try {
         console.log('Initializing KheloPatna Standalone Baileys WhatsApp Microservice...');
         connectionStatus = 'CONNECTING';
-        await loadBotSetting();
+
 
         const { state, saveCreds } = await useSupabaseAuthState();
         const baileys = await import('@whiskeysockets/baileys');
@@ -247,68 +238,14 @@ async function initWhatsApp() {
 
         sock.ev.on('creds.update', saveCreds);
 
-        // Listen for incoming messages and forward to main backend webhook
-        sock.ev.on('messages.upsert', async (m) => {
-            if (!botEnabled || m.type !== 'notify') return;
 
-            for (const message of m.messages) {
-                if (message.key?.id && message.message) {
-                    msgStore.set(message.key.id, message);
-                    if (msgStore.size > 1000) {
-                        const firstKey = msgStore.keys().next().value;
-                        msgStore.delete(firstKey);
-                    }
-                }
-
-                const rawJid = message.key.remoteJid;
-                if (!rawJid || rawJid.endsWith('@g.us') || rawJid === 'status@broadcast') continue;
-
-                const phone = rawJid; // Keep full JID for accurate routing (handles @lid and @s.whatsapp.net)
-                const msg = message.message?.ephemeralMessage?.message || message.message?.viewOnceMessage?.message || message.message;
-                const text = (msg?.conversation || msg?.extendedTextMessage?.text || msg?.imageMessage?.caption || '').trim();
-
-                if (!text) continue;
-
-                // Allow staff out-bound dot commands (. / .. / ...) to control AI bot per individual chat
-                if (message.key.fromMe && text !== '.' && text !== '..' && text !== '...') {
-                    continue;
-                }
-
-                console.log(`[Baileys Microservice] Incoming chat from ${phone}: "${text}". Forwarding to main site webhook...`);
-                try {
-                    const baseUrl = MAIN_BACKEND_URL.replace(/\/+$/, '');
-                    const primaryWebhook = `${baseUrl}/api/whatsapp/webhook`;
-                    const payload = { phone, text, secret: WA_API_SECRET, fromMe: Boolean(message.key?.fromMe) };
-                    const config = { headers: { 'X-WA-Secret': WA_API_SECRET }, timeout: 30000 };
-
-                    try {
-                        await axios.post(primaryWebhook, payload, config);
-                    } catch (primaryErr) {
-                        if (primaryErr.response?.status === 404) {
-                            const fallbackWebhook = `${baseUrl}/api/reports/whatsapp/webhook`;
-                            await axios.post(fallbackWebhook, payload, config);
-                        } else {
-                            throw primaryErr;
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error forwarding incoming chat webhook:', err.message);
-                }
-            }
-        });
 
     } catch (err) {
         console.error('Error in WhatsApp initialization:', err);
     }
 }
 
-// Render Keep-Alive Pinger to keep main backend and microservice awake 24/7
-setInterval(() => {
-    if (MAIN_BACKEND_URL) {
-        const pingUrl = `${MAIN_BACKEND_URL.replace(/\/+$/, '')}/api/admin/whatsapp/status`;
-        axios.get(pingUrl).catch(() => {});
-    }
-}, 4 * 60 * 1000);
+
 
 // Middleware to authenticate microservice API requests
 function authSecret(req, res, next) {
@@ -329,25 +266,11 @@ app.get('/status', authSecret, (req, res) => {
     res.json({
         status: connectionStatus,
         qr: qrCodeImage,
-        bot_enabled: botEnabled
+
     });
 });
 
-app.post('/toggle-bot', authSecret, async (req, res) => {
-    const { enabled } = req.body;
-    botEnabled = Boolean(enabled);
-    console.log(`🤖 [WhatsApp Microservice] Auto-Bot toggled to: ${botEnabled ? 'ENABLED' : 'DISABLED'}`);
-    try {
-        await dbPool.query(
-            `INSERT INTO whatsapp_session (key, value) VALUES ('setting:bot_enabled', $1)
-             ON CONFLICT (key) DO UPDATE SET value = $1`,
-            [String(botEnabled)]
-        );
-    } catch (e) {
-        console.error('Error saving bot setting to DB:', e);
-    }
-    res.json({ success: true, bot_enabled: botEnabled });
-});
+
 
 app.post('/send-text', authSecret, async (req, res) => {
     const { phone, message } = req.body;
@@ -405,7 +328,7 @@ app.post('/disconnect', authSecret, async (req, res) => {
             try { sock.end(); } catch (e) {}
         }
         initWhatsApp();
-        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.', bot_enabled: botEnabled });
+        res.json({ success: true, message: 'Session reset initiated. Scan QR code to re-pair.' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
