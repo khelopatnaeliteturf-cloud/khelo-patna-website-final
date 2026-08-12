@@ -116,19 +116,7 @@ async function useSupabaseAuthState() {
 
     // ── Credentials ──────────────────────────────────────────────────
     const credsData = keyCache.get('creds:main');
-    // Only reuse creds if device is fully registered; otherwise start fresh
-    const creds = (credsData && credsData.registered) ? credsData : initAuthCreds();
-
-    // If starting fresh, wipe stale pre-keys/sessions that would corrupt pairing
-    if (!credsData || !credsData.registered) {
-        console.log('🔑 Fresh pairing — clearing stale session keys from DB...');
-        try {
-            await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
-            keyCache.clear();
-        } catch (e) {
-            console.warn('Could not clear stale keys:', e.message);
-        }
-    }
+    const creds = credsData || initAuthCreds();
 
     return {
         state: {

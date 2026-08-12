@@ -8,6 +8,32 @@ const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:service@khelopatna.in
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
+// Auto-create push_subscriptions table if missing in PostgreSQL/Supabase
+async function ensurePushTable() {
+    try {
+        const { Pool } = require('pg');
+        const pool = new Pool({
+            connectionString: process.env.SUPABASE_DB_URL,
+            ssl: { rejectUnauthorized: false }
+        });
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS push_subscriptions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                endpoint TEXT NOT NULL UNIQUE,
+                subscription JSONB NOT NULL,
+                user_agent TEXT,
+                user_role TEXT DEFAULT 'ADMIN',
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+        await pool.end();
+    } catch (e) {
+        console.warn('[WebPush] Could not auto-create push_subscriptions table:', e.message);
+    }
+}
+ensurePushTable();
+
 function getVapidPublicKey() {
     return VAPID_PUBLIC_KEY;
 }

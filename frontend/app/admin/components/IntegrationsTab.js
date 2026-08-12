@@ -9,7 +9,6 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
     // WhatsApp details states (for live QR retrieval)
     const [waQr, setWaQr] = useState(null);
     const [waStatus, setWaStatus] = useState('');
-    const [botEnabled, setBotEnabled] = useState(true);
     const [waLoading, setWaLoading] = useState(false);
 
     // Live Mobile Push Notifications state
@@ -181,7 +180,6 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
             if (res.ok) {
                 setWaStatus(data.status);
                 setWaQr(data.qr);
-                setBotEnabled(data.bot_enabled);
             }
         } catch (err) {
             console.error('Error fetching whatsapp status:', err);
@@ -206,22 +204,6 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
         }
     };
 
-    const handleToggleBot = async () => {
-        try {
-            const target = !botEnabled;
-            const res = await fetch(`${backendUrl}/api/admin/whatsapp/toggle-bot`, {
-                method: 'POST',
-                headers: getHeaders(),
-                body: JSON.stringify({ enabled: target })
-            });
-            if (res.ok) {
-                setBotEnabled(target);
-                alert(`WhatsApp Auto-Booking Bot successfully ${target ? 'ENABLED' : 'DISABLED'}.`);
-            }
-        } catch (err) {
-            console.error('WhatsApp bot toggle failed:', err);
-        }
-    };
 
     return (
         <div className="card-premium animate-fade-in">
@@ -290,82 +272,11 @@ export default function IntegrationsTab({ backendUrl, getHeaders }) {
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Action footer inside card */}
-                                    {isWhatsApp && (
-                                        <div className="mt-3 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
-                                            <button 
-                                                disabled={waLoading}
-                                                onClick={handleReconnectWhatsApp} 
-                                                className="btn-secondary-stripe btn-sm w-100"
-                                                style={{ fontSize: '0.74rem', padding: '6px 12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                                            >
-                                                <span className="material-icons-outlined" style={{ fontSize: '15px' }}>refresh</span>
-                                                {waLoading ? 'Reconnecting Socket...' : 'Reconnect Microservice'}
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         );
                     })}
 
-                    {/* Dedicated AI WhatsApp Auto-Reply Bot Card */}
-                    <div className="col-md-6 col-lg-4">
-                        <div className="rounded p-4 d-flex flex-column justify-content-between h-100" 
-                             style={{ 
-                                 minHeight: '180px',
-                                 backgroundColor: 'var(--bg-color)',
-                                 border: '1px solid var(--border-color)',
-                                 boxShadow: 'var(--shadow-sm)'
-                             }}>
-                            <div>
-                                <div className="d-flex justify-content-between align-items-center mb-2 gap-2">
-                                    <strong style={{ fontSize: '0.94rem', color: 'var(--text-main)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <span className="material-icons-outlined" style={{ color: 'var(--emerald)', fontSize: '18px', flexShrink: 0 }}>smart_toy</span>
-                                        <span>AI WhatsApp Auto-Reply</span>
-                                    </strong>
-                                    <span className="badge-pill" style={{ 
-                                        background: botEnabled ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', 
-                                        color: botEnabled ? 'var(--success)' : 'var(--danger)', 
-                                        fontSize: '0.66rem', 
-                                        fontWeight: 700,
-                                        whiteSpace: 'nowrap',
-                                        flexShrink: 0,
-                                        padding: '4px 8px'
-                                    }}>
-                                        {botEnabled ? 'BOT ACTIVE' : 'PAUSED'}
-                                    </span>
-                                </div>
-                                <p style={{ fontSize: '0.82rem', color: 'var(--text-main)', opacity: 0.78, margin: '8px 0 0 0', lineHeight: 1.45 }}>
-                                    {botEnabled 
-                                        ? 'AI Bot is automatically replying to customer slot queries, rates, & booking requests.' 
-                                        : 'AI Auto-reply is paused. Incoming messages are saved so human staff can reply manually.'}
-                                </p>
-                            </div>
-
-                            <div className="mt-3 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
-                                <button 
-                                    onClick={handleToggleBot} 
-                                    className={`btn-sm w-100 ${botEnabled ? 'btn-secondary-stripe' : 'btn-primary-stripe'}`}
-                                    style={{ 
-                                        fontSize: '0.74rem', 
-                                        padding: '6px 12px', 
-                                        fontWeight: 700,
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '6px'
-                                    }}
-                                >
-                                    <span className="material-icons-outlined" style={{ fontSize: '16px' }}>
-                                        {botEnabled ? 'pause_circle_outline' : 'play_circle_outline'}
-                                    </span>
-                                    {botEnabled ? 'Turn OFF AI Auto-Reply' : 'Turn ON AI Auto-Reply'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* WhatsApp QR Panel */}
                     {waStatus !== 'CONNECTED' && waStatus !== 'DISABLED' && (

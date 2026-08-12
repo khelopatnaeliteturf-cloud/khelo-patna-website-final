@@ -124,7 +124,8 @@ function getTableName(modelName) {
         FinanceConfig: 'finance_configs',
         Invoice: 'invoices',
         MapsReviewUsed: 'maps_reviews_used',
-        CommunicationLog: 'communication_logs'
+        CommunicationLog: 'communication_logs',
+        PushSubscription: 'push_subscriptions'
     };
     return mappings[modelName] || `${modelName.toLowerCase()}s`;
 }
@@ -383,7 +384,7 @@ class Document {
             this.subscriptionExpiresAt = this.subscription.expiresAt || null;
         }
 
-        const keys = Object.keys(this).filter(k => !k.startsWith('_') && k !== 'id' && k !== 'subscription');
+        const keys = Object.keys(this).filter(k => !k.startsWith('_') && k !== 'id' && (k !== 'subscription' || this._modelName === 'PushSubscription'));
         const setClauses = [];
         const insertCols = ['id'];
         const insertVals = [uuid];
