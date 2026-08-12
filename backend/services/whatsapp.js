@@ -7,27 +7,28 @@ async function logWhatsApp({ to, content, status, errorMessage, bookedBy, recipi
     try {
         const tenant = await Tenant.findOne({ subdomain: 'khelopatna' });
         const tenantId = tenant ? tenant._id : null;
+        const cleanErr = errorMessage ? (typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : String(errorMessage)) : null;
         try {
             await new CommunicationLog({
                 tenantId,
                 type: 'WHATSAPP',
-                recipient: to,
+                recipient: String(to || ''),
                 recipientName,
                 bookedBy,
-                content,
+                content: String(content || ''),
                 status,
-                errorMessage
+                errorMessage: cleanErr
             }).save();
         } catch (saveErr) {
             // Fallback for pre-existing tables missing bookedBy column
             await new CommunicationLog({
                 tenantId,
                 type: 'WHATSAPP',
-                recipient: to,
+                recipient: String(to || ''),
                 recipientName,
-                content,
+                content: String(content || ''),
                 status,
-                errorMessage
+                errorMessage: cleanErr
             }).save();
         }
     } catch (err) {

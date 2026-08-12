@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 
 function renderWhatsAppFormatted(text) {
     if (!text) return { __html: '' };
-    const escaped = String(text)
+    const str = typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text);
+    const escaped = str
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
@@ -19,7 +20,8 @@ function renderWhatsAppFormatted(text) {
 
 function getCleanSummary(text) {
     if (!text) return '';
-    return String(text).replace(/[*_~]/g, '');
+    const str = typeof text === 'object' ? JSON.stringify(text) : String(text);
+    return str.replace(/[*_~]/g, '');
 }
 
 export default function CommunicationTab(props) {
@@ -366,7 +368,7 @@ export default function CommunicationTab(props) {
                                                     ) : (
                                                         <span 
                                                             className="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" 
-                                                            title={log.errorMessage || 'Error occurred'}
+                                                            title={typeof log.errorMessage === 'object' ? JSON.stringify(log.errorMessage) : String(log.errorMessage || 'Error occurred')}
                                                             style={{ cursor: 'help' }}
                                                         >
                                                             FAILED ⚠️
@@ -446,12 +448,14 @@ export default function CommunicationTab(props) {
                             <div className="row g-3 mb-4">
                                 <div className="col-sm-6">
                                     <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>RECIPIENT</div>
-                                    <div className="font-monospace fw-bold" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{selectedLog.recipient}</div>
+                                    <div className="font-monospace fw-bold" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>
+                                        {typeof selectedLog.recipient === 'object' ? JSON.stringify(selectedLog.recipient) : String(selectedLog.recipient || '')}
+                                    </div>
                                 </div>
                                 <div className="col-sm-6">
                                     <div className="text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>BOOKED BY / INITIATOR</div>
                                     <div className="fw-bold" style={{ color: 'var(--primary)', fontSize: '0.92rem' }}>
-                                        {selectedLog.bookedBy || selectedLog.sender || (selectedLog.type === 'EMAIL' ? 'KheloPatna System' : 'Online / WhatsApp Bot')}
+                                        {typeof selectedLog.bookedBy === 'object' ? JSON.stringify(selectedLog.bookedBy) : String(selectedLog.bookedBy || selectedLog.sender || (selectedLog.type === 'EMAIL' ? 'KheloPatna System' : 'Online / WhatsApp Bot'))}
                                     </div>
                                 </div>
                                 <div className="col-sm-6">
@@ -476,7 +480,7 @@ export default function CommunicationTab(props) {
                                 )}
                                 {selectedLog.errorMessage && (
                                     <div className="col-12 border-top pt-3 text-danger bg-danger-subtle p-3 rounded-3" style={{ fontSize: '0.85rem' }}>
-                                        <strong>Error Details:</strong> {selectedLog.errorMessage}
+                                        <strong>Error Details:</strong> {typeof selectedLog.errorMessage === 'object' ? JSON.stringify(selectedLog.errorMessage) : String(selectedLog.errorMessage)}
                                     </div>
                                 )}
                             </div>
