@@ -2,9 +2,15 @@
 const webpush = require('web-push');
 const PushSubscription = require('../models/PushSubscription');
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BOZD_cJ_Tv8yptSqXH3G7K5YjtkjGC1hgZ1k1hzWsa5XRAivy4KGESU8R1rIC6Y2UvfVG7xrUWx_VPjU4EC5JmA';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 'NDcUUfvd9BJt92G1u7eK5jSD0bQSoBaidbR4ZEvBVQs';
+let VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+let VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:service@khelopatna.in';
+
+if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    const keys = webpush.generateVAPIDKeys();
+    VAPID_PUBLIC_KEY = VAPID_PUBLIC_KEY || keys.publicKey;
+    VAPID_PRIVATE_KEY = VAPID_PRIVATE_KEY || keys.privateKey;
+}
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
