@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dns = require('dns');
-
 const pino = require('pino');
 const qrcode = require('qrcode');
 const { Pool } = require('pg');
@@ -39,18 +38,14 @@ let sock = null;
 let qrCodeImage = null;
 let connectionStatus = 'DISCONNECTED';
 
-
 async function ensureSessionTable() {
     try {
         await dbPool.query(`
             CREATE TABLE IF NOT EXISTS whatsapp_session (
-                key VARCHAR PRIMARY KEY,
-                value TEXT,
+                key VARCHAR(255) PRIMARY KEY,
+                value TEXT NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS key VARCHAR;
-            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS value TEXT;
-            ALTER TABLE whatsapp_session ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
         `);
     } catch (e) {
         console.error('Error ensuring whatsapp_session table:', e.message);
@@ -58,62 +53,82 @@ async function ensureSessionTable() {
 }
 
 /**
- * Custom Supabase PostgreSQL Auth State Provider for Baileys
+ * High-Performance Supabase PostgreSQL Auth State Provider for Baileys
+ * 
+ * Uses in-memory cache + parallel DB writes to prevent the QR scan
+ * from hanging for minutes due to sequential network round-trips.
  */
 async function useSupabaseAuthState() {
     await ensureSessionTable();
     const { initAuthCreds, BufferJSON } = await import('@whiskeysockets/baileys');
 
-    const readData = async (type, id) => {
-        const key = `${type}:${id}`;
-        try {
-            const res = await dbPool.query('SELECT value FROM whatsapp_session WHERE key = $1', [key]);
-            if (res.rows.length > 0) {
-                return JSON.parse(res.rows[0].value, BufferJSON.reviver);
-            }
-        } catch (e) {
-            console.error(`Error reading session ${key}:`, e.message);
-        }
-        return null;
-    };
+    // ── In-memory key cache ──────────────────────────────────────────
+    // All keys are held in RAM for instant reads. DB writes happen
+    // in parallel in the background so Baileys never blocks.
+    const keyCache = new Map();
 
-    const writeData = async (type, id, value) => {
-        const key = `${type}:${id}`;
+    // Pre-load ALL existing keys into memory cache on startup
+    try {
+        const res = await dbPool.query('SELECT key, value FROM whatsapp_session');
+        for (const row of res.rows) {
+            try {
+                keyCache.set(row.key, JSON.parse(row.value, BufferJSON.reviver));
+            } catch (e) {
+                // Skip corrupt entries
+            }
+        }
+        console.log(`📦 Loaded ${keyCache.size} session keys into memory cache.`);
+    } catch (e) {
+        console.warn('Could not pre-load session keys:', e.message);
+    }
+
+    // ── DB helper: write one key ────────────────────────────────────
+    const dbWrite = async (key, valStr) => {
         try {
-            const valStr = JSON.stringify(value, BufferJSON.replacer);
+            await dbPool.query(
+                `INSERT INTO whatsapp_session (key, value, updated_at)
+                 VALUES ($1, $2, NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+                [key, valStr]
+            );
+        } catch (e) {
+            // Fallback for tables without updated_at column
             try {
                 await dbPool.query(
-                    `INSERT INTO whatsapp_session (key, value, updated_at) 
-                     VALUES ($1, $2, NOW()) 
-                     ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
-                    [key, valStr]
-                );
-            } catch (colErr) {
-                // Fallback for pre-existing tables without updated_at column
-                await dbPool.query(
-                    `INSERT INTO whatsapp_session (key, value) 
-                     VALUES ($1, $2) 
+                    `INSERT INTO whatsapp_session (key, value)
+                     VALUES ($1, $2)
                      ON CONFLICT (key) DO UPDATE SET value = $2`,
                     [key, valStr]
                 );
+            } catch (e2) {
+                console.error(`DB write error for ${key}:`, e2.message);
             }
-        } catch (e) {
-            console.error(`Error writing session ${key}:`, e.message);
         }
     };
 
-    const removeData = async (type, id) => {
-        const key = `${type}:${id}`;
+    const dbDelete = async (key) => {
         try {
             await dbPool.query('DELETE FROM whatsapp_session WHERE key = $1', [key]);
         } catch (e) {
-            console.error(`Error deleting session ${key}:`, e.message);
+            console.error(`DB delete error for ${key}:`, e.message);
         }
     };
 
-    const credsData = await readData('creds', 'main');
-    // If device is already registered, use saved creds. If not registered yet (QR pairing state), use fresh initAuthCreds to prevent stale key collisions.
+    // ── Credentials ──────────────────────────────────────────────────
+    const credsData = keyCache.get('creds:main');
+    // Only reuse creds if device is fully registered; otherwise start fresh
     const creds = (credsData && credsData.registered) ? credsData : initAuthCreds();
+
+    // If starting fresh, wipe stale pre-keys/sessions that would corrupt pairing
+    if (!credsData || !credsData.registered) {
+        console.log('🔑 Fresh pairing — clearing stale session keys from DB...');
+        try {
+            await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
+            keyCache.clear();
+        } catch (e) {
+            console.warn('Could not clear stale keys:', e.message);
+        }
+    }
 
     return {
         state: {
@@ -121,10 +136,11 @@ async function useSupabaseAuthState() {
             keys: {
                 get: async (type, ids) => {
                     const data = {};
+                    const baileys = await import('@whiskeysockets/baileys');
                     for (const id of ids) {
-                        let value = await readData(type, id);
+                        const cacheKey = `${type}:${id}`;
+                        let value = keyCache.get(cacheKey) || null;
                         if (type === 'app-state-sync-key' && value) {
-                            const baileys = await import('@whiskeysockets/baileys');
                             value = baileys.proto.Message.AppStateSyncKeyData.fromObject(value);
                         }
                         data[id] = value;
@@ -132,26 +148,41 @@ async function useSupabaseAuthState() {
                     return data;
                 },
                 set: async (data) => {
+                    // Collect all write/delete operations and run them in parallel
+                    const ops = [];
                     for (const category of Object.keys(data)) {
                         for (const id of Object.keys(data[category])) {
+                            const cacheKey = `${category}:${id}`;
                             const value = data[category][id];
                             if (value) {
-                                await writeData(category, id, value);
+                                // Update memory cache instantly
+                                keyCache.set(cacheKey, value);
+                                // Queue parallel DB write
+                                const valStr = JSON.stringify(value, BufferJSON.replacer);
+                                ops.push(dbWrite(cacheKey, valStr));
                             } else {
-                                await removeData(category, id);
+                                // Remove from memory cache instantly
+                                keyCache.delete(cacheKey);
+                                // Queue parallel DB delete
+                                ops.push(dbDelete(cacheKey));
                             }
                         }
+                    }
+                    // Fire all DB operations in parallel — don't block Baileys
+                    if (ops.length > 0) {
+                        await Promise.all(ops);
                     }
                 }
             }
         },
         saveCreds: async () => {
-            await writeData('creds', 'main', creds);
+            const cacheKey = 'creds:main';
+            keyCache.set(cacheKey, creds);
+            const valStr = JSON.stringify(creds, BufferJSON.replacer);
+            await dbWrite(cacheKey, valStr);
         }
     };
 }
-
-
 
 /**
  * Initialize Baileys WhatsApp Socket Connection
@@ -161,7 +192,6 @@ async function initWhatsApp() {
         console.log('Initializing KheloPatna Standalone Baileys WhatsApp Microservice...');
         connectionStatus = 'CONNECTING';
 
-
         const { state, saveCreds } = await useSupabaseAuthState();
         const baileys = await import('@whiskeysockets/baileys');
         const makeWASocket = baileys.default?.default || baileys.default || baileys.makeWASocket;
@@ -170,8 +200,6 @@ async function initWhatsApp() {
 
         const { version, isLatest } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1017531287], isLatest: false }));
         console.log(`Using WhatsApp Web Version: ${Array.isArray(version) ? version.join('.') : version} (isLatest: ${isLatest})`);
-
-        const msgStore = new Map();
 
         sock = makeWASocket({
             version,
@@ -186,12 +214,7 @@ async function initWhatsApp() {
             syncFullHistory: false,
             shouldSyncHistory: () => false,
             fireInitQueries: true,
-            getMessage: async (key) => {
-                if (key?.id && msgStore.has(key.id)) {
-                    return msgStore.get(key.id)?.message;
-                }
-                return { conversation: 'Hello' };
-            }
+            getMessage: async () => ({ conversation: '' })
         });
 
         sock.ev.on('connection.update', async (update) => {
@@ -210,20 +233,18 @@ async function initWhatsApp() {
             if (connection === 'open') {
                 connectionStatus = 'CONNECTED';
                 qrCodeImage = null;
-                console.log('✅ WhatsApp Baileys socket connected successfully and listening!');
+                console.log('✅ WhatsApp Baileys socket connected successfully!');
             }
 
             if (connection === 'close') {
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
-                // Only 401 (Logged Out) and 403 (Forbidden) mean true session invalidation.
-                // 408 (Timeout), 428 (Connection Closed), 515 (Restart Required) are temporary network drops.
                 const isLoggedOut = statusCode === DisconnectReason?.loggedOut || statusCode === 401 || statusCode === 403;
 
-                console.warn(`Connection closed. StatusCode: ${statusCode}. Session corrupt/loggedOut: ${isLoggedOut}`);
+                console.warn(`Connection closed. StatusCode: ${statusCode}. LoggedOut: ${isLoggedOut}`);
                 connectionStatus = 'DISCONNECTED';
 
                 if (isLoggedOut) {
-                    console.log(`StatusCode ${statusCode} detected (Logged Out). Cleaning auth session credentials to issue fresh QR code...`);
+                    console.log(`StatusCode ${statusCode} detected (Logged Out). Wiping session for fresh QR...`);
                     try {
                         await dbPool.query("DELETE FROM whatsapp_session WHERE key NOT LIKE 'setting:%'");
                     } catch (e) {
@@ -231,21 +252,19 @@ async function initWhatsApp() {
                     }
                     qrCodeImage = null;
                 }
-                
+
                 setTimeout(initWhatsApp, 4000);
             }
         });
 
         sock.ev.on('creds.update', saveCreds);
 
-
-
     } catch (err) {
         console.error('Error in WhatsApp initialization:', err);
+        connectionStatus = 'DISCONNECTED';
+        setTimeout(initWhatsApp, 10000);
     }
 }
-
-
 
 // Middleware to authenticate microservice API requests
 function authSecret(req, res, next) {
@@ -265,12 +284,9 @@ app.get('/', (req, res) => {
 app.get('/status', authSecret, (req, res) => {
     res.json({
         status: connectionStatus,
-        qr: qrCodeImage,
-
+        qr: qrCodeImage
     });
 });
-
-
 
 app.post('/send-text', authSecret, async (req, res) => {
     const { phone, message } = req.body;
@@ -288,7 +304,7 @@ app.post('/send-text', authSecret, async (req, res) => {
         } else {
             let cleanPhone = String(phone).replace(/\D/g, '');
             if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
-            
+
             if (cleanPhone.length >= 11 && cleanPhone.startsWith('19')) {
                 jid = `${cleanPhone}@lid`;
             } else {
