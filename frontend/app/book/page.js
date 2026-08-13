@@ -380,72 +380,37 @@ export default function BookPage() {
         setCouponError('');
     }, [selectedSlots, participantsCount, sport, date]);
 
-    const handleApplyCoupon = async (e, customCode) => {
+    const handleApplyCoupon = async (e) => {
         if (e) e.preventDefault();
-        const codeToTest = customCode || couponCodeInput;
-        if (!codeToTest || !codeToTest.trim()) {
-            setCouponError('Please enter one or more promo codes.');
+        if (!couponCodeInput.trim()) {
+            setCouponError('Please enter a coupon code.');
             return;
         }
 
         setValidatingCoupon(true);
         setCouponError('');
         try {
-            const rawCode = codeToTest.trim();
-            const isMultiple = rawCode.includes(',');
+            const res = await fetch(`${BACKEND_URL}/api/payment/validate-coupon`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: couponCodeInput,
+                    amount: calculateTotal()
+                })
+            });
 
-            if (isMultiple) {
-                const res = await fetch(`${BACKEND_URL}/api/payment/check-valid-coupons`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        codes: rawCode,
-                        amount: calculateTotal()
-                    })
-                });
-                const data = await res.json();
-                if (!res.ok || !data.success) {
-                    throw new Error(data.error || 'Failed to check promo codes.');
-                }
-
-                if (!data.validCoupons || data.validCoupons.length === 0) {
-                    throw new Error('None of the entered promo codes are valid for this booking amount.');
-                }
-
-                // Pick the best valid coupon giving the highest discount amount
-                const best = data.validCoupons.reduce((prev, curr) => (curr.discountAmount > prev.discountAmount ? curr : prev), data.validCoupons[0]);
-
-                setAppliedCoupon({
-                    code: best.code,
-                    discountAmount: best.discountAmount,
-                    finalAmount: best.finalAmount
-                });
-                setCouponCodeInput(best.code);
-                setCouponError(`✓ Tested ${data.totalChecked} codes — Best code "${best.code}" applied (Save ₹${best.discountAmount})!`);
-                setTimeout(() => setShowPromoModal(false), 1200);
-            } else {
-                const res = await fetch(`${BACKEND_URL}/api/payment/validate-coupon`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        code: rawCode,
-                        amount: calculateTotal()
-                    })
-                });
-
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || 'Failed to validate coupon.');
-                }
-
-                setAppliedCoupon({
-                    code: data.code,
-                    discountAmount: data.discountAmount,
-                    finalAmount: data.finalAmount
-                });
-                setCouponError('');
-                setShowPromoModal(false);
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to validate coupon.');
             }
+
+            setAppliedCoupon({
+                code: data.code,
+                discountAmount: data.discountAmount,
+                finalAmount: data.finalAmount
+            });
+            setCouponError('');
+            setShowPromoModal(false);
         } catch (err) {
             console.error(err);
             setCouponError(err.message || 'Invalid coupon code.');
@@ -1863,7 +1828,7 @@ export default function BookPage() {
                             Enter Promo Code
                         </h3>
                         <p style={{ color: '#9CA3AF', fontSize: '0.85rem', margin: '0 0 20px', lineHeight: 1.4 }}>
-                            Enter a promo code (or separate multiple with commas, e.g. <code style={{ color: 'var(--emerald)' }}>CODE1, CODE2</code>) to test and apply the best discount.
+                            Enter your promo code below to get a discount on your turf booking.
                         </p>
 
                         <form onSubmit={async (e) => {
@@ -1876,13 +1841,13 @@ export default function BookPage() {
                                 style={{ 
                                     textTransform: 'uppercase', 
                                     textAlign: 'center',
-                                    fontSize: '1rem',
+                                    fontSize: '1.1rem',
                                     fontWeight: 700,
-                                    letterSpacing: '1px',
+                                    letterSpacing: '2px',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     marginBottom: 0
                                 }}
-                                placeholder="PROMO1, PROMO2, PROMO3"
+                                placeholder="PROMO100"
                                 value={couponCodeInput}
                                 onChange={(e) => setCouponCodeInput(e.target.value)}
                                 autoFocus
