@@ -57,6 +57,20 @@ export default function BookPage() {
     const [couponError, setCouponError] = useState('');
     const [validatingCoupon, setValidatingCoupon] = useState(false);
     const [showPromoModal, setShowPromoModal] = useState(false);
+    const [availablePromos, setAvailablePromos] = useState([]);
+
+    useEffect(() => {
+        if (showPromoModal) {
+            fetch(`${BACKEND_URL}/api/payment/active-coupons`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && Array.isArray(data.coupons)) {
+                        setAvailablePromos(data.coupons);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [showPromoModal]);
     
     // Status from redirection
     const [paymentSuccessInfo, setPaymentSuccessInfo] = useState(null);
@@ -1827,9 +1841,47 @@ export default function BookPage() {
                         }}>
                             Enter Promo Code
                         </h3>
-                        <p style={{ color: '#9CA3AF', fontSize: '0.85rem', margin: '0 0 20px', lineHeight: 1.4 }}>
-                            Enter your promo code below to get a discount on your turf booking.
-                        </p>
+                        {availablePromos.length > 0 && (
+                            <div style={{ marginBottom: '16px', textAlign: 'left' }}>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                                    ✨ Available Active Offers (Tap to Apply)
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '120px', overflowY: 'auto' }}>
+                                    {availablePromos.map((p) => {
+                                        const label = p.discountType === 'PERCENT' 
+                                            ? `${p.discountValue}% OFF` 
+                                            : `₹${p.discountValue} OFF`;
+                                        return (
+                                            <button
+                                                key={p.code}
+                                                type="button"
+                                                onClick={() => {
+                                                    setCouponCodeInput(p.code);
+                                                    setCouponError('');
+                                                }}
+                                                style={{
+                                                    background: couponCodeInput.toUpperCase() === p.code ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.06)',
+                                                    border: couponCodeInput.toUpperCase() === p.code ? '1.5px solid var(--emerald)' : '1px solid rgba(255, 255, 255, 0.12)',
+                                                    borderRadius: '20px',
+                                                    padding: '6px 12px',
+                                                    color: '#ffffff',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 600,
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <span style={{ fontWeight: 800, color: 'var(--emerald)' }}>{p.code}</span>
+                                                <span style={{ fontSize: '0.72rem', opacity: 0.8 }}>({label})</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
                         <form onSubmit={async (e) => {
                             e.preventDefault();
