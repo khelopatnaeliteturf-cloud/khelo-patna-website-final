@@ -1680,6 +1680,74 @@ router.post('/payment/validate-coupon', async (req, res) => {
     }
 });
 
+// POST /api/payment/check-valid-coupons — Batch test or list coupons valid for a given order amount
+router.post('/payment/check-valid-coupons', async (req, res) => {
+    const { amount, codes } = req.body;
+
+    if (!amount) {
+        return res.status(400).json({ error: 'Order amount is required.' });
+    }
+
+    try {
+        const orderAmount = Number(amount);
+        let coupons = [];
+
+        if (Array.isArray(codes) && codes.length > 0) {
+            const uppercaseCodes = codes.map(c => String(c).toUpperCase().trim()).filter(Boolean);
+            coupons = await Coupon.find({ code: { $in: uppercaseCodes }, isActive: true });
+        } else if (typeof codes === 'string' && codes.includes(',')) {
+            const uppercaseCodes = codes.split(',').map(c => c.toUpperCase().trim()).filter(Boolean);
+            coupons = await Coupon.find({ code: { $in: uppercaseCodes }, isActive: true });
+        } else {
+            coupons = await Coupon.find({ isActive: true });
+        }
+
+        const now = new Date();
+        const validCoupons = [];
+
+        for (const coupon of (coupons || [])) {
+            if (!coupon.isActive) continue;
+            if (coupon.expiryDate && new Date(coupon.expiryDate) < now) continue;
+            if (coupon.usageLimit !== null && (coupon.usageCount || 0) >= coupon.usageLimit) continue;
+            
+            const minAmount = Number(coupon.minOrderAmount || 0);
+            if (orderAmount < minAmount) continue;
+
+            let discount = 0;
+            if (coupon.discountType === 'PERCENT') {
+                discount = (orderAmount * Number(coupon.discountValue)) / 100;
+                if (coupon.maxDiscountAmount !== null) {
+                    discount = Math.min(discount, Number(coupon.maxDiscountAmount));
+                }
+            } else if (coupon.discountType === 'FLAT') {
+                discount = Number(coupon.discountValue);
+            }
+
+            discount = Math.min(discount, orderAmount);
+            const finalAmount = Math.max(0, orderAmount - discount);
+
+            validCoupons.push({
+                code: coupon.code,
+                discountType: coupon.discountType,
+                discountValue: coupon.discountValue,
+                discountAmount: discount,
+                finalAmount,
+                minOrderAmount: minAmount
+            });
+        }
+
+        res.json({
+            success: true,
+            totalChecked: coupons.length,
+            validCount: validCoupons.length,
+            validCoupons
+        });
+    } catch (err) {
+        console.error('Check valid coupons error:', err);
+        res.status(500).json({ error: 'Server error checking valid coupons.' });
+    }
+});
+
 // GET /api/admin/coupons
 router.get('/admin/coupons', authenticateToken, authorizeRoles('ADMIN', 'SUPER_ADMIN'), async (req, res) => {
     try {
