@@ -272,8 +272,21 @@ async function initWhatsApp() {
     }
 }
 
-// Render Keep-Alive Pinger to keep main backend and microservice awake 24/7
+function isOffHoursIST() {
+    try {
+        const now = new Date();
+        const istTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour12: false, hour: 'numeric', minute: 'numeric' });
+        const [hours, minutes] = istTimeStr.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes;
+        return totalMinutes >= 60 && totalMinutes < 330;
+    } catch (e) {
+        return false;
+    }
+}
+
+// Render Keep-Alive Pinger to keep main backend and microservice awake (05:30 AM to 01:00 AM IST)
 setInterval(() => {
+    if (isOffHoursIST()) return;
     if (MAIN_BACKEND_URL) {
         const pingUrl = `${MAIN_BACKEND_URL.replace(/\/+$/, '')}/api/admin/whatsapp/status`;
         axios.get(pingUrl).catch(() => {});

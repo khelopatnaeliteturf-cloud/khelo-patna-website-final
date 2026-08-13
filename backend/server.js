@@ -287,9 +287,28 @@ app.listen(PORT, async () => {
         console.error('Database bootstrap failed during startup:', err);
     }
 
-    // Self-pinger to prevent free-tier servers from sleeping (every 12 minutes)
+    // Helper function to check if current time is in late-night off-hours (01:00 AM to 05:30 AM IST)
+    // Pausing pinger during these 4.5 hours saves ~135+ free tier hours/month on Render
+    function isOffHoursIST() {
+        try {
+            const now = new Date();
+            const istTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour12: false, hour: 'numeric', minute: 'numeric' });
+            const [hours, minutes] = istTimeStr.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes;
+            // Off hours: 01:00 AM (60 min) to 05:30 AM (330 min) IST
+            return totalMinutes >= 60 && totalMinutes < 330;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // Self-pinger to prevent free-tier servers from sleeping during active hours (05:30 AM - 01:00 AM IST, every 12 minutes)
     const intervalMs = 12 * 60 * 1000;
     setInterval(async () => {
+        if (isOffHoursIST()) {
+            console.log('[Self-Pinger] Late-night off-hours active (01:00 AM - 05:30 AM IST). Skipping keep-alive ping to allow Render server to sleep.');
+            return;
+        }
         try {
             const host = process.env.BACKEND_SELF_URL || 'https://api.khelopatna.in';
             console.log(`[Self-Pinger] Sending keep-alive ping to ${host}/health...`);
