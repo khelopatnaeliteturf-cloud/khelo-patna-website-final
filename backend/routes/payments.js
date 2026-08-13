@@ -1680,28 +1680,6 @@ router.post('/payment/validate-coupon', async (req, res) => {
     }
 });
 
-// GET /api/payment/active-coupons — Public list of available active promo codes
-router.get('/payment/active-coupons', async (req, res) => {
-    try {
-        const coupons = await Coupon.find({ isActive: true });
-        const now = new Date();
-        const active = (coupons || [])
-            .filter(c => !c.expiryDate || new Date(c.expiryDate) >= now)
-            .filter(c => c.usageLimit === null || (c.usageCount || 0) < c.usageLimit)
-            .map(c => ({
-                code: c.code,
-                discountType: c.discountType,
-                discountValue: c.discountValue,
-                minOrderAmount: c.minOrderAmount || 0,
-                maxDiscountAmount: c.maxDiscountAmount || null
-            }));
-        res.json({ success: true, coupons: active });
-    } catch (err) {
-        console.error('Fetch active coupons error:', err);
-        res.json({ success: true, coupons: [] });
-    }
-});
-
 // GET /api/admin/coupons
 router.get('/admin/coupons', authenticateToken, authorizeRoles('ADMIN', 'SUPER_ADMIN'), async (req, res) => {
     try {
