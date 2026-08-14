@@ -174,17 +174,18 @@ function isWhatsAppEnabled() {
     return true;
 }
 
-let pollInterval = null;
+let pollTimeoutId = null;
 let lastPollError = null;
 let lastPollTime = null;
 let lastReconnectTime = null;
 let lastReconnectResult = null;
 
 function startServicePolling() {
-    if (pollInterval) clearInterval(pollInterval);
+    if (pollTimeoutId) clearTimeout(pollTimeoutId);
 
     const poll = async () => {
         lastPollTime = new Date().toISOString();
+        let nextDelay = 30000; // Default: poll every 30s when healthy
         try {
             const rawUrl = (process.env.WA_SERVICE_URL || '').trim();
             if (!rawUrl) return;
@@ -201,9 +202,10 @@ function startServicePolling() {
             qrCodeImage = response.data.qr || null;
             botEnabled = response.data.bot_enabled !== undefined ? response.data.bot_enabled : botEnabled;
             if (lastPollError) {
-                console.log('✅ [WhatsApp Service] Polling recovered successfully.');
+                console.log('✅ [WhatsApp Service] Connected successfully to microservice.');
             }
-            lastPollError = null; // Clear on success
+            lastPollError = null;
+            nextDelay = 30000;
         } catch (err) {
             let errorMsg = err.message;
             if (err.response) {
@@ -217,18 +219,23 @@ function startServicePolling() {
                 errorMsg = `${status} ${details}`.trim();
             }
             
-            // Only log if the error state changed to avoid flooding server logs
-            if (lastPollError !== errorMsg) {
-                console.error('[WhatsApp Service] Polling status error:', errorMsg);
+            // Only log ONCE when transitioning to error state to keep console logs clean
+            if (!lastPollError) {
+                console.error(`[WhatsApp Service] Microservice unreachable (${errorMsg}). Backing off polling to 2m interval to prevent rate-limits.`);
             }
             connectionStatus = 'DISCONNECTED';
             qrCodeImage = null;
             lastPollError = errorMsg;
+            // When microservice is down/sleeping/rate-limited, poll every 2 minutes instead of 30s
+            nextDelay = 120000;
+        } finally {
+            if (process.env.WA_SERVICE_URL) {
+                pollTimeoutId = setTimeout(poll, nextDelay);
+            }
         }
     };
 
     poll(); // Run immediately
-    pollInterval = setInterval(poll, 30000); // Repeat every 30 seconds
 }
 
 function getDiagnostics() {
