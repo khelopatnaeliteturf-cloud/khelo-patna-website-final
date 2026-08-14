@@ -200,10 +200,27 @@ function startServicePolling() {
             connectionStatus = isConnected ? 'CONNECTED' : 'DISCONNECTED';
             qrCodeImage = response.data.qr || null;
             botEnabled = response.data.bot_enabled !== undefined ? response.data.bot_enabled : botEnabled;
+            if (lastPollError) {
+                console.log('✅ [WhatsApp Service] Polling recovered successfully.');
+            }
             lastPollError = null; // Clear on success
         } catch (err) {
-            const errorMsg = err.response ? `${err.response.status} ${JSON.stringify(err.response.data)}` : err.message;
-            console.error('[WhatsApp Service] Polling status error:', errorMsg);
+            let errorMsg = err.message;
+            if (err.response) {
+                const status = err.response.status;
+                let details = '';
+                if (typeof err.response.data === 'string') {
+                    details = err.response.data.includes('<html') ? (err.response.statusText || 'HTML Error Page') : err.response.data.trim();
+                } else if (err.response.data) {
+                    details = JSON.stringify(err.response.data);
+                }
+                errorMsg = `${status} ${details}`.trim();
+            }
+            
+            // Only log if the error state changed to avoid flooding server logs
+            if (lastPollError !== errorMsg) {
+                console.error('[WhatsApp Service] Polling status error:', errorMsg);
+            }
             connectionStatus = 'DISCONNECTED';
             qrCodeImage = null;
             lastPollError = errorMsg;
@@ -211,7 +228,7 @@ function startServicePolling() {
     };
 
     poll(); // Run immediately
-    pollInterval = setInterval(poll, 10000); // Repeat every 10 seconds
+    pollInterval = setInterval(poll, 30000); // Repeat every 30 seconds
 }
 
 function getDiagnostics() {
