@@ -690,8 +690,11 @@ router.post('/payment/webhook', async (req, res) => {
                 console.error('Invalid signature on Cashfree Webhook.');
                 return res.status(400).send('Invalid signature.');
             }
+        } else if (process.env.NODE_ENV === 'production') {
+            console.error('FATAL: Cashfree webhook secret (CASHFREE_WEBHOOK_SECRET / CASHFREE_SECRET_KEY) is missing in production.');
+            return res.status(500).send('Webhook security configuration error.');
         } else {
-            console.warn('WARNING: Cashfree webhook received but no verification key is configured (CASHFREE_WEBHOOK_SECRET / CASHFREE_SECRET_KEY). Signature check bypassed.');
+            console.warn('WARNING: Cashfree webhook received but no verification key is configured. Signature check bypassed in dev mode.');
         }
 
         const payload = req.body;

@@ -27,8 +27,12 @@ const authenticateToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    if (!process.env.JWT_SECRET) {
-        console.error('FATAL: JWT_SECRET is not configured in the environment.');
+    const secret = process.env.JWT_SECRET;
+    const isProd = process.env.NODE_ENV === 'production';
+    const weakSecrets = ['change-me', 'your_jwt_secret', 'secret', '123456', 'default', 'khelo_patna_secret', 'khelopatnasecret'];
+
+    if (!secret || (isProd && (secret.length < 32 || weakSecrets.includes(secret.toLowerCase())))) {
+        console.error('FATAL: JWT_SECRET is missing, insecure, or too short (<32 characters) for production environment.');
         return res.status(500).json({ error: 'Internal security configuration error.' });
     }
 

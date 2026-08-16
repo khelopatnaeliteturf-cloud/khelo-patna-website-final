@@ -4,6 +4,8 @@ const multer = require('multer');
 const { authenticateToken } = require('../middlewares/auth');
 const { uploadToCloudinary } = require('../services/cloudinary');
 
+const path = require('path');
+
 // Setup multer to store file in memory temporarily
 const allowedUploadMimeTypes = new Set([
     'image/jpeg',
@@ -12,13 +14,16 @@ const allowedUploadMimeTypes = new Set([
     'application/pdf'
 ]);
 
+const allowedUploadExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp', '.pdf']);
+
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
         fileSize: 10 * 1024 * 1024 // Limit to 10MB
     },
     fileFilter: (req, file, cb) => {
-        if (!allowedUploadMimeTypes.has(file.mimetype)) {
+        const ext = path.extname(file.originalname || '').toLowerCase();
+        if (!allowedUploadMimeTypes.has(file.mimetype) || !allowedUploadExtensions.has(ext)) {
             return cb(new Error('Only JPG, PNG, WebP, and PDF files are allowed.'));
         }
         cb(null, true);
