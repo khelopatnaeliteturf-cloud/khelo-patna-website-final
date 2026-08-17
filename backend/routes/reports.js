@@ -192,9 +192,23 @@ router.get('/reports/bookings', authenticateToken, authorizeRoles('BRANCH_MANAGE
     if (paymentStatus) query.paymentStatus = paymentStatus;
 
     if (startDate || endDate) {
-        query.createdAt = {};
-        if (startDate) query.createdAt.$gte = new Date(startDate);
-        if (endDate) query.createdAt.$lte = new Date(endDate + 'T23:59:59');
+        const startStr = startDate ? startDate : '1970-01-01';
+        const endStr = endDate ? endDate : '2099-12-31';
+
+        query.$or = [
+            {
+                date: {
+                    ...(startDate ? { $gte: startStr } : {}),
+                    ...(endDate ? { $lte: endStr } : {})
+                }
+            },
+            {
+                createdAt: {
+                    ...(startDate ? { $gte: new Date(startDate) } : {}),
+                    ...(endDate ? { $lte: new Date(endDate + 'T23:59:59') } : {})
+                }
+            }
+        ];
     }
 
     try {
