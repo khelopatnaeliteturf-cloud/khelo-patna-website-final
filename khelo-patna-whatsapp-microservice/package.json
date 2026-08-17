@@ -1,6 +1,6 @@
 {
   "name": "khelo-patna-whatsapp-microservice",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Standalone Baileys WhatsApp Microservice for KheloPatna Elite Turf",
   "main": "index.js",
   "scripts": {

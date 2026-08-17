@@ -1,6 +1,6 @@
 {
-  "name": "khelopatna-backend",
-  "version": "2.5.0",
+  "name": "khelo-patna-backend",
+  "version": "2.6.0",
   "description": "Stateful Express backend for KheloPatna Turf & Academy ERP",
   "main": "server.js",
   "scripts": {
