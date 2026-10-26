@@ -23,6 +23,11 @@ const authenticateToken = (req, res, next) => {
         token = cookies.token;
     }
 
+    // Fallback to query param (e.g. for authenticated downloads or open-in-new-tab in browser)
+    if (!token && req.query && req.query.token) {
+        token = req.query.token;
+    }
+
     if (!token) {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }

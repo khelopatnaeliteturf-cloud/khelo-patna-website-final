@@ -2,32 +2,51 @@
 
 import React, { useState } from 'react';
 
-export default function AdmissionFormModal({ isOpen, onClose }) {
-    const [copied, setCopied] = useState(false);
-    const [previewMode, setPreviewMode] = useState('pdf'); // 'pdf' | 'html'
+export default function AdmissionFormModal({ isOpen, onClose, backendUrl, token }) {
+    const [downloading, setDownloading] = useState(false);
 
     if (!isOpen) return null;
 
-    const pdfUrl = '/forms/Khelo_Patna_Academy_Admission_Form.pdf';
-    const previewImg = '/forms/admission_form_preview_hd.png';
+    const authQuery = token ? `?token=${encodeURIComponent(token)}` : '';
+    const downloadEndpoint = `${backendUrl}/api/academy/admission-form/download${authQuery}`;
+    const viewEndpoint = `${backendUrl}/api/academy/admission-form/view${authQuery}`;
+    const previewEndpoint = `${backendUrl}/api/academy/admission-form/preview${authQuery}`;
 
-    const handleCopyLink = () => {
+    const handleDownload = async () => {
         try {
-            const fullUrl = window.location.origin + pdfUrl;
-            navigator.clipboard.writeText(fullUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2500);
+            setDownloading(true);
+            const res = await fetch(downloadEndpoint, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                credentials: 'include'
+            });
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('Access denied. Admin or office staff login required.');
+                }
+                throw new Error('Failed to download admission form.');
+            }
+            const blob = await res.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'Khelo_Patna_Academy_Admission_Form.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
         } catch (err) {
-            console.error('Could not copy link', err);
+            alert(err.message || 'Error downloading form.');
+        } finally {
+            setDownloading(false);
         }
     };
 
+    const handleOpenInNewTab = () => {
+        window.open(viewEndpoint, '_blank');
+    };
+
     const handlePrint = () => {
-        // Open PDF directly in new tab/window where print is natively supported
-        const printWindow = window.open(pdfUrl, '_blank');
-        if (printWindow) {
-            printWindow.focus();
-        }
+        window.open(viewEndpoint, '_blank');
     };
 
     return (
@@ -94,21 +113,24 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                                     Academy Admission Form
                                 </h3>
                                 <span style={{
-                                    fontSize: '0.7rem',
+                                    fontSize: '0.68rem',
                                     fontWeight: 700,
                                     padding: '2px 8px',
                                     borderRadius: '6px',
-                                    background: 'rgba(16, 185, 129, 0.15)',
-                                    color: 'var(--emerald, #10B981)',
-                                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
+                                    background: 'rgba(239, 68, 68, 0.15)',
+                                    color: '#F87171',
+                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    letterSpacing: '0.04em'
                                 }}>
-                                    Offline PDF
+                                    <span className="material-icons-outlined" style={{ fontSize: '12px' }}>lock</span>
+                                    Staff Only
                                 </span>
                             </div>
                             <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--text-muted, #94A3B8)' }}>
-                                Official registration & consent form for walk-in academy students
+                                Official offline registration & consent form (Protected Internal Document)
                             </p>
                         </div>
                     </div>
@@ -136,7 +158,7 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                     </button>
                 </div>
 
-                {/* Action Bar (Download / Print / Share) */}
+                {/* Action Bar (Download / Print) */}
                 <div style={{
                     padding: '12px 24px',
                     background: 'rgba(0, 0, 0, 0.35)',
@@ -148,9 +170,10 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                     gap: '12px'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        <a
-                            href={pdfUrl}
-                            download="Khelo_Patna_Academy_Admission_Form.pdf"
+                        <button
+                            type="button"
+                            onClick={handleDownload}
+                            disabled={downloading}
                             className="btn-primary-stripe"
                             style={{
                                 display: 'inline-flex',
@@ -159,14 +182,17 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                                 padding: '9px 18px',
                                 fontSize: '0.86rem',
                                 fontWeight: 700,
-                                textDecoration: 'none',
                                 borderRadius: '10px',
+                                cursor: downloading ? 'not-allowed' : 'pointer',
+                                opacity: downloading ? 0.7 : 1,
                                 boxShadow: '0 4px 14px rgba(16, 185, 129, 0.25)'
                             }}
                         >
-                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>download</span>
-                            Download PDF Form
-                        </a>
+                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>
+                                {downloading ? 'hourglass_top' : 'download'}
+                            </span>
+                            {downloading ? 'Downloading...' : 'Download PDF Form'}
+                        </button>
 
                         <button
                             type="button"
@@ -186,10 +212,9 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                             Print Form
                         </button>
 
-                        <a
-                            href={pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <button
+                            type="button"
+                            onClick={handleOpenInNewTab}
                             className="btn-secondary-stripe"
                             style={{
                                 display: 'inline-flex',
@@ -197,38 +222,28 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                                 gap: '6px',
                                 padding: '9px 14px',
                                 fontSize: '0.86rem',
-                                textDecoration: 'none',
                                 borderRadius: '10px'
                             }}
                         >
                             <span className="material-icons-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
                             Open in New Tab
-                        </a>
+                        </button>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleCopyLink}
-                        style={{
-                            background: copied ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.04)',
-                            border: `1px solid ${copied ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.08)'}`,
-                            color: copied ? 'var(--emerald, #10B981)' : '#CBD5E1',
-                            padding: '8px 14px',
-                            borderRadius: '10px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>
-                            {copied ? 'check' : 'content_copy'}
-                        </span>
-                        <span>{copied ? 'Link Copied!' : 'Copy Download Link'}</span>
-                    </button>
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.76rem',
+                        color: 'var(--emerald, #10B981)',
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(16, 185, 129, 0.2)'
+                    }}>
+                        <span className="material-icons-outlined" style={{ fontSize: '14px' }}>verified_user</span>
+                        <span>Authenticated Staff Access</span>
+                    </div>
                 </div>
 
                 {/* Form Quick Info Banner */}
@@ -282,12 +297,16 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                         position: 'relative'
                     }}>
                         <img 
-                            src={previewImg} 
+                            src={previewEndpoint} 
                             alt="Khelo Patna Elite Turf Academy Admission Form"
                             style={{
                                 width: '100%',
                                 height: 'auto',
                                 display: 'block'
+                            }}
+                            onError={(e) => {
+                                // Fallback placeholder if image not yet loaded
+                                e.currentTarget.style.display = 'none';
                             }}
                         />
                     </div>
@@ -306,12 +325,12 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                         gap: '12px'
                     }}>
                         <span className="material-icons-outlined" style={{ color: 'var(--emerald, #10B981)', fontSize: '20px', marginTop: '2px' }}>
-                            tips_and_updates
+                            security
                         </span>
                         <div style={{ fontSize: '0.8rem', color: '#CBD5E1', lineHeight: '1.5' }}>
-                            <strong style={{ color: '#FFFFFF' }}>Office Staff Instructions:</strong>
+                            <strong style={{ color: '#FFFFFF' }}>Internal Office Staff Security Policy:</strong>
                             <p style={{ margin: '4px 0 0' }}>
-                                Print blank copies of this form and keep 10-15 copies at the reception counter. Once the parent or guardian fills out and signs the form, collect the admission fee and register the student in the <strong>Admissions</strong> tab in the sidebar.
+                                This form is restricted to internal staff and administrators. It cannot be accessed without an active admin login session. Print copies as needed for offline walk-in parents and file physical copies in the office registry after digital admission.
                             </p>
                         </div>
                     </div>
@@ -327,7 +346,7 @@ export default function AdmissionFormModal({ isOpen, onClose }) {
                     background: 'rgba(0, 0, 0, 0.3)'
                 }}>
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94A3B8)' }}>
-                        File: <code style={{ color: 'var(--emerald, #10B981)', fontFamily: 'monospace' }}>Khelo_Patna_Academy_Admission_Form.pdf</code>
+                        Internal File: <code style={{ color: 'var(--emerald, #10B981)', fontFamily: 'monospace' }}>Khelo_Patna_Academy_Admission_Form.pdf</code>
                     </span>
                     <button
                         type="button"

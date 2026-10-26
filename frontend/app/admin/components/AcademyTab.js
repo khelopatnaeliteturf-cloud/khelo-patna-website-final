@@ -26,7 +26,8 @@ export default function AcademyTab(props) {
         setAttendanceSport = () => {}, 
         studentsList = [], 
         attendanceGrid = {}, 
-        toggleStudentAttendance = () => {} 
+        toggleStudentAttendance = () => {},
+        onOpenAdmissionForm = () => {}
     } = props || {};
 
     const [applications, setApplications] = useState([]);
@@ -85,16 +86,16 @@ export default function AcademyTab(props) {
                         <button key={t.id} className={`sub-tab-link ${academySubTab === t.id ? 'active' : ''}`} onClick={() => setAcademySubTab(t.id)}>{t.label}</button>
                     ))}
                 </div>
-                <a 
-                    href="/forms/Khelo_Patna_Academy_Admission_Form.pdf" 
-                    download="Khelo_Patna_Academy_Admission_Form.pdf" 
+                <button 
+                    type="button"
+                    onClick={onOpenAdmissionForm}
                     className="btn-secondary-stripe ms-auto" 
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 12px', textDecoration: 'none', borderRadius: '10px' }}
-                    title="Download Blank Academy Admission Form (PDF)"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 12px', borderRadius: '10px' }}
+                    title="Download Blank Academy Admission Form (PDF) - Staff Only"
                 >
                     <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--emerald, #10B981)' }}>description</span> 
                     <span>Download Blank Form (PDF)</span>
-                </a>
+                </button>
             </div>
 
             {/* 1. DIRECTORY */}

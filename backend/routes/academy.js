@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
 const Student = require('../models/Student');
 const Fee = require('../models/Fee');
 const Attendance = require('../models/Attendance');
@@ -1484,6 +1486,40 @@ router.post('/academy/admission/approve/:id', authenticateToken, authorizeRoles(
         console.error('Error approving admission:', err);
         res.status(500).json({ error: err.message || 'Failed to approve admission.' });
     }
+});
+
+// ─── Protected Admission Form Endpoints (Admin & Staff Only) ───
+const ADMISSION_FORM_PDF = path.join(__dirname, '..', 'forms', 'Khelo_Patna_Academy_Admission_Form.pdf');
+const ADMISSION_FORM_PREVIEW = path.join(__dirname, '..', 'forms', 'admission_form_preview_hd.png');
+
+// 1. Download official PDF (Content-Disposition: attachment)
+router.get('/academy/admission-form/download', authenticateToken, STAFF_READ, (req, res) => {
+    if (!fs.existsSync(ADMISSION_FORM_PDF)) {
+        return res.status(404).json({ error: 'Admission form template not found on server.' });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="Khelo_Patna_Academy_Admission_Form.pdf"');
+    res.sendFile(ADMISSION_FORM_PDF);
+});
+
+// 2. View official PDF inline (Content-Disposition: inline)
+router.get('/academy/admission-form/view', authenticateToken, STAFF_READ, (req, res) => {
+    if (!fs.existsSync(ADMISSION_FORM_PDF)) {
+        return res.status(404).json({ error: 'Admission form template not found on server.' });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="Khelo_Patna_Academy_Admission_Form.pdf"');
+    res.sendFile(ADMISSION_FORM_PDF);
+});
+
+// 3. HD visual preview image for admin modal
+router.get('/academy/admission-form/preview', authenticateToken, STAFF_READ, (req, res) => {
+    if (!fs.existsSync(ADMISSION_FORM_PREVIEW)) {
+        return res.status(404).json({ error: 'Admission form preview not found on server.' });
+    }
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'private, no-cache');
+    res.sendFile(ADMISSION_FORM_PREVIEW);
 });
 
 module.exports = router;

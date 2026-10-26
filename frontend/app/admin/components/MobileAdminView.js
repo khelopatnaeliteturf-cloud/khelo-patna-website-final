@@ -21,6 +21,7 @@ export default function MobileAdminView({
     onOpenFeeModal,
     onOpenExpenseModal,
     onToggleAttendance,
+    onOpenAdmissionForm,
     onLogout
 }) {
     const [mobileTab, setMobileTab] = useState('dashboard');
@@ -312,9 +313,9 @@ export default function MobileAdminView({
                 {mobileTab === 'academy' && (
                     <>
                         {/* Download Admission Form Banner */}
-                        <a 
-                            href="/forms/Khelo_Patna_Academy_Admission_Form.pdf" 
-                            download="Khelo_Patna_Academy_Admission_Form.pdf"
+                        <button 
+                            type="button"
+                            onClick={onOpenAdmissionForm}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -327,13 +328,14 @@ export default function MobileAdminView({
                                 color: '#00FF88',
                                 fontSize: '0.78rem',
                                 fontWeight: 700,
-                                textDecoration: 'none',
+                                width: '100%',
+                                cursor: 'pointer',
                                 marginBottom: '14px'
                             }}
                         >
                             <span className="material-icons-outlined" style={{ fontSize: '18px' }}>description</span>
-                            <span>Download Blank Admission Form (PDF)</span>
-                        </a>
+                            <span>Admission Form (Staff Only)</span>
+                        </button>
 
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                             {['students', 'coaches', 'batches', 'sessions'].map((sub) => (
