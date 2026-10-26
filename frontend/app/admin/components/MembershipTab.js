@@ -17,6 +17,7 @@ export default function MembershipTab({
     initialSelectedMemberId,
     clearInitialSelectedMemberId,
     onOpenAdmissions,
+    onOpenAdmissionForm,
     notifySuccess,
     notifyError
 }) {
@@ -237,14 +238,26 @@ export default function MembershipTab({
                             </button>
                         ))}
                     </div>
-                    <button
-                        className="btn-primary-stripe"
-                        onClick={() => onOpenAdmissions && onOpenAdmissions()}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
-                    >
-                        <span className="material-icons-outlined" style={{ fontSize: '16px' }}>how_to_reg</span>
-                        New Admission
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                            type="button"
+                            className="btn-secondary-stripe"
+                            onClick={() => onOpenAdmissionForm && onOpenAdmissionForm()}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
+                            title="Download or print blank offline admission form"
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>description</span>
+                            Admission Form (PDF)
+                        </button>
+                        <button
+                            className="btn-primary-stripe"
+                            onClick={() => onOpenAdmissions && onOpenAdmissions()}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>how_to_reg</span>
+                            New Admission
+                        </button>
+                    </div>
                 </div>
 
                 {subView === 'list' && !selectedMember && (

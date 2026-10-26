@@ -311,6 +311,30 @@ export default function MobileAdminView({
                 {/* TAB 4: ACADEMY */}
                 {mobileTab === 'academy' && (
                     <>
+                        {/* Download Admission Form Banner */}
+                        <a 
+                            href="/forms/Khelo_Patna_Academy_Admission_Form.pdf" 
+                            download="Khelo_Patna_Academy_Admission_Form.pdf"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                padding: '10px 14px',
+                                borderRadius: '12px',
+                                background: 'rgba(0, 255, 136, 0.1)',
+                                border: '1px solid rgba(0, 255, 136, 0.25)',
+                                color: '#00FF88',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                textDecoration: 'none',
+                                marginBottom: '14px'
+                            }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '18px' }}>description</span>
+                            <span>Download Blank Admission Form (PDF)</span>
+                        </a>
+
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                             {['students', 'coaches', 'batches', 'sessions'].map((sub) => (
                                 <button key={sub} onClick={() => setAcademySubTab(sub)} style={{

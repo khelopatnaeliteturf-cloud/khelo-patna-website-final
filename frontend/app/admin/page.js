@@ -18,6 +18,7 @@ import CustomersTab from './components/CustomersTab';
 import AnimatedNumber from './components/AnimatedNumber';
 import SettingsTab from './components/SettingsTab';
 import AdmissionStudio from './components/AdmissionStudio';
+import AdmissionFormModal from './components/AdmissionFormModal';
 
 import CouponsTab from './components/CouponsTab';
 import { getBackendUrl } from '../lib/backendUrl';
@@ -198,6 +199,7 @@ export default function AdminDashboard() {
     // User Profile Menu & Change Password Modal
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [showAdmissionFormModal, setShowAdmissionFormModal] = useState(false);
     const [changePasswordForm, setChangePasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [changingPassword, setChangingPassword] = useState(false);
 
@@ -767,7 +769,7 @@ export default function AdminDashboard() {
         if (tabId === 'turf-management') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'GROUND_MANAGER'].includes(role);
         }
-        if (tabId === 'admission-studio' || tabId === 'membership-management' || tabId === 'session-management' || tabId === 'batch-management' || tabId === 'coach-management' || tabId === 'attendance-management') {
+        if (tabId === 'admission-studio' || tabId === 'admission-form' || tabId === 'membership-management' || tabId === 'session-management' || tabId === 'batch-management' || tabId === 'coach-management' || tabId === 'attendance-management') {
             return ['SUPER_ADMIN', 'ACADEMY_OWNER', 'BRANCH_MANAGER', 'RECEPTIONIST', 'COACH', 'FINANCE_MANAGER'].includes(role);
         }
         if (tabId === 'membership-billing' || tabId === 'finance') {
@@ -6313,6 +6315,7 @@ export default function AdminDashboard() {
                     {(() => {
                         const items = [
                             { id: 'admission-studio', label: 'Admissions', icon: 'how_to_reg' },
+                            { id: 'admission-form', label: 'Admission Form', icon: 'description', isModal: true },
                             { id: 'membership-management', label: 'Memberships', icon: 'people' },
                             { id: 'session-management', label: 'Sessions', icon: 'schedule' },
                             { id: 'batch-management', label: 'Batches', icon: 'groups' },
@@ -6327,7 +6330,16 @@ export default function AdminDashboard() {
                                     <button 
                                         key={item.key || item.id}
                                         className={`sidebar-link ${activeSidebarKey === (item.key || item.id) ? 'active' : ''}`}
-                                        onClick={() => { setActiveTab(item.id); setActiveSidebarKey(item.key || item.id); setSidebarOpen(false); }}
+                                        onClick={() => { 
+                                            if (item.isModal) {
+                                                setShowAdmissionFormModal(true);
+                                                setSidebarOpen(false);
+                                            } else {
+                                                setActiveTab(item.id); 
+                                                setActiveSidebarKey(item.key || item.id); 
+                                                setSidebarOpen(false); 
+                                            }
+                                        }}
                                         title={sidebarCollapsed ? item.label : ''}
                                     >
                                         {activeSidebarKey === (item.key || item.id) && (
@@ -6526,6 +6538,31 @@ export default function AdminDashboard() {
                             {totalNotifications > 0 && <span className="notification-badge">{totalNotifications}</span>}
                         </button>
 
+                        <button 
+                            type="button"
+                            onClick={() => setShowAdmissionFormModal(true)}
+                            className="topbar-notification d-none d-sm-inline-flex"
+                            title="Download / Print Blank Academy Admission Form (PDF)"
+                            style={{ 
+                                textDecoration: 'none', 
+                                color: theme === 'light' ? '#047857' : 'var(--emerald)', 
+                                background: theme === 'light' ? 'rgba(4, 120, 87, 0.08)' : 'rgba(16,185,129,0.1)', 
+                                border: theme === 'light' ? '1px solid rgba(4, 120, 87, 0.3)' : '1px solid rgba(16,185,129,0.25)', 
+                                padding: '6px 12px', 
+                                borderRadius: '10px', 
+                                fontSize: '0.74rem', 
+                                fontWeight: 700,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <span className="material-icons-outlined" style={{ fontSize: '16px' }}>description</span>
+                            <span>Admission Form</span>
+                        </button>
+
                         <a 
                             href="/khelo_patna_logo_animated.gif" 
                             download="khelo_patna_logo_animated.gif"
@@ -6686,6 +6723,7 @@ export default function AdminDashboard() {
                             onCollectPayment={handleCollectPaymentRedirect}
                             notifySuccess={setSuccessMessage}
                             notifyError={setErrorMessage}
+                            onOpenAdmissionForm={() => setShowAdmissionFormModal(true)}
                         />
                     )}
                     {activeTab === 'academy-management' && <AcademyTab backendUrl={BACKEND_URL} getHeaders={getHeaders} academySubTab={academySubTab} setAcademySubTab={setAcademySubTab} customerSearchQuery={customerSearchQuery} setCustomerSearchQuery={setCustomerSearchQuery} allStudents={allStudents} selectedCrmStudent={selectedCrmStudent} setSelectedCrmStudent={setSelectedCrmStudent} setActiveTab={setActiveTab} setActiveSidebarKey={setActiveSidebarKey} setPaymentsSubTab={setPaymentsSubTab} setPaymentSearchId={setPaymentSearchId} setSelectedStudentForPayment={setSelectedStudentForPayment} setShowEnquiryModal={setShowEnquiryModal} enquirySearchQuery={enquirySearchQuery} setEnquirySearchQuery={setEnquirySearchQuery} enquiriesList={enquiriesList} handleConvertEnquiry={handleConvertEnquiry} handleSaveAttendance={handleSaveAttendance} attendanceSport={attendanceSport} setAttendanceSport={setAttendanceSport} studentsList={studentsList} attendanceGrid={attendanceGrid} toggleStudentAttendance={toggleStudentAttendance} />}
@@ -6704,6 +6742,7 @@ export default function AdminDashboard() {
                             initialSelectedMemberId={initialSelectedMemberId}
                             clearInitialSelectedMemberId={() => setInitialSelectedMemberId('')}
                             onOpenAdmissions={() => { setActiveTab('admission-studio'); setActiveSidebarKey('admission-studio'); }}
+                            onOpenAdmissionForm={() => setShowAdmissionFormModal(true)}
                             notifySuccess={setSuccessMessage}
                             notifyError={setErrorMessage}
                         />
@@ -6928,9 +6967,19 @@ export default function AdminDashboard() {
                     setActiveSidebarKey('membership-management');
                 }}
                 onSelectTab={(tabId, key) => {
+                    if (tabId === 'admission-form') {
+                        setShowAdmissionFormModal(true);
+                        return;
+                    }
                     setActiveTab(tabId);
                     setActiveSidebarKey(key || tabId);
                 }}
+            />
+
+            {/* Academy Admission Form Download & Print Modal */}
+            <AdmissionFormModal 
+                isOpen={showAdmissionFormModal}
+                onClose={() => setShowAdmissionFormModal(false)}
             />
         </div>
     );

@@ -8,6 +8,7 @@ const ALL_MODULES = [
     { id: 'turf-management', label: 'Turf Management', category: 'Main', icon: 'settings_suggest', key: 'calendar' },
     { id: 'membership-management', label: 'Membership Management', category: 'Academy', icon: 'people', key: 'active' },
     { id: 'membership-management', label: 'New Admission', category: 'Academy', icon: 'person_add', key: 'new-admission' },
+    { id: 'admission-form', label: 'Download Admission Form (PDF)', category: 'Academy', icon: 'description' },
     { id: 'membership-management', label: 'Session Promotion', category: 'Academy', icon: 'move_up', key: 'promotion' },
     { id: 'batch-management', label: 'Batch Management', category: 'Academy', icon: 'groups' },
     { id: 'coach-management', label: 'Coach Management', category: 'Academy', icon: 'sports' },

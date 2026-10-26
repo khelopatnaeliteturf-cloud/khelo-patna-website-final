@@ -74,15 +74,27 @@ export default function AcademyTab(props) {
 
     return (
         <div className="animate-fade-in">
-            <div className="d-flex gap-3 mb-4 border-bottom pb-2 flex-wrap">
-                {[
-                    { id: 'students', label: 'Directory' },
-                    { id: 'online-applications', label: 'Online Applications (₹1k Paid)' },
-                    { id: 'admissions', label: 'Enquiries' },
-                    { id: 'attendance', label: 'Attendance' }
-                ].map(t => (
-                    <button key={t.id} className={`sub-tab-link ${academySubTab === t.id ? 'active' : ''}`} onClick={() => setAcademySubTab(t.id)}>{t.label}</button>
-                ))}
+            <div className="d-flex gap-3 mb-4 border-bottom pb-2 flex-wrap align-items-center">
+                <div className="d-flex gap-2 flex-wrap">
+                    {[
+                        { id: 'students', label: 'Directory' },
+                        { id: 'online-applications', label: 'Online Applications (₹1k Paid)' },
+                        { id: 'admissions', label: 'Enquiries' },
+                        { id: 'attendance', label: 'Attendance' }
+                    ].map(t => (
+                        <button key={t.id} className={`sub-tab-link ${academySubTab === t.id ? 'active' : ''}`} onClick={() => setAcademySubTab(t.id)}>{t.label}</button>
+                    ))}
+                </div>
+                <a 
+                    href="/forms/Khelo_Patna_Academy_Admission_Form.pdf" 
+                    download="Khelo_Patna_Academy_Admission_Form.pdf" 
+                    className="btn-secondary-stripe ms-auto" 
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 12px', textDecoration: 'none', borderRadius: '10px' }}
+                    title="Download Blank Academy Admission Form (PDF)"
+                >
+                    <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--emerald, #10B981)' }}>description</span> 
+                    <span>Download Blank Form (PDF)</span>
+                </a>
             </div>
 
             {/* 1. DIRECTORY */}

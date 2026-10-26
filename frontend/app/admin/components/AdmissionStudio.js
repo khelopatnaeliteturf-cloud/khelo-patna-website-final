@@ -25,7 +25,7 @@ const calcAge = (dob) => {
     return Math.max(0, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
 };
 
-export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, onRefresh, onCollectPayment, notifySuccess, notifyError }) {
+export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, onRefresh, onCollectPayment, notifySuccess, notifyError, onOpenAdmissionForm }) {
     const [view, setView] = useState('wizard'); // 'wizard' | 'plans'
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
@@ -218,7 +218,7 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
     return (
         <div className="admission-studio" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* View switcher */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <button className={`sub-tab-link ${view === 'wizard' ? 'active' : ''}`} onClick={() => setView('wizard')}>
                     <span className="material-icons-outlined" style={{ fontSize: '15px', verticalAlign: '-3px', marginRight: '6px' }}>how_to_reg</span>
                     New Admission
@@ -226,6 +226,25 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                 <button className={`sub-tab-link ${view === 'plans' ? 'active' : ''}`} onClick={() => setView('plans')}>
                     <span className="material-icons-outlined" style={{ fontSize: '15px', verticalAlign: '-3px', marginRight: '6px' }}>payments</span>
                     Fee Plans
+                </button>
+                <button 
+                    type="button" 
+                    className="btn-secondary-stripe" 
+                    onClick={onOpenAdmissionForm}
+                    style={{ 
+                        marginLeft: 'auto', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '6px', 
+                        padding: '6px 14px', 
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        borderRadius: '10px'
+                    }}
+                    title="Download or Print Blank Offline Admission Form"
+                >
+                    <span className="material-icons-outlined" style={{ fontSize: '16px', color: 'var(--emerald, #10B981)' }}>description</span>
+                    <span>Download Blank Form (PDF)</span>
                 </button>
             </div>
 
@@ -304,7 +323,29 @@ export default function AdmissionStudio({ backendUrl, getHeaders, batchesList, o
                     {/* STEP 1 — Sport & plan */}
                     {step === 1 && (
                         <div>
-                            <h3 style={{ margin: '0 0 14px 0', fontSize: '1rem' }}>Choose a Program</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 14px 0', flexWrap: 'wrap', gap: '8px' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem' }}>Choose a Program</h3>
+                                <button
+                                    type="button"
+                                    onClick={onOpenAdmissionForm}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--emerald, #10B981)',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: 0
+                                    }}
+                                    title="Open offline admission form download & print modal"
+                                >
+                                    <span className="material-icons-outlined" style={{ fontSize: '15px' }}>description</span>
+                                    Print / Download Offline Form
+                                </button>
+                            </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
                                 {SPORTS.map(sp => {
                                     const p = planFor(sp.id);
